@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Объемный туман из компьютерной игры Tomb Raider 4 (Fog Bulb)</title>
+
+	<meta name="DESCRIPTION" content="Объемный туман из компьютерной игры Tomb Raider 4 (Fog Bulb)">
+	<meta name="KEYWORDS" content="Объемный туман из компьютерной игры Tomb Raider 4 (Fog Bulb)">
+
+<style type="text/css">
+body {
+	font-size: 24px;
+	font-family: "Consolas";
+	background-color: #000;
+	color: #ffffff;
+}
+
+pre {
+	font-size: 24px;
+	font-family: "Consolas";
+	background-color: #ffffaa;
+	color: #000;
+	width: max-content;
+	min-width: 100%;
+
+}
+
+div.my_selected {
+	width: 100%;
+	background-color: #ffff55;
+	position: relative;
+}
+
+a:link, a:visited { color: #aaaaaa; text-decoration: none; font-weight: normal;} 
+a:active, a:hover { color: #aaaaaa; text-decoration: underline;}
+
+p {
+	text-align: justify;
+	margin-right: 20px;
+}
+
+</style>	
+</head>
+<body>
+
+<h3>
+Объемный туман из компьютерной игры Tomb Raider 4 (Fog Bulb)
+</h3>
+
+<img src="./volume_fog.jpg" width=600 alt="volume fog dx9">
+
+<p>
+Загрузить исходный код для Visual Stduio 2005 и DirectX 9 June 2010 SDK <a href="./For_Bulb_Tomb_Raider4.rar">ЗДЕСЬ</a>.
+</p>
+
+<p>
+Тот же принцип объемного тумана из TR4 реализованный на Visual Stduio 2019 и DirectX 12 <a href="./Volume_Fog_Sphere_DX12.rar">ЗДЕСЬ</a>.
+</p>
+
+<p>
+Алгоритм программы следующий (для Visual Stduio 2005 и DirectX 9 June 2010 SDK).
+</p>
+
+<ol>
+	<li>Есть исходные данные - позиция наблюдателя (камеры), есть вершины треугольников сцены (сама сцена на экране), и так же сфера, размещенная на этой сцене. Каждая вершина треугольников сцены имеет формат - координаты x,y,z, зеркальная составляющая цвета вершины, текстурные координаты.
+
+	<li>На следующем этапе есть цикл в котором мы перебираем все вершины сцены (функция Update). В этом цикле мы проводим вектор от позиции камеры до вершины (каждого треугольника сцены). И проверяем- пересекает этот вектор сферу на сцене или нет. Если пересекает есть две точки пересечения - вход вектора в сферу и выход из сферы. Мы берем эти две координаты и узнает между ними расстояние. Это расстояние принимается за интенсивность тумана - пересечение вектора ближе к краю сферы дает меньшую интенсивность тумана, пересечение ближе к центру сферы дает большую интенсивность тумана, так как расстояние между точками перечечения разное. 
+
+	<li>В этом же цикле когда мы перебираем все вершины, и узнали интенсивность тумана, эту интенсивность записываем как альфа- составляющую зеркального цвета вершины, rgb компоненты зеркального цвета не имеют значения, могут быть ноль.
+
+	<li>Теперь можно перейти к рисованию сцены с туманом - устанавливаем renderstate cullmode, если нет нормалей в вершинах (у нас нет) устанавливаем render state lighting false, и теперь самое главное: D3DRS_FOGENABLE -> true, устанавливаем цвет тумана D3DRS_FOGCOLOR, устанавливаем Fog End и Fog Start, и самое важное устанавливаем D3DRS_RANGEFOGENABLE -> true.
+
+	<li>Вызываем функцию DrawPrimitive() для отрисовки сцены.
+
+
+</ol>		
+
+
+<pre>
+
+	m_pD3DDevice->SetRenderState(D3DRS_FOGENABLE, TRUE);
+
+	DWORD fog_colr = D3DCOLOR_ARGB(0xFF, 0, 223, 191);
+	m_pD3DDevice->SetRenderState(D3DRS_FOGCOLOR, fog_colr);
+
+	float m_fFogStart = 1024.0f * 12.0f;
+	float m_fFogEnd = 1024.0f * 20.0f;
+
+	m_pD3DDevice->SetRenderState(D3DRS_FOGSTART, *(DWORD *)(&m_fFogStart));
+	m_pD3DDevice->SetRenderState(D3DRS_FOGEND,   *(DWORD *)(&m_fFogEnd));
+
+	m_pD3DDevice->SetRenderState(D3DRS_RANGEFOGENABLE, TRUE);
+
+
+</pre>
+
+
+</body>
+</html>

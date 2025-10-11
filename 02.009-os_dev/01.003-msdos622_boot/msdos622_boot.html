@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Описание исходного кода MS-DOS 6.22 boot sector полученного в результате reverse engineering</title>
+
+	<meta name="DESCRIPTION" content="Описание исходного кода MS-DOS 6.22 boot sector полученного в результате reverse engineering">
+	<meta name="KEYWORDS" content="Описание исходного кода MS-DOS 6.22 boot sector полученного в результате reverse engineering">
+
+<style type="text/css">
+body {
+	font-size: 24px;
+	font-family: "Consolas";
+	background-color: #000;
+	color: #ffffff;
+}
+
+pre {
+	font-size: 24px;
+	font-family: "Consolas";
+	background-color: #ffffaa;
+	color: #000;
+	width: max-content;
+	min-width: 100%;
+
+}
+
+div.my_selected {
+	width: 100%;
+	background-color: #ffff55;
+	position: relative;
+}
+
+a:link, a:visited { color: #aaaaaa; text-decoration: none; font-weight: normal;} 
+a:active, a:hover { color: #aaaaaa; text-decoration: underline;}
+
+p {
+	text-align: justify;
+	margin-right: 20px;
+}
+
+</style>	
+</head>
+<body>
+
+<h3>
+Описание исходного кода MS-DOS 6.22 boot sector полученного в результате reverse engineering
+</h3>
+
+<p>
+Весь исходный код загрузочного сектора MS-DOS 6.22 представлен ниже.
+</p>
+
+<pre>
+
+; ==================================================================
+; Reverse Engineering MS-DOS 6.22 boot sector. NASM source code.
+; Final two bytes being the boot signature (AA55h). Note that in FAT12,
+; a cluster is the same as a sector: 512 bytes.
+; ==================================================================
+
+	BITS 16
+
+	org 7C00h
+
+	jmp short bootloader_start	; Jump past disk description section - jmp short size 2 bytes
+	nop				; Pad out before disk description - nop size 1 byte
+
+; ------------------------------------------------------------------
+; Bios parameter block BPB
+; Disk description table, to make it a valid floppy
+; Note: some of these values are hard-coded in the source!
+; Values are those used by IBM for 1.44 MB, 3.5" diskette
+
+OEMLabel			db "MSDOS622"	; seg000:0003 Disk label
+BytesPerSector		dw 512			; seg000:000B Bytes per sector 200h
+SectorsPerCluster	db 1			; seg000:000D Sectors per cluster
+ReservedForBoot		dw 1			; seg000:000E Reserved sectors for boot record
+NumberOfFats		db 2			; seg000:0010 Number of copies of the FAT
+RootDirEntries		dw 224			; seg000:0011 Number of entries in root dir e0h
+									; (224 * 32 = 7168 = 14 sectors to read)
+LogicalSectors		dw 2880			; seg000:0013 Number of logical sectors b40h
+MediumByte			db 0F0h			; seg000:0015 Medium descriptor byte
+SectorsPerFat		dw 9			; seg000:0016 Sectors per FAT
+SectorsPerTrack		dw 18			; seg000:0018 Sectors per track (36/cylinder) 12h
+Sides				dw 2			; seg000:001A Number of sides/heads
+HiddenSectors		dd 0			; seg000:001C Number of hidden sectors
+LargeSectors		dd 0			; seg000:0020 Number of LBA sectors i.e. 32 bit 										; version of number of sectors
+DriveNo				db 0			; seg000:0024 Drive No: 0 for A: floppy, 80h for HDD
+CurrentHead			db 0 			; seg000:0025 Current Head
+Signature			db 41			; seg000:0026 Drive signature: 41d 29h for floppy
+VolumeID			dd 00000000h	; seg000:0027 Volume ID: any number
+VolumeLabel			db "MSDOS622   "; seg000:002B Volume Label: any 11 chars
+FileSystem			db "FAT12   "	; seg000:0036 File system type: don't change!
+
+; ------------------------------------------------------------------
+; Main bootloader code
+
+Sec9		EQU	bootloader_start+0	;11 byte diskette parm. table
+BiosLow 	EQU	bootloader_start+11
+BiosHigh	EQU	bootloader_start+13
+CurTrk		EQU	bootloader_start+15
+CurSec		EQU	bootloader_start+17
+DirLow		EQU	bootloader_start+18
+DirHigh		EQU	bootloader_start+20
+
+bootloader_start:
+	cli				; Disable interrupts while changing stack
+	xor	AX,AX
+	mov	SS,AX		;Work in stack just below this routine
+	mov	SP,7C00h
+
+	push 	ss
+	pop 	es
+	
+
+ 	mov     bx, 78h		;POINTER TO DRIVE PARAMETERS 30d * 4d = 120d (78h) i.e. 1EH*4
+ 	lds     si, ss:[bx]
+ 	push	DS			; save original vector for possible
+	push	SI			; restore
+	push	SS
+	push	BX
+	mov	DI, Sec9
+	mov	CX, 11
+	cld
+	repz	movsb
+
+	push	ES
+	pop	DS							; DS = ES = code = 0.
+
+	mov     byte [di-2], 0Fh		; Head settle time
+	mov 	cx,	[SectorsPerTrack]
+	mov		byte [DI-7], cl			; End of Track
+
+	mov	[bx+2],AX					; Place in new disk parameter
+	mov	word [bx], Sec9				; table vector
+	
+	sti				; Interrupts OK now
+	int	13h			; Reset the disk system just in case
+
+	jc	CkErr			; any thing funny has happened.
+
+	xor	AX, AX
+	cmp	[LogicalSectors], AX		; 32 bit calculation?
+	je	Dir_Cont
+
+	mov	CX, [LogicalSectors]
+	mov	[LargeSectors], CX
+
+; First, we need to load the root directory from the disk. Technical details:
+; Start of root = ReservedForBoot + NumberOfFats * SectorsPerFat = logical 19d
+; Number of root = RootDirEntries * 32 bytes/entry / 512 bytes/sector = 14d
+; Start of user data = (start of root) + (number of root) = logical 33d 21h
+
+Dir_Cont:
+	
+	mov	AL, [NumberOfFats]		;Determine sector dir starts on
+	mul	WORD [SectorsPerFat]
+	add	AX,WORD [HiddenSectors]
+	adc	DX,WORD [HiddenSectors + 2]
+	add	AX,[ReservedForBoot]
+	adc	DX,0
+
+	; DX:AX = NumberOfFats * SectorsPerFat + ReservedForBoot + HiddenSectors
+
+	mov	[DirLow],AX
+	mov	[DirHigh],DX
+	mov	[BiosLow],AX
+	mov	[BiosHigh],DX
+
+	; Take into account size of directory (only know number
+	; of directory entries)
+
+
+	mov	AX, 20h 			; bytes per directory entry
+	mul	word [RootDirEntries]	; convert to bytes in directory
+	mov	BX,[BytesPerSector]	; add in sector size
+	add	AX,BX
+	dec	AX					; decrement so that we round up
+	div	BX					; convert to sector number
+	add	[BiosLow],AX		; Start sector # of Data area
+	adc	word [BiosHigh],0
+
+	; We load in the first directory sector and examine it to
+	; make sure the the BIOS and DOS are the first two directory
+	; entries. If they are not found, the user is prompted to
+	; insert a new disk. The directory sector is loaded into 00500h
+
+	mov	BX, 500h		; sector to go in at 00500h
+
+	mov	DX,[DirHigh]
+	mov	AX,[DirLow]		; logical start sector of directory
+	call	DoDiv			; convert to sector, track, head
+	jc	CkErr			; Overflow? BPB must be wrong!!
+
+	mov	al, 1			; disk read 1 sector
+	call	DoCall			; do the disk read
+	jb	CkErr			; if errors try to recover
+
+	; Now we scan for the presence of BIOS file.
+
+	mov	DI,BX
+	mov	CX,11
+	mov	SI, 	Bio		; point to "io.sys"
+	repz	cmpsb			; see if the same
+	jnz	CkErr			; if not there advise the user
+
+	; Found the BIOS. Check the second directory entry.
+	; SI will already point to "MSDOS  SYS" if first compare
+	; was successful
+
+	lea	DI,[BX+20h]
+	mov	SI,Dos
+	mov	CX,11
+	repz	cmpsb
+	jz	DoLoad
+
+	; There has been some recoverable error. Display a message
+	; and wait for a keystroke.
+
+CkErr:	
+	mov	SI, SysMsg	; point to no system message
+
+ErrOut:
+	call	Write			; and write on the screen
+
+	xor	AX,AX			; wait for response
+	int	16h			; get character from keyboard
+	pop	SI			; reset disk parameter table back to
+	pop	DS			; rom
+	pop	word [SI]
+	pop	word [SI+2]
+	int	19h			; Continue in loop till good disk
+
+Load_Failure:
+	pop	ax			;adjust the stack
+	pop	ax
+	pop	ax
+	jmp	short CkErr		;display message and reboot.
+
+	; We now begin to load the BIOS in.
+	; All we have to do is just read is multiply the BioStartClus
+	; by SecsPerClust to find the logical sector for the start
+	; of the BIOS file. When this value is added to the double
+	; word BiosHigh:BiosLow we get the absolute sector offset
+	; for the start of the file and then read the  sectors
+	; contiguously IBM_LOAD_SIZE times. We here assume that
+	; IBMLOAD module is contiguous. Currently we estimate that
+	; IBMLOAD module will not be more than 3 sectors.
+
+
+DoLoad:
+	mov	AX,[BX + 1Ah]	; AX = BIOS starting cluster
+	dec	AX			; Subtract first 2 reserved clusters
+	dec	AX
+	mov	BL,[SectorsPerCluster]		; BX = Sectors per cluster
+	xor	BH,BH
+	mul	BX			; DX:AX = first logical sector of bios
+
+	add	AX,[BiosLow]		; Add absolute start sector
+	adc	DX,[BiosHigh]		; DX:AX = Absolute bios sector offset
+
+	mov	BX,700h		;offset of ibmbio(IBMLOAD) to be loaded.
+	mov	CX,3	;# of sectors to read.
+
+	; Main read-in loop.
+	; ES:BX points to area to read.
+	; Count is the number of sectors remaining.
+	; BIOS$ is the next logical sector number to read
+	;
+	; CurrentHead is the head for this next disk request
+	; CurTrk is the track for this next request
+	; CurSec is the beginning sector number for this request
+	;
+	; AX is the number of sectors that we may read.
+
+
+Do_While:
+	push	AX
+	push	DX
+	push	CX
+	call	DoDiv			; DX:AX = sector number.
+	jc	Load_Failure		; Adjust stack. Show error message
+	mov	al, 1			; Read 1 sector at a time.
+					; This is to handle a case of media
+					; when the first sector of IBMLOAD is the
+					; the last sector in a track.
+	call	DoCall			; Read the sector.
+	pop	CX
+	pop	DX
+	pop	AX
+	jc	CkErr			; Read error?
+	add	AX,1			; Next sector number.
+	adc	DX,0
+	add	BX,[BytesPerSector]	; Adjust buffer address.
+	loop	Do_While
+
+
+; IBMINIT requires the following input conditions:
+;
+;   DL = INT 13 drive number we booted from
+;   CH = media byte
+;   IBMBIO init routine should check if the boot record is the
+;   extended one by looking at the extended_boot_signature.
+;   If it is, then should us AX;BX for the starting data sector number.
+
+; PC-DOS (and MS-DOS up to version
+; 6.xx behaves similar) expects on entry for io.sys:
+; ch = media id byte in the boot sector
+; dl = BIOS drive booted from (0x00=A:, 0x80=C:, ...)
+; ax:bx = the starting (LBA) sector of cluster 2 (ie the 1st
+; data sector, which is 0x0000:0021 for FAT12)
+; note: IO.SYS may use ax:bx and cluster # stored
+; elsewhere (perhaps dir entry still at 0x50:0) to determine
+; starting sector for full loading of kernel file.
+; it also expects the boot sector (in particular the BPB)
+; to still be at 0x0:7C00, the directory entry for io.sys
+; (generally first entry of first sector of the root directory)
+; at 0x50:0 (DOS reserved communication area). 
+
+DISKOK:
+	mov	CH,[MediumByte]
+	mov	DL,[DriveNo]
+	mov	BX,[BiosLow]		; Low Word Get bios sector in bx BiosLow = 21h 33d
+	mov	AX,[BiosHigh]		; Hight Word Value is 0h
+	jmp	70h:0 				; CRANK UP THE DOS
+
+; ------------------------------------------------------------------
+; BOOTLOADER SUBROUTINES
+
+Write:
+	lodsb				;GET NEXT CHARACTER
+	or	AL,AL			;Clear the high bit
+	jz	EndWr			;ERROR MESSAGE UP, JUMP TO BASIC
+	mov	AH,14			;WILL WRITE CHARACTER & ATTRIBUTE
+	mov	BX,7			;ATTRIBUTE
+	int	10h			;PRINT THE CHARACTER
+	jmp	Write
+
+EndWr:
+	ret
+
+;----------------------------
+
+		; Convert a logical sector into Track/sector/head.
+		; DX;AX has the sector number. Because of not enough space, we
+		; are  going to use Simple 32 bit division here.
+		; Carry set if DX;AX is too big to handle.
+
+DoDiv:
+	cmp	DX,[SectorsPerTrack]		; To prevent overflow!!!
+	jae	DivOverFlow		; Compare high word with the divisor.
+	div	word [SectorsPerTrack]		; AX = Total tracks, DX = sector number
+	inc	DL			; We assume SecPerTrack < 255 & DH=0
+					; curSec is 1-based.
+	mov	[CurSec], DL		; Save it
+	xor	DX,DX
+	div	word [Sides]
+	mov	[CurrentHead],DL		;Also, NumHeads < 255.
+	mov	[CurTrk],AX
+	clc
+	ret
+
+DivOverFlow:
+	stc
+
+EndWR:
+	ret
+
+;------------------------------
+
+; Issue one read request. ES:BX have the transfer address,
+; AL is the number of sectors.
+
+DoCall:
+	mov	AH, 2h			;=2
+	mov	DX,[CurTrk]
+	mov	CL,6
+	shl	DH,CL
+	or	DH,[CurSec]
+	mov	CX,DX
+	xchg	CH,CL
+	mov	DL, [DriveNo]
+	mov	DH, [CurrentHead]
+	int	13h
+	ret
+
+; ------------------------------------------------------------------
+; STRINGS AND VARIABLES
+
+	Bio	db "IO      SYS"
+	Dos	db "MSDOS   SYS"
+
+	;SysMsg	db "Non-System disk or disk error",0Dh,0Ah,"Replace and press any key when ;ready",0Dh,0Ah,0
+
+	SysMsg	db "Non-System disk or disk error",0Dh,0Ah, 0 
+
+; ------------------------------------------------------------------
+; END OF BOOT SECTOR
+
+	times 510-($-$$) db 0	; Pad remainder of boot sector with zeros
+	dw 0AA55h		; Boot signature (DO NOT CHANGE!)
+
+
+</pre>
+
+<p>
+Описание исходного кода.
+</p>
+
+<p>
+Ниже в коде указывается что это 16 бит двоичный файл, счетчик команд IP установить 7C00h, и прыжок на метку bootloader_start.
+</p>
+
+<pre>
+
+	BITS 16
+
+	org 7C00h
+
+	jmp short bootloader_start	; Jump past disk description section
+	nop							; Pad out before disk description
+
+
+</pre>
+
+<p>
+Между прыжком на метку bootloader_start и самой меткой bootloader_start расположена таблица параметров BIOS, которая называется Bios Parameter Block (BPB). См. ниже.
+</p>
+
+<pre>
+
+jmp short bootloader_start	; Jump past disk description section
+	nop							; Pad out before disk description
+
+;-----------------------------
+; Здесь Bios Parameter Block
+;-----------------------------
+
+Sec9		EQU	bootloader_start+0	;11 byte diskette parm. table
+BiosLow 	EQU	bootloader_start+11
+BiosHigh	EQU	bootloader_start+13
+CurTrk		EQU	bootloader_start+15
+CurSec		EQU	bootloader_start+17
+DirLow		EQU	bootloader_start+18
+DirHigh		EQU	bootloader_start+20
+
+bootloader_start:
+
+</pre>
+
+<p>
+BPB нужен что бы BIOS компьютера располагал как читать данные из раздела с данными из диска, т.е. BPB включает количество FAT, сколько секторов на одну FAT, сколько может быть записей в корневой директории, номер загрузочного диска, сколько секторов на диске (общее количество) и т.п. Вы сами можете ознакомиться с содержанием BPB. По этой инофрмации BIOS знает как обращаться с дисководом. Между BPB и меткой bootloader_start расположены переменные. Когда программа перейдер на метку bootloader_start, и начнет дальше выполняться, то эти переменные будут как раз расположены там где был выполненный код метки bootloader_start. Это делается что бы не выделять дополнительно место под переменные под кодом загрузчика, т.к. это занимает память, и не хватит 512 байт что бы разместить весь код загрузчика. Поэтому переменная Sec9 и все последующие создаются на месте бывшего кода метки bootloader_start - этот код уже выполнен и мы можем его затереть для использования места под переменные далее в коде.
+</p>
+
+<p>
+После метки bootloader_start код выполняется следующим образом. См. ниже. Сначала запрещаются прерывания что бы изменить регистр стека SS. Значение SS = 0. Значение SP = 7C00h - т.е. стек расположен прямо под кодом загручика, снизу, под ним. Далее в ES записываем 0, т.е. ES = 0.
+</p>
+
+
+<pre>
+
+bootloader_start:
+	cli				; Disable interrupts while changing stack
+	xor	AX,AX
+	mov	SS,AX		;Work in stack just below this routine
+	mov	SP,7C00h
+
+	push 	ss
+	pop 	es
+
+</pre>
+
+<p>
+Для информации и понимания кода далее, необходимо знать что таблица параметров диска храниться по адресу 0h:78h от начала памяти компьютера смещение 78h. Таблица параметров диска для дискет (DPT) задана указателем в памяти по адресу 0:78h, для жестких дисков (HDPT) — 0:104h. Мы начало этой таблицы, т.е. 0:78h записываем в DS:SI.  Смещение переменной Sec9 (она будет хранить новые параметры диска) храниться по адресу ES:DI, т.е. ES = 0, DI = offset Sec9. Далее устанавливается направление копирования cld - это значит то при копировании SI и DI регистры увеличиваются (а не уменьшаются). И команда repz movsb копирует в конце концов таблицу параметров диска в новое место (данные из таблицы) - где расположена переменна Sec9, занимает 11 байт. Т.е. копирование 11 байт. Первый 1 килобайт памяти занимают прерывания BIOS. После включения ПК BIOS загружает свои прерывания начиная от 0 адреса памяти до 1024 - первый килобат. В этом списке 256 прерываний, каждое прерывание - это 4 байта, адрес сегмент:смещение на подпрограмму обработки прерывания. Но в этом участке памяти BIOS хранит не только адреса переходов на подпрограммы прерываний, а также хранит необходимые для работы данные- оно из этих данных - таблица параметров диска имеет номер INT 1Eh но это не прерывание как таковое - это место где BIOS хранит параметры дисковода. 1Eh * 4 = 78h смещение 78h это смещение в памяти для INT 1Eh, 4 байта занимает один адрес - сегмент:смещение. Называется просто INT 1Eh но это не прерывание. Таким образом Bios Parameter Block нужен для описания дискеты которая содержит ОС, например дискета 1400 КB. Disk Parameter Table необходим для описания дисковода (физическое устройство) которое будет читать этот диск 1440 KB с ОС. Но для использования образа ISO в программе VirtualBox параметры в Disk Parameter Table менять не обязательно, образ ISO будет загружатся. Можно закоментировать этот код работы с Int 1Eh, сделать образ ISO и этот образ загрузиться в VirtualBox.
+</p>
+
+<p>
+Код ниже берет 4 байта по адресу 0:78h - эти 4 байта это адрес таблицы параметров дисковода, таблица параметров дисковода содержит 11 байт данных. Эти 11 байт копируются по адресу переменной Sec9 - это делает код ниже. DS:SI подержат 0:78h, ES:DI содержат 0:Sec9 (смещение переменной Sec9).
+</p>
+
+<pre>
+
+	mov     bx, 78h		;POINTER TO DRIVE PARAMETERS 30d * 4d = 120d (78h) i.e. 1EH*4
+ 	lds     si, ss:[bx]
+ 	push	DS			; save original vector for possible
+	push	SI			; restore
+	push	SS
+	push	BX
+	mov	DI, Sec9
+	mov	CX, 11
+	cld
+	repz	movsb
+
+</pre>
+
+<p>
+Далее в DS записываем ноль, т.е. DS = 0, ES = 0, CS = 0. Почему CS = 0 так как мы установили ранее org 7c00h - это устанавливает CS = 0 и IP = 7c00h (т.е. на код загрузчика).
+</p>
+
+<pre>
+
+	push	ES
+	pop	DS							; DS = ES = code = 0.
+
+</pre>
+
+<p>
+Далее там где расположена переменная Sec9 на нее указывает регистр DI, и мы меняем некоторые значения в таблице параметров диска.
+</p>
+
+<pre>
+
+	mov     byte [di-2], 0Fh		; Head settle time
+	mov 	cx,	[SectorsPerTrack]
+	mov		byte [DI-7], cl			; End of Track
+
+</pre>
+
+<p>
+Далее мы указываем что новая таблица параметров диска (11 байт) размещена там где переменная Sec9. В коде ниже bx = 78h - это смещение от начала памяти 78h, по этому смещению адрес старой таблицы диска, оригинальной. Мы записываем новый адрес 4 байта сегмент:смещение по адресу 78h, т.е. сегмент в AX = 0 записываем по адресу bx+2 т.е. 7Ah, по адресу bx = 78h записываем смещение переменной Sec9 (Sec9 мы по этому смещению скоопировали старую таблицу диска), так как little endian требует что бы сначала в памяти разместился младший байт (78h = offset Sec9), затем старший байт (7Ah = segment 0).
+</p>
+
+<pre>
+
+	mov	[bx+2],AX					; Place in new disk parameter
+	mov	word [bx], Sec9				; table vector
+
+</pre>
+
+<p>
+Далее делаем на всякий случай сброс дисковода, разрешаем прерывания - команда sti, и вызываем int 13h - прерывание для операций с дисками.
+</p>
+
+<pre>
+
+	sti				; Interrupts OK now
+	int	13h			; Reset the disk system just in case
+
+</pre>
+
+<p>
+Далее код, если ошибка в процессе вызова int 13h выводим сообщение на экран, ждем нажатия на любую клавишу, и далее перезагрузка.
+</p>
+
+<pre>
+
+jc	CkErr			; any thing funny has happened.
+
+</pre>
+
+<p>
+Если в процессе вызова int 13h ошибки нет, далее проверяем нужен ли 32 битный расчет.
+</p>
+
+<pre>
+
+	xor	AX, AX
+	cmp	[LogicalSectors], AX		; 32 bit calculation?
+	je	Dir_Cont
+
+	mov	CX, [LogicalSectors]
+	mov	[LargeSectors], CX
+
+</pre>
+
+<p>
+Далее начиная с метки Dir_Cont выполняются такие расчеты.
+</p>
+
+<pre>
+
+Сектор начала корневого каталога = ReservedForBoot + NumberOfFats * SectorsPerFat =  19d
+
+Сколько занимает места корневой каталог = RootDirEntries * 32 bytes/entry / 512 bytes/sector = 14d
+
+Начало данных пользователя на диске на чинается в секторе = (start of root) + (number of root) =  33d 21h
+
+</pre>
+
+
+<p>
+В результате выполнения кода ниже в AX будет сектор начала корневого каталога т.е. это сектор 19d.
+</p>
+
+<pre>
+
+Dir_Cont:
+	
+	mov	AL, [NumberOfFats]		;Determine sector dir starts on
+	mul	WORD [SectorsPerFat]
+	add	AX,WORD [HiddenSectors]
+	adc	DX,WORD [HiddenSectors + 2]
+	add	AX,[ReservedForBoot]
+	adc	DX,0
+
+</pre>
+
+<p>
+Записываем эти значения в переменные, см. код ниже.
+</p>
+
+<pre>
+
+	mov	[DirLow],AX 		; AX = 19d
+	mov	[DirHigh],DX 		; Dx = 0
+	mov	[BiosLow],AX 		; AX = 19d
+	mov	[BiosHigh],DX 		; DX = 0
+
+</pre>	
+
+<p>
+На данном этапе мы вычислили номер первого сектора корневого каталога. Далее за корневым каталогом лежит область данных диска. Вычисляем первый сектор области данных диска. См. код ниже - теперь AX = BiosLow = 33d и BiosHigh = 0.
+</p>
+
+<pre>
+
+	mov	AX, 20h 			; bytes per directory entry
+	mul	word [RootDirEntries]	; convert to bytes in directory
+	mov	BX,[BytesPerSector]	; add in sector size
+	add	AX,BX
+	dec	AX					; decrement so that we round up
+	div	BX					; convert to sector number
+	add	[BiosLow],AX		; Start sector # of Data area
+	adc	word [BiosHigh],0
+
+</pre>
+
+<p>
+Следующая инструкция устанавливает что мы хотим загрузить корневой каталог по смещению BX = 500h. Мы загружаем не весь корневой каталог а только 1 сектор, загрузка происходит по адресу 0h:500h, ES:BX, здесь ES = 0 и BX = 500h.
+</p>
+
+<pre>
+
+mov	BX, 500h		; sector to go in at 00500h
+
+</pre>
+
+<p>
+См.код ниже - переменная DirHigh = 0, и DirLow = 19d - это сектор начала корневого каталога. Функция DoDiv выполняет преобразование этого значения 19d в вид "сектор : дорожка : сторона" диска. Проверяем на ошибки - функция CkErr.
+</p>
+
+<pre>
+
+	mov	DX,[DirHigh]
+	mov	AX,[DirLow]		; logical start sector of directory
+	call	DoDiv			; convert to sector, track, head
+	jc	CkErr			; Overflow? BPB must be wrong!!
+
+</pre>
+
+<p>
+Далее читаем 1 сектор корневого каталога с диска - функция DoCall. Проверяем на ошибки - функция CkErr. Мы читаем сектор корневого каталога что бы проверить есть ли файлы io.sys и msdos.sys на диске. Если они присутствуют в корневом каталоге значит они есть на диске.
+</p>
+
+<pre>
+
+	mov	al, 1			; disk read 1 sector
+	call	DoCall			; do the disk read
+	jb	CkErr			; if errors try to recover
+
+</pre>
+
+<p>
+Далее проверяем есть ли файлы io.sys и msdos.sys в корневом каталоге. Команда repz	cmpsb сравнивает количество байт записанное в CX, у нас CX = 11 это размер для имен файлов DOS 8 символов имя + 3 символа расширение файла = 11 символов. Регистр ES = 0, DI = BX = 500h куда мы загрузили 1 сектор корневого каталога. Регистр DS = 0, SI = offset Bio. Сравнение идет регистры ES:DI с регистрами DS:SI (на что указывают эти регистры). CkErr проверка на ошибки.
+</p>
+
+<pre>
+
+	mov	DI,BX
+	mov	CX,11
+	mov	SI, 	Bio		; point to "io.sys"
+	repz	cmpsb			; see if the same
+	jnz	CkErr			; if not there advise the user
+
+</pre>
+
+<p>
+Если нашли в корневом каталоге io.sys добавляем до DI 32d или 20h - это размер одного элемента корневого каталога, и переходим таким образом ко второму элементу корневого каталога. Таким же образом как мы искали io.sys находим msdos.sys. Если есть совпадение переходим на загрузку DoLoad. Если в результате сравнения символов в корневом каталоге не нашелся файла msdos.sys то идем на функцию вывода ошибки CkErr.
+</p>
+
+<pre>
+
+	lea	DI,[BX+20h]
+	mov	SI,Dos
+	mov	CX,11
+	repz	cmpsb
+	jz	DoLoad
+
+</pre>
+
+<p>
+Что в начале функции DoLoad. BX указывает на первый сектор загруженой корневой директории. Первый и все последующие элементы корневой директории имеют размер 32d байта. Первые 11 байт это имя файла. У нас первая запись в корневой директории файл io.sys. По смещению 1Ah или 26d от начала записи лежит номер первого сектора в FAT файла io.sys. Мы этот номер сектора заносим в AX. Наша цель из сектора FAT получить номер сектора в области данных, если мы знаем что область данных начинается в 33 секторе. Вычисления следующие:
+</p>
+
+
+<pre>
+
+Начальный сектор файла в области данных = ((Кластер FAT) - 2) * SectorsPerCluster + (Начало области данных 33d) = (Кластер FAT) + 31d
+
+</pre>
+
+<pre>
+
+DoLoad:
+	mov	AX,[BX + 1Ah]	; AX = BIOS starting cluster in FAT
+
+</pre>
+
+<p>
+Первые два сектора FAT это служебные секторы, поэтому мы значение в регистре AX должны уменьшить на 2. 
+</p>
+
+<pre>
+ 	
+ 	FAT cluster 0 = media descriptor = 0F0h
+ 	FAT cluster 1 = filler cluster = 0FFh
+
+</pre>
+
+<pre>
+
+	dec	AX			; Subtract first 2 reserved clusters
+	dec	AX
+
+</pre>
+
+<p>
+Выполняем вычисления, в результате AX хранит номер первого сектора на диске в области данных файла io.sys, мы  к значению AX добавляем BiosLow = 33d и к DX BiosHigh = 0 (см. вычисления ранее). В результате DX:AX хранит старшие 16 байт и младшие 16 байт которые представляют собой первый сектор io.sys в области данных.
+</p>
+
+<pre>
+
+	mov	BL,[SectorsPerCluster]		; BX = Sectors per cluster
+	xor	BH,BH
+	mul	BX			; DX:AX = first logical sector of bios
+
+	add	AX,[BiosLow]		; Add absolute start sector
+	adc	DX,[BiosHigh]		; DX:AX = Absolute bios sector offset
+
+</pre>
+
+<p>
+Мы будем загружать io.sys по адресу ES:BX, где ES = 0 и BX = 700h, т.е. адрес 0000h:0700h или по другому 70h:0. Мы по этому адресу загружаем 3 первых сектора io.sys - в них храниться загрузчик остальной части io.sys и далее грузиться msdos.sys. Мы загружаем на адрес 0000h:0700h первые 3 сектора io.sys и передаем на них управление. Эти первые три сектора грузят остальную часть io.sys и msdos.sys. 3 сектора это 1536 байт, хотя на реальный размер io.sys около 40 Килобайтов. Остальная часть io.sys подружается этим загрузчиком IBMLOAD который расположен в первых 3х секторах io.sys.
+</p>
+
+<pre>
+
+	mov	BX,700h		;offset of io.sys(IBMLOAD) to be loaded.
+	mov	CX,3	;# of sectors to read.
+
+</pre>
+
+<p>
+Далее в цикле без помощи FAT (мы уже получили первый сектор io.sys в области данных) читаем подряд 3 сектора файла io.sys с диска с области данных. Перед началом цикла Do_While AX:DX хранят номер первого сектора io.sys в области данных. DoDiv выполняет преобразование номера сектора из AX:DX в вид "сектор : дорожка : сторона" диска. В случае ошибки после вызова DoDiv вызывается Load_Failure. В регистр AL заносим 1 - мы читаем 1 сектор за раз. DoCall читает сектор с диска. CkErr выполняется в случае ошибки чтения с диска. После чтения сектора добавляем к значению в AX 1 и это будет номер следующего сектора. К значению в BX т.е. это 700h добавляем 512 что бы сдвинуть буфер для следующего чтения сектора. Переходим на начало цикла loop Do_While.
+</p>
+
+<pre>
+
+Do_While:
+	push	AX
+	push	DX
+	push	CX
+	call	DoDiv			; DX:AX = sector number.
+	jc	Load_Failure		; Adjust stack. Show error message
+	mov	al, 1			; Read 1 sector at a time.
+					; This is to handle a case of media
+					; when the first sector of IBMLOAD is the
+					; the last sector in a track.
+	call	DoCall			; Read the sector.
+	pop	CX
+	pop	DX
+	pop	AX
+	jc	CkErr			; Read error?
+	add	AX,1			; Next sector number.
+	adc	DX,0
+	add	BX,[BytesPerSector]	; Adjust buffer address.
+	loop	Do_While
+
+</pre>
+
+<p>
+Теперь у нас есть 3 первых сектора io.sys прочитанные с дика в память по адресу 0000h:0700h, или 70h:0. Далее в коде ниже настраиваем регистры что бы передать управление io.sys, так как io.sys необходимо для работы некоторая информация. И передаем управление на 70h:0 куда мы загрузили первые 3 сектора io.sys.
+</p>
+
+<pre>
+
+DISKOK:
+	mov	CH,[MediumByte]
+	mov	DL,[DriveNo]
+	mov	BX,[BiosLow]		; Get bios sector in bx BiosLow = 21h 33d
+	mov	AX,[BiosHigh]		; Value is 0h
+	jmp	70h:0 				; CRANK UP THE DOS
+
+</pre>
+
+<p>
+После этого на экране высвечивается сообщение о загрузке MS-DOS 6.22 и операционная система начинает работу.
+</p>
+
+<p>
+Особенности работы кода. Как понятно из работы кода что 1 сектор корневой директории диска
+должен быть загружен по адресу 0:0500h иначе загрузки MS-DOS не будет, если закоментировать int 13h когда загружается сектор корневой директории, и не загрузить сектор корневой директории загрузка виснет, т.е. по адресу 0:0500h должен быть 1й сектор корневой директории. Нужно строго соблюдать всю адресацию согласно тому как это сделано в загрузчике MS-DOS 6.22 Микрософт.
+</p>
+
+<p>
+Итак подведем итоги- схема загрузки MS-DOS 6.22.
+</p>
+
+<ol>
+	<li> Загрузить корневой каталог с диска в память
+	<li> Проверить есть ли в корневом каталоге файлы io.sys и msdos.sys
+	<li> Из записи корневого каталога io.sys получить первый сектор FAT io.sys
+	<li> По первому сектору FAT рассчитать первый сектор io.sys в области данных
+	<li> Из области данных в память 0:0700h прочитать первые 3 сектора io.sys
+	<li> При помощи инструкции jmp передать управление на 70h:0 т.е. на io.sys
+</ol>
+
+<p>
+Так же есть укороченная версия загрузчика MS-DOS 6.22. В этой версии только загружается корневой каталог по адресу 0:0500h и затем загружается io.sys по адресу 0:0700h. Для лучшего понимания работы загрузчика я создал укороченную версию загрузчика MS-DOS 6.22. Ниже исходный код укороченной версии:
+</p>
+
+<pre>
+
+; ==================================================================
+; Reverse Engineering MS-DOS 6.22 boot sector. NASM source code.
+; Final two bytes being the boot signature (AA55h). Note that in FAT12,
+; a cluster is the same as a sector: 512 bytes.
+; ==================================================================
+
+	BITS 16
+
+	org 7C00h
+
+	jmp short bootloader_start	; Jump past disk description section
+	nop							; Pad out before disk description
+
+; ------------------------------------------------------------------
+; Bios parameter block BPB
+; Disk description table, to make it a valid floppy
+; Note: some of these values are hard-coded in the source!
+; Values are those used by IBM for 1.44 MB, 3.5" diskette
+
+OEMLabel			db "MSDOS622"	; seg000:0003 Disk label
+BytesPerSector		dw 512			; seg000:000B Bytes per sector 200h
+SectorsPerCluster	db 1			; seg000:000D Sectors per cluster
+ReservedForBoot		dw 1			; seg000:000E Reserved sectors for boot record
+NumberOfFats		db 2			; seg000:0010 Number of copies of the FAT
+RootDirEntries		dw 224			; seg000:0011 Number of entries in root dir e0h
+									; (224 * 32 = 7168 = 14 sectors to read)
+LogicalSectors		dw 2880			; seg000:0013 Number of logical sectors b40h
+MediumByte			db 0F0h			; seg000:0015 Medium descriptor byte
+SectorsPerFat		dw 9			; seg000:0016 Sectors per FAT
+SectorsPerTrack		dw 18			; seg000:0018 Sectors per track (36/cylinder) 12h
+Sides				dw 2			; seg000:001A Number of sides/heads
+HiddenSectors		dd 0			; seg000:001C Number of hidden sectors
+LargeSectors		dd 0			; seg000:0020 Number of LBA sectors i.e. 32 bit 										; version of number of sectors
+DriveNo				db 0			; seg000:0024 Drive No: 0 for A: floppy, 80h for HDD
+CurrentHead			db 0 			; seg000:0025 Current Head
+Signature			db 41			; seg000:0026 Drive signature: 41d 29h for floppy
+VolumeID			dd 00000000h	; seg000:0027 Volume ID: any number
+VolumeLabel			db "MSDOS622   "; seg000:002B Volume Label: any 11 chars
+FileSystem			db "FAT12   "	; seg000:0036 File system type: don't change!
+
+; ------------------------------------------------------------------
+; Main bootloader code
+
+CurTrk		EQU	bootloader_start+ 0 
+CurSec		EQU	bootloader_start+ 2
+
+bootloader_start:
+	cli				; Disable interrupts while changing stack
+	xor	AX,AX
+	mov	SS,AX		;Work in stack just below this routine
+	mov	SP,7C00h
+	
+	sti				; Interrupts OK now
+
+	push 	ss
+	pop 	es
+	
+	push	ES
+	pop	DS							; DS = ES = code = 0.
+
+	;------------------------------
+
+	;первый сектор корневой директории диска
+	;должен быть загружен по адресу 0:0500h (DOS reserved communication area)
+	;иначе загрузки MS-DOS не будет
+	
+	;шаг 1 - загружаем 1 сектор корневого каталога
+	mov	BX, 500h		; sector to go in at 00500h
+
+	mov	DX, 0
+	mov	AX,19		; logical start sector of directory
+	call	DoDiv			; convert to sector, track, head
+
+	mov	al, 1			; disk read 1 sector
+
+	;[CurTrk] = 0
+	;[CurSec] = 2
+	;[CurrentHead] = 1
+
+	call	DoCall
+
+	;шаг 2- загружаем 3 сектора io.sys
+	mov ax, 33 	;первый сектор области данных там io.sys - младшее слово ax
+	mov dx, 0 	;сюда ноль это старшее слово dx для сектора
+
+	mov	BX,700h		;offset of io.sys(IBMLOAD) to be loaded
+					;0h:0700h is DOS interface to ROM I/O routines
+	mov	CX,3	;читаем в память первые 3 сектора io.sys где находится загрузчик io.sys
+				;на диске io.sys занимает около 40 Килобайт
+
+Do_While:
+	push	AX
+	push	DX
+	push	CX
+
+	call	DoDiv			; DX:AX = sector number.
+
+	mov	al, 1			; Read 1 sector at a time.
+					; This is to handle a case of media
+					; when the first sector of IBMLOAD is the
+					; the last sector in a track.
+	call	DoCall			; Read the sector.
+	pop	CX
+	pop	DX
+	pop	AX
+
+	add	AX,1			; Next sector number.
+	adc	DX,0
+	add	BX,[BytesPerSector]	; Adjust buffer address.
+	loop	Do_While
+	
+
+; PC-DOS (and MS-DOS up to version
+; 6.xx behaves similar) expects on entry for io.sys:
+; ch = media id byte in the boot sector
+; dl = BIOS drive booted from (0x00=A:, 0x80=C:, ...)
+; ax:bx = the starting (LBA) sector of cluster 2 (ie the 1st
+; data sector, which is 0x0000:0021 for FAT12)
+; note: IO.SYS may use ax:bx and cluster # stored
+; elsewhere (perhaps dir entry still at 0x50:0) to determine
+; starting sector for full loading of kernel file.
+; it also expects the boot sector (in particular the BPB)
+; to still be at 0x0:7C00, the directory entry for io.sys
+; (generally first entry of first sector of the root directory)
+; at 0x50:0 (DOS reserved communication area). 
+
+	;шаг 3 - передаем управление на io.sys
+DISKOK:
+	mov	CH,[MediumByte]
+	mov	DL,[DriveNo]  	 
+	mov	BX,33		; Low Word Get bios sector in bx BiosLow = 21h 33d
+	mov	AX,0		; Hight Word Value is 0h
+
+	jmp	70h:0 				; CRANK UP THE DOS
+
+; ------------------------------------------------------------------
+; BOOTLOADER SUBROUTINES
+
+; Convert a logical sector into Track/sector/head.
+; DX;AX has the sector number. Because of not enough space, we
+; are  going to use Simple 32 bit division here.
+; Carry set if DX;AX is too big to handle.
+
+DoDiv:
+	cmp	DX,[SectorsPerTrack]		; To prevent overflow!!!
+	jae	DivOverFlow		; Compare high word with the divisor.
+	div	word [SectorsPerTrack]		; AX = Total tracks, DX = sector number
+	inc	DL			; We assume SecPerTrack < 255 & DH=0
+					; curSec is 1-based.
+	mov	[CurSec], DL		; Save it
+	xor	DX,DX
+	div	word [Sides]
+	mov	[CurrentHead],DL		;Also, NumHeads < 255.
+	mov	[CurTrk],AX
+	clc
+	ret
+
+DivOverFlow:
+	stc
+
+EndWR:
+	ret
+
+;------------------------------
+
+; Issue one read request. ES:BX have the transfer address,
+; AL is the number of sectors.
+
+DoCall:
+	mov	AH, 2h			;=2
+	mov	DX,[CurTrk]
+	mov	CL,6
+	shl	DH,CL
+	or	DH,[CurSec]
+	mov	CX,DX
+	xchg	CH,CL
+	mov	DL, [DriveNo]
+	mov	DH, [CurrentHead]
+	int	13h
+	ret
+
+; ------------------------------------------------------------------
+; END OF BOOT SECTOR
+
+	times 510-($-$$) db 0	; Pad remainder of boot sector with zeros
+	dw 0AA55h		; Boot signature (DO NOT CHANGE!)
+
+
+</pre>
+
+</body>
+</html>

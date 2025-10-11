@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Камера. Billbords. Изучаем матрицу Мира. Реализуем Альфа- смешивание</title>
+
+	<meta name="DESCRIPTION" content="Камера. Billbords. Изучаем матрицу Мира. Реализуем Альфа- смешивание">
+	<meta name="KEYWORDS" content="Камера. Billbords. Изучаем матрицу Мира. Реализуем Альфа- смешивание">
+
+<style type="text/css">
+body {
+	font-size: 24px;
+	font-family: "Consolas";
+	background-color: #000;
+	color: #ffffff;
+}
+
+pre {
+	font-size: 24px;
+	font-family: "Consolas";
+	background-color: #ffffaa;
+	color: #000;
+	width: max-content;
+	min-width: 100%;
+}
+
+div.my_selected {
+	width: 100%;
+	background-color: #ffff55;
+	position: relative;
+}
+
+a:link, a:visited { color: #aaaaaa; text-decoration: none; font-weight: normal;} 
+a:active, a:hover { color: #aaaaaa; text-decoration: underline;}
+
+p {
+	text-align: justify;
+	margin-right: 20px;
+}
+
+
+</style>	
+</head>
+<body>
+
+<h3>
+Камера. Billbords. Изучаем матрицу Мира. Реализуем Альфа- смешивание
+</h3>
+
+<p>
+Загрузить архив с примерами <a href="../source.rar">ЗДЕСЬ</a>.
+</p>
+
+
+<p>
+Билбоарды это такие полигоны которые всегда обращены лицевой стороной к камере, к наблюдателю. Например два треугольника образуют квадрат, на этот квадрат наложена текстура дерева (с прозрачностью), у нас есть плоское дерево, и оно всегда смотрит в сторону камеры. Это и есть биллбоарды, очень удобно, т.к. создается иллюзия что дерево объемное.
+</p>
+
+<p>
+Для того что бы добиться такого эффекта, необходимо для этого полигона с текстурой дерева создать собственную матрицу мира. Как устроена обычная матирца мира:
+</p>
+
+<pre>
+
+vRight.x 	vRight.y 	vRigth.z 	0.0f
+vUp.x 		vUp.y 		vUp.z 		0.0f
+vLook.x 	vLook.y 	vLook.z 	0.0f
+vPos.x 		vPos.y 		vPos.z 		1.0f
+
+</pre>
+
+<p>
+Это модель матрицы мира. Мы уже знаем как устроена матрица вида. Далее мы от позиции камеры на сцене отнимаем позицию нашего биллбоарда- нормализуем этот вектор, это у нас будет vLook. Кроме того наш биллбоард всегда направлен вертикально, т.е. vU[ =  (0.0f, 1.0f, 0.0f). Теперь у нас есть два вектора. При помощи функции Cross Product находим vRight. Заполняем этими тремя векторами матрицу мира. В довершение размещаем в матрице мира вектор позиции нашего дерева vPos. Мы можем разместить биллбоард в любом месте сцены. В примере ниже- биллбоард размещен в центре сцены.
+</p>
+
+<p>
+Код примера можно загрузить /src/03.007-billboards/BillBoard_Soft1.
+</p>
+
+<p>
+Когда проводится смешивание (blending) в 3D графике, используются такие понятия как то что уже нарисовано на экране (в заднем буфере) это Destination, и то что будет рисоваться на экран (поверх уже нарисованного, того что уже есть в заднем буфере, для смешивания) это Source. Таким образом, то что уже есть в заднем буфере это Dest, то что рисуем поверх - это Src.
+</p>
+
+<p>
+В этом примере мы загружаем 32 бит BMP файл с рисунком дерева, и выводим изображение на экран используя альфа смешивание. Альфа смешивание осуществляется следующим способом.
+</p>
+
+<pre>
+
+	Для дерева расчет SourceBlend
+	Коэффициент blend имеет значение (As, As, As, As, As).
+
+</pre>
+
+<pre>
+
+	Для фона расчет DestBlend
+	Коэффициент смешения ( 1 - As, 1 - As, 1 - As, 1 - As).
+
+</pre>
+
+<p>
+Формула смешивания
+</p>
+
+<pre>
+
+	Color = TexelColor x SourceBlend + CurrentPixelColor x DestBlend
+
+</pre>
+
+<p>
+где TexelColor - это пиксель текстуры дерева;
+SourceBlend - это альфа в пикселе текстуры дерева;
+CurrentPixelColor - это пиксель в бак- буфере (фон);
+DestBlend - это альфа пикселя в бак- буфере.
+</p>
+
+
+<p>
+
+Эту формулу можно преобразовать так (мы ее используем в примере программы:
+</p>
+
+<pre>
+
+	Color = TexelColor x SourceBlend + CurrentPixelColor x 1 - SourceBlend
+
+</pre>
+
+<p>
+Вот как эта формула реализована на С++ в коде примера (см.функцию Draw_Textured_Poly()):
+</p>
+
+<pre>
+
+	//получаем пиксель из текстуры дерева
+	//и преобразуем в диапазон от 0 до 1
+	float r = m_pRes[t + 2] / 255.0f;
+	float g = m_pRes[t + 1] / 255.0f;
+	float b = m_pRes[t + 0] / 255.0f;
+	float a = m_pRes[t + 3] / 255.0f;
+
+	//умножаем пиксель текстуры дерева
+	//на его альфа канал
+	float src_r = r * a;
+	float src_g = g * a;
+	float src_b = b * a;
+
+	//получаем пиксель бак- буфера (фона)
+	//и преобразуем в диапазон от 0 до 1
+	float rb = m_lpData[index + 2] / 255.0f;
+	float gb = m_lpData[index + 1] / 255.0f;
+	float bb = m_lpData[index + 0] / 255.0f;
+
+	//умножаем пиксель из бак- буфера
+	//на 1 - альфа канал текстуры дерева
+	float dest_r = rb * (1.0f - a);
+	float dest_g = gb * (1.0f - a);
+	float dest_b = bb * (1.0f - a);
+
+	//складываем значения по формуле и умрожаем на 255
+	float res_r = (src_r + dest_r) * 255;
+	float res_g = (src_g + dest_g) * 255;
+	float res_b = (src_b + dest_b) * 255;
+			
+	//заполняем бак- буфер
+	m_lpData[index] = (int)res_b;
+	index++;
+	
+	m_lpData[index] = (int)res_g;
+	index++;
+
+	m_lpData[index] = (int)res_r;
+	index++;
+
+	m_lpData[index] = 0;
+	index++;
+
+</pre>
+
+<p>
+В DirectX 9 этот тип смешивания выглядит так:
+</p>
+<pre>
+
+	m_pD3DDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
+	m_pD3DDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
+
+</pre>
+
+<p>
+Так же особенность данного проекта, в функции void CMeshManager::Init_Scene(HWND hwnd) мы текстурные координаты умножаем на 5, например:
+</p>
+
+<pre>
+
+	p.Vertex[2].tu = (float)tex[0].nTextureWidth * 5 - 1;
+	p.Vertex[2].tv = (float)tex[0].nTextureHeight * 5 - 1;
+	
+</pre>
+
+<p>
+А потом позже, при отрисовке сцены, в функции void CMeshManager::Draw_Textured_Poly(int y1, int y2), мы делим по модулю u,v:
+</p>
+
+<pre>
+
+	float z = 1.0f/zi;
+	float uf = ui * z;
+	float vf = vi * z;
+
+	UINT u = (UINT)uf;
+	UINT v = (UINT)vf;
+
+	u = u % m_nTextureWidth; 	//делим по модулю
+	v = v % m_nTextureHeight; 	//делим по модулю
+
+</pre>
+
+<p>
+Это нам позволит 5 раз наложить текстуру по ширине и высоте полигона, не растягивая текстуру по всей ширине и высоте полигона.
+</p>
+
+<p>
+Посмотрите код следующего примера- можно загрузить /src/03.007-billboards/BillBoard_Soft2. Здесь другой подход, что бы билбоард всегда был обращен к зрителю (без инвертирования матрицы вида).
+</p>
+
+<p>
+Так же посмотрите код примера- можно загрузить /src/03.007-billboards/BillBoard_Soft3. Здесь используется другой способ хранения вершин треугольников и массив функций для рисования треугольников, так же вместо Z-buffer используется сортировка полигонов по глубине.
+</p>
+
+
+<pre>
+
+	void (*Poly_Draw_Routines[])(int* buff) = {
+			Draw_Perspective_Opaque_Tri,
+			Draw_Perspective_Transparent_Tri };
+
+
+</pre>
+
+
+</body>
+</html>

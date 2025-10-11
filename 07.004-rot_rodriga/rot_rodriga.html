@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Вращение объектов вокруг вектора- оси формула Родрига</title>
+
+	<meta name="DESCRIPTION" content="Вращение объектов вокруг вектора- оси формула Родрига">
+	<meta name="KEYWORDS" content="Вращение объектов вокруг вектора- оси формула Родрига">
+
+<style type="text/css">
+body {
+	font-size: 24px;
+	font-family: "Consolas";
+	background-color: #000;
+	color: #ffffff;
+}
+
+pre {
+	font-size: 24px;
+	font-family: "Consolas";
+	background-color: #ffffaa;
+	color: #000;
+	width: max-content;
+	min-width: 100%;
+
+}
+
+div.my_selected {
+	width: 100%;
+	background-color: #ffff55;
+	position: relative;
+}
+
+a:link, a:visited { color: #aaaaaa; text-decoration: none; font-weight: normal;} 
+a:active, a:hover { color: #aaaaaa; text-decoration: underline;}
+
+p {
+	text-align: justify;
+	margin-right: 20px;
+}
+
+</style>	
+</head>
+<body>
+
+<h3>
+	Вращение объектов вокруг вектора- оси формула Родрига
+</h3>
+
+<p>Загрузить проект С++ здесь <a href="./Rot_Rodriga.rar">ПРИМЕР КОДА</a> </p>
+
+<p>Реализация в коде С++.</p>
+
+<pre>
+
+#include &ltmath.h>
+
+#define PI 3.1415926535897932384626433f
+
+struct vector3
+{
+	float x,y,z;
+};
+
+struct matrix4x4
+{
+	union
+	{
+		float  Mat[4][4];
+		struct
+		{
+			float r1c1; float r1c2; float r1c3; float r1c4;
+			float r2c1; float r2c2; float r2c3; float r2c4;
+			float r3c1; float r3c2; float r3c3; float r3c4;
+			float r4c1; float r4c2; float r4c3; float r4c4;
+		};
+	};
+
+	matrix4x4 (){};
+	~matrix4x4 (){};
+
+	matrix4x4 (float ir1c1, float ir1c2, float ir1c3, float ir1c4,
+					float ir2c1, float ir2c2, float ir2c3, float ir2c4,
+					float ir3c1, float ir3c2, float ir3c3, float ir3c4,
+					float ir4c1, float ir4c2, float ir4c3, float ir4c4)
+	{
+		r1c1 = ir1c1; r1c2 = ir1c2; r1c3 = ir1c3; r1c4 = ir1c4;
+		r2c1 = ir2c1; r2c2 = ir2c2; r2c3 = ir2c3; r2c4 = ir2c4;
+		r3c1 = ir3c1; r3c2 = ir3c2; r3c3 = ir3c3; r3c4 = ir3c4;
+		r4c1 = ir4c1; r4c2 = ir4c2; r4c3 = ir4c3; r4c4 = ir4c4;
+	};
+};
+
+
+matrix4x4 Matrix_Rotation_Axis(vector3 &VecIn, float Angle)
+{
+	float x = VecIn.x;
+	float y = VecIn.y;
+	float z = VecIn.z;
+	
+	float s = sin(Angle);
+	float c = cos(Angle);
+	float omc = 1.0f - c;
+
+	float xomc = x * omc;
+	float yomc = y * omc;
+	float zomc = z * omc;
+
+	float xxomc = x * xomc;
+	float xyomc = x * yomc;
+	float xzomc = x * zomc;
+		
+	float yyomc = y * yomc;
+	float yzomc = y * zomc;
+	float zzomc = z * zomc;
+
+	float xs = x * s;
+	float ys = y * s;
+	float zs = z * s;
+
+	matrix4x4 MatRotate = matrix4x4 (xxomc + c,  xyomc + zs, xzomc - ys, 0.0f,
+		xyomc - zs, yyomc + c,  yzomc + xs, 0.0f,
+		xzomc + ys, yzomc - xs, zzomc + c, 0.0f,
+		0.0f ,0.0f, 0.0f, 1.0f);
+
+	return MatRotate;
+}
+
+int main()
+{
+
+	vector3 VecIn = { 1.0f, 0.0f, 0.0f };
+	float Angle = PI / 2.0f;
+
+	matrix4x4 MatRotate = Matrix_Rotation_Axis(VecIn, Angle);
+
+    return 0;
+}
+
+</pre>
+
+<p>
+Эта функция - Matrix_Rotation_Axis() - осуществляет поворот вокруг вектора на заданный угол. Функция создает матрицу вращения вокруг заданного вектора-оси, которую затем можно применить к любому объекту для поворота. Это метод основан на формуле Родрига (Rodrigues' rotation formula), которая позволяет вычислить матрицу вращения для заданной оси и угла. Матрицу которую возвращает эта функцию можно умножить на вершины объекта, и таким образом повернуть сам объект.
+</p>
+
+<p>
+Как работает эта функция:
+</p>
+
+<p>Параметры</p>
+<ul>
+<li>Входной вектор VecIn=(x,y,z) — это ось вращения</li>
+<li>Угол Angle задаёт величину поворота в радианах</li>
+</ul>
+
+<p>Тригонометрия</p>
+<ul>
+<li>Вычисляются синус (s) и косинус (c) угла</li>
+<li>1−c (обозначено как omc) используется для вычислений в формуле</li>
+</ul>
+
+<p>
+Формирование матрицы (Формула Родрига для матрицы вращения):
+</p>
+
+<pre>
+
+     |	xx(1-c)+c 		xy(1-c)-zs 		xz(1-c)+ys 		0 	|
+     |	xy(1-c)+zs 		yy(1-c)+c 		yz(1-c)-xs 		0 	|
+     |	xz(1-c)-ys 		yz(1-c)+xs 		zz(1-c)+c 		0 	|
+     |	0 			0 			0 			1 	|
+
+</pre>
+
+<p>
+Здесь:
+</p>
+
+<ul>
+<li>x,y,z — координаты оси вращения</li>
+<li>s=sin(Angle), c=cos(Angle)</li>
+</ul>
+
+<p>Результат: Возвращаемая матрица MatRotate содержит вращение вокруг заданной оси на указанный угол.</p>
+
+
+</body>
+</html>

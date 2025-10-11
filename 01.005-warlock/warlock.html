@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Игра WARLOCK Remastered на С++ Visual Studio 2019</title>
+
+	<meta name="DESCRIPTION" content="Игра WARLOCK Remastered на С++ Visual Studio 2019">
+	<meta name="KEYWORDS" content="Игра WARLOCK Remastered на С++ Visual Studio 2019">
+
+<style type="text/css">
+body {
+	font-size: 24px;
+	font-family: "Consolas";
+	background-color: #000;
+	color: #ffffff;
+}
+
+pre {
+	font-size: 24px;
+	font-family: "Consolas";
+	background-color: #ffffaa;
+	color: #000;
+	width: max-content;
+	min-width: 100%;
+
+}
+
+div.my_selected {
+	width: 100%;
+	background-color: #ffff55;
+	position: relative;
+}
+
+a:link, a:visited { color: #aaaaaa; text-decoration: none; font-weight: normal;} 
+a:active, a:hover { color: #aaaaaa; text-decoration: underline;}
+
+p {
+	text-align: justify;
+	margin-right: 20px;
+}
+
+</style>	
+</head>
+<body>
+
+
+<h3>
+Игра WARLOCK Remastered на С++ Visual Studio 2019
+</h3>
+
+
+<img src="./warlock1.jpg" width=600>
+
+<img src="./warlock2.jpg" width=600>
+
+<p>Загрузить исходный код С++ Visual Studio 2019 <a href="./WARLOCK_SRC.rar">ЗДЕСЬ</a></p>
+
+<p>Загрузить исполняемый файл <a href="./WARLOCK_EXE.rar">ЗАГРУЗИТЬ EXE</a></p>
+
+
+<p>
+Страница проекта на GitHub <a href="https://github.com/ed-kurlyak/warlock-remastered">https://github.com/ed-kurlyak/warlock-remastered</a>
+</p>
+
+
+<p>
+Игра WARLOCK была представлена в книге Andre LaMothe "Tricks of the Game-Programming Gurus" (1994) в Главе 19. В книге игра разрабатывалась под операционную систему MS-DOS, с использованием видеорежима 13h (256 цветов) и разрешением экрана 320×200 пикселей. Исходный код игры приводился в главе 19, где Андре ЛаМот демонстрировал технологию Ray Casting. Оригинальный код компилировался с помощью компилятора Microsoft C++.
+</p>
+
+
+<p>
+Технология Ray Casting
+</p>
+
+<p>
+Ray Casting (лучевой бросок) — технология, популярная в начале 90-х, использовалась для создания псевдо-3D-графики в ранних шутерах от первого лица. Она позволяла отображать игровые миры с высокой скоростью на слабом «железе», имитируя трёхмерность без полноценного 3D-движка.
+</p>
+
+<p>
+Эта технология использовалась в таких играх, как:
+</p>
+
+<ul>
+<li>Wolfenstein 3D (1992)</li>
+<li>Doom (1993)</li>
+<li>Doom II (1994)</li>
+<li>Heretic (1994)</li>
+<li>Hexen (1995) и других</li>
+</ul>
+
+<p>
+Описание проекта
+</p>
+
+
+<p>
+Этот проект содержит remastered версию игры WARLOCK из книги Андре ЛаМота, реализованную на C++ (Visual Studio 2019) и протестированную в среде Windows 10.
+</p>
+
+<p>
+Ключевые особенности проекта:
+</p>
+
+<ol>
+<li>Звуковая система — используется библиотека HMI SOS (Human Machine Interfaces Sound Operating System) для Windows.</li>
+<p>
+    Источник: <a href="https://web.archive.org/web/19970225190838/http://www.humanmachine.com/dev.htm">https://web.archive.org/web/19970225190838/http://www.humanmachine.com/dev.htm</a>
+    </p>
+</li>
+<li>Буфер кадра (Back Buffer) — используется библиотека SciTech MGL (MegaGraph Graphics Library) от SciTech Software для поддержки 8-битного буфера, так как оригинальная игра была рассчитана на 256-цветный режим (320×200).</li>
+<p>
+Библиотека взята из исходников Quake 1. Скачать: <a href="https://github.com/id-Software/Quake">https://github.com/id-Software/Quake</a>
+</p>
+
+<li>Обработка ввода — управление с клавиатуры реализовано с использованием функций WinAPI.</li>
+
+<li>Режим отображения — приложение запускается в оконном режиме с клиентской областью 800×600 пикселей (разрешение можно увеличить с минимальными изменениями).</li>
+
+<li>Собственная библиотека вывода текста — мной была разработана небольшая библиотека для вывода текста в графических приложениях, которая используется в проекте для отображения игрового текста.</li>
+
+<li>Библиотеки HMI SOS и SciTech MGL — это 32-битные библиотеки, использовавшиеся в 1990-х, поэтому в Visual Studio 2019 необходимо установить параметры сборки в режим Debug x86.</li>
+
+</ol>
+
+<p>
+Этот проект представляет собой современную реализацию классической игры WARLOCK, с сохранением оригинальной механики и адаптацией для запуска на современных системах.
+</p>
+
+
+
+</body>
+</html>

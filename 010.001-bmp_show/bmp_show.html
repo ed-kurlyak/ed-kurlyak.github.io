@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Загрузить изображение BMP 8 бит и 24 бит на С++</title>
+
+	<meta name="DESCRIPTION" content="Загрузить изображение BMP 8 бит и 24 бит на С++">
+	<meta name="KEYWORDS" content="Загрузить изображение BMP 8 бит и 24 бит на С++">
+
+<style type="text/css">
+body {
+	font-size: 24px;
+	font-family: "Consolas";
+	background-color: #000;
+	color: #ffffff;
+}
+
+pre {
+	font-size: 24px;
+	font-family: "Consolas";
+	background-color: #ffffaa;
+	color: #000;
+}
+
+div.my_selected {
+	width: 100%;
+	background-color: #ffff55;
+	position: relative;
+}
+
+a:link, a:visited { color: #aaaaaa; text-decoration: none; font-weight: normal;} 
+a:active, a:hover { color: #aaaaaa; text-decoration: underline;}
+
+p {
+	text-align: justify;
+	margin-right: 20px;
+}
+
+
+</style>	
+</head>
+<body>
+
+<h3>
+Загрузить изображение BMP 8 бит и 24 бит на С++
+</h3>
+
+<p>
+Загрузить архив с примерами <a href="./BMP_show.rar">ЗДЕСЬ</a>.
+</p>
+
+
+<p>
+Первое это нужно открыть BMP файл и прочитать два заголовка. Первый заголовок характеризует сам BMP файл- это заголовок BITMAPFILEHEADER, второй заголовок характеризует изображение которое храниться в этом файле- это заголовок BITMAPINFOHEADER. Затем нужно отступить от начала файла указанное количество байт в первом заголовке в поле структуры bfOffBits, после этого можно читать данные в массив.
+</p>
+
+<pre>
+
+//делаем отступ от начала файла,
+//в некоторых случаях это не обязательно
+
+fseek(fp, bfh.bfOffBits, SEEK_SET);
+
+unsigned char *nStartData;
+nStartData = new unsigned char [bih.biWidth*bih.biHeight];
+
+//читаем данных о цветах в массив
+//один пиксель изображения хранит
+//3 цветовых компоненты R,G,B
+//каждая из компонент размером 1 байт
+fread(nStartData,bih.biWidth * bih.biHeight * 3,1,fp);
+
+fclose(fp);
+
+</pre>
+
+<p>
+В следующем примере загружается BMP файл с глубиной цвета 8 бит. Загрузить пример можно /src/02.007-bmp/Load_BMP8. Как устроен BMP файл 8 бит. Сначала из файла как обычно читается два заголовка. После заголовков читается палитра - 256 элементов в палитре. Каждый элемент палитры (индексы от 0 до 255) содержит 4 компоненты - цвет R,G,B и четвертый компонет зарезервированный. Каждый из 4х элементов палитры имеет размер 8 байт. После палитры  из файла загружается само изображение. Например у нас изображение в файле 64х64 пикселя высотой и шириной. Каждый пиксель занимает 1 байт. Байт может хранить значения от 0 до 255.Этот один байт из прочитанного изображения - это индекс в массиве палитры, фактически это номер цвета в палитре. К примеру мы взяли первый пиксель изображения (один байт), этот пиксель содержит число 14 - это номер в палитре. Мы из палитры под индексом 14 берем компоненты R,G,B и заносим этот пиксель на экран при помощи макроса COLORREF RGB(). Как видим BMP изображение с глубиной цвета 8 бит может хранить до 256 цветов RGB, 256 - это размер палитры хранящейся в изображении.
+</p>
+
+<p>
+В примере ниже загружаеться файл изображения texture.bmp с глубиной цвета 24 бита размером 256 на 256 пикселей, и изображение выводиться в окно консольного приложения. Загрузить пример можно /src/02.007-bmp/Load_BMP24.
+</p>
+
+<p>
+В следующем примере загружается BMP с глубиной цвета 32 бита R,G,B,A (плюс альфа канал четвертый элемент). Загрузить пример можно /src/02.007-bmp/Load_BMP32.
+</p>
+
+<pre>
+
+#define _WIN32_WINNT 0x0500
+
+#include &ltwindows.h>
+#include &ltstdio.h>
+
+int main()
+{
+
+	//открываем BMP файл для чтения в бинарном режиме
+	FILE *fp = NULL;
+	fopen_s(&fp, "texture.bmp", "rb");
+	if(fp==NULL) printf("Error Open File");
+
+	//читаем заголовок файла текстуры
+	BITMAPFILEHEADER bfh;
+	fread(&bfh, sizeof(BITMAPFILEHEADER), 1, fp);
+
+	//читаем заголовок файла текстуры
+	BITMAPINFOHEADER bih;
+	fread(&bih, sizeof(BITMAPINFOHEADER), 1, fp);
+
+	//сдвигаемся от начала BMP файла до начала данных
+	fseek(fp, bfh.bfOffBits, SEEK_SET);
+
+	//указатель на массив байт полученных из BMP файла
+	unsigned char *pRes;
+	pRes = new unsigned char[bih.biHeight * bih.biWidth * 3];
+	
+	//читаем из файла rgb данные изображения
+	//один пиксель изображения хранит три компоненты R,G,B
+	//каждая компонента цвета занимает 1 байт
+	fread(pRes, bih.biHeight * bih.biWidth * 3, 1, fp);
+
+	//загрузили текстуру закрываем файл
+	fclose(fp);
+
+	HWND hWnd = GetConsoleWindow();
+	HDC hDC = GetDC(hWnd);
+
+	int index = 0;
+	for ( int h = 0; h < bih.biHeight; h++ )
+	{
+		for ( int w = 0; w < bih.biWidth; w++ )
+		{
+			index = (h * bih.biWidth + w) * 3;
+			SetPixel(hDC, w, h, RGB(pRes[index + 2], pRes[index + 1], pRes[index]));
+		}
+		while(index%4!=0)index++; //pitch должен быть кратным 4
+	}
+
+	ReleaseDC(hWnd, hDC);
+
+	Sleep(5000);
+
+	delete [] pRes;
+
+	return 0;
+
+}
+
+
+</pre>
+
+</body>
+</html>

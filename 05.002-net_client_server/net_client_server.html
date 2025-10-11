@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Как на С++ написать простой клиент и сервер Windows | Ubuntu Linux</title>
+
+	<meta name="DESCRIPTION" content="Как на С++ написать простой клиент и сервер Windows | Ubuntu Linux">
+	<meta name="KEYWORDS" content="Как на С++ написать простой клиент и сервер Windows | Ubuntu Linux">
+
+<style type="text/css">
+body {
+	font-size: 24px;
+	font-family: "Consolas";
+	background-color: #000;
+	color: #ffffff;
+}
+
+pre {
+	font-size: 24px;
+	font-family: "Consolas";
+	background-color: #ffffaa;
+	color: #000;
+	width: max-content;
+	min-width: 100%;
+
+}
+
+div.my_selected {
+	width: 100%;
+	background-color: #ffff55;
+	position: relative;
+}
+
+a:link, a:visited { color: #aaaaaa; text-decoration: none; font-weight: normal;} 
+a:active, a:hover { color: #aaaaaa; text-decoration: underline;}
+
+p {
+	text-align: justify;
+	margin-right: 20px;
+}
+
+</style>	
+</head>
+<body>
+
+<h3>
+Как на С++ написать простой клиент и сервер Windows | Ubuntu Linux
+</h3>
+
+
+
+<p>Загрузить исходный код С++ WinAPI Visual Studio 2005 <a href="./net_win.rar">ЗДЕСЬ</a></p>
+
+<p>Загрузить исходный код С++ для Ubuntu Linux <a href="./net_lnx.rar">ЗДЕСЬ</a></p>
+
+
+<p>Для компиляции и запуска под Windows последовательность действий такая:</p>
+
+<ol>
+
+<li>
+Открыть проект для Visual Studio 2005 NetClient и NetServer и скомпилировать
+</li>
+
+<li>
+Запускаем скомпилированный ЕХЕ NetServer на выполнение; запуститься окно консольного приложения
+</li>
+
+<li>
+Запускаем скомпилированный ЕХЕ NetClient на выполнение; запуститься окно консольного приложения
+</li>
+
+
+<li>
+После запуска клиента увидим в окнах NetServer и NetClient текстовый сообщения для теста - клиент послал строку текста серверу, сервер ответил строкой текста
+</li>
+
+<li>
+Нажимаем в окне NetServer любую клавишу окно приложения закроется; нажимаем в окне NetClient любую клавишу окно приложения закроется 
+</li>
+
+</ol>
+
+<p>Для компиляции и запуска под Ubuntu Linux последовательность действий такая:</p>
+
+<ol>
+
+<li>Зайти в Терминал Ubuntu</li>
+
+<li>Скопировать все 3 файла из папки net_lnx на рабочий стол</li>
+
+<li>В Терминале набрать команду cd Desktop что бы перейти на рабочий стол</li>
+
+<li>На рабочем столе правая кнопка мыши по файлу my.sh -> Свойства -> Разрешить выполнение файла</li>
+
+<li>В Терминале дать команду ./my.sh</li>
+
+<li>На рабочем столе получим 2 файла в результате компиляции s.out и c.out соответсвенно сервер, и клиент</li>
+
+<li>
+В Терминале после компиляции запускаем файл сервера ./s.out
+</li>
+
+<li>
+Запускаем второй Терминал, переходим на рабочий стол - запускаем файл клиента ./c.out
+</li>
+
+<li>
+Смотрим на результат - клиент пошлет сроку текста серверу, сервер пошлет строку текста клиенту
+</li>
+
+</ol>
+
+<img src="./client.jpg" width="900">
+
+<img src="./server.jpg" width="900">
+
+
+
+</body>
+</html>

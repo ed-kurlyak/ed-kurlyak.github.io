@@ -1,0 +1,434 @@
+<html>
+<meta charset=windows-1251>
+<title>Typing test by Kurlyak</title>
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1251"> 
+<meta name="description" content="Typing test by Kurlyak"> 
+<meta name="keywords" content="speed typing Ed Kurlyak"> 
+
+<style>
+	.object1
+	{
+		border-style:solid;
+		border-width:1px;
+		font-family:Arial;
+		font-size:350%;
+		font-weight:bold;
+		background:white;
+		padding:10px 10px 10px 10px;
+		margin: 0px 0px 0px 0px;
+		color:black;
+		text-align:left;
+		width:81%;
+	}
+
+	#test
+	{
+		white-space: nowrap;
+		visibility: hidden;
+		border-style:solid;
+		border-width:0px;
+		padding:0px 0px 0px 0px;
+		margin: 0px 0px 0px 0px;
+		font-family:Arial;
+		font-size:350%;
+		font-weight:bold;
+		text-align:left;
+	}
+
+	.my_result
+	{
+		font-family:Arial;
+		font-size:220%;
+		font-weight:bold;
+	}
+
+	.typing_window {
+		font-family:Arial;
+		font-size:320%;
+		font-weight:bold;}
+
+	.my_timer
+	{
+		font-family:Arial;
+		font-size:220%;
+		font-weight:bold;
+	}
+
+
+	.text1
+	{
+		color:darkred;
+		background:royalblue;
+	}
+
+	.text2
+	{
+		color:royalblue;
+		background:yellow;
+	}
+
+</style>
+
+
+<script>
+	function start()
+	{
+
+		//document.clearInterval(handle);
+		//document.getElementById("typingtext").focus();	
+	}
+</script>
+
+
+<body onload='start()'>
+
+<br>
+<br>
+
+<center>
+
+<div id='result' class='my_result'>1 Minute typing test by Kurlyak</div>
+
+<br>
+
+<div id='source_text' class='object1'>Text</div>
+
+<br>
+
+<input type='text' value='' id='typingtext' class=typing_window size=15% maxlength=1024  onkeyup='fn_start()' autofocus>
+
+<br>
+<br>
+
+<div id='countdown_timer' class='my_timer'>60</div>
+
+<br>
+<br>
+
+<div id='my_debug'></div>
+
+</center>
+
+<span id='test'>string</span>
+
+<script>
+
+	bool_start = false
+
+	document.getElementById("typingtext").addEventListener("keypress", KeyCheck2);
+
+	function KeyCheck2(event)
+	{
+		//СЃРЅР°С‡Р°Р»Р° СЃСЂР°Р±Р°С‚С‹РІР°РµС‚ keypress СѓСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ true
+		//РїРѕСЃР»Рµ РЅРµРіРѕ СЃСЂР°Р±Р°С‚С‹РІР°РµС‚ keyup Рё fn_start() 
+		bool_start = true
+	}
+
+	var_start = "true";
+
+	char_count_total = 0;
+	char_count = 0
+	char_error = "false"
+
+	res_string = "";
+
+	word_count_total = 0;
+	word_count = 1;
+
+	curr_word_array = 0;
+
+	wrong_char = 0;
+
+	res_string_main = "";
+
+	src_string = "It was night and I was alone, behind the locked door, the bulletproof glass. Outside, the city of New York was in the black grip of January. For the last two years, six times a week, I'd come in an hour before midnight and left at eight in the morning. I was neither content nor discontent. The room I worked in was warm, the work untaxing, the necessity to speak infrequent. My duties left me time for my own amusements, with no one to give me orders or change the routine of the night. I spent an hour on the Racing Form, preparing my bets for the next day. It was a lively paper, written with brio, confident of the future, renewing hope with each edition. Finished with my calculations of times, weights, distances, sunshine, and rain, I read, making sure always to have a supply of books on hand to suit my tastes. For other nourishment there was a sandwich and a bottle of beer that I picked up on the way to work. Twice during the night I did isometric exercises, for the arms, the gut, the legs. Despite my sedentary occupation, at the age of thirty-three I was stronger and in better condition than I had been at twenty.-I'm just short of six feet tall and weigh one hundred and eighty-five pounds. People are surprised when they hear I weigh that much. I'm vain enough to be pleased by this. But I wish I were taller. Some women have told me I look boyish, which I don't take as a compliment. I have never longed for a mother. Like most men I would prefer to resemble the sort of man who is cast on television as a captain in the Marines or the leading figure in a desperate enterprise.";
+
+	word_array = new Array();
+
+	//СЃРѕР·РґР°РµРј РјР°СЃСЃРёРІ СЃРѕ СЃС‚СЂРѕРєР°РјРё С‚РµРєСЃС‚Р° РґР»СЏ РЅР°Р±РѕСЂР°
+	//РєР°Р¶РґР°СЏ СЃС‚СЂРѕРєР° С‚РµРєСЃС‚Р° РІ РјР°СЃСЃРёРІРµ РЅРµ Р±РѕР»РµРµ 1100 РїРёСЃРµР»РµР№ РґР»РёРЅРЅРѕР№
+	//СЌС‚Рѕ РґР»РёРЅРЅР° РѕРєРЅР° РґР»СЏ С‚РµРєСЃС‚Р°
+	function ret_str_length()
+	{
+
+		str1 = "";
+		str2 = "";
+
+		//22 = 10 + 10 + 1 + 1 
+		//22 =  (margin left right) + (border left right)
+		var width2 = document.getElementById('source_text').offsetWidth - 22;
+
+		for( i = 0 ; i < src_string.length ; i++)
+		{
+
+			if(src_string[i] != " ")
+			{
+				str1 = str1 + src_string[i];
+				continue;
+			}
+			else
+			{
+				str1 = str1 + " ";
+				var test = document.getElementById('test');
+				test.innerHTML = str1;
+
+				var width = test.offsetWidth;
+
+				if( width < width2)
+				{
+
+					str2 = str1;
+					val_i2 = i;
+
+					continue;
+				}
+				else
+				{
+					i = val_i2;
+
+					word_array.push(str2);
+
+					str1 = "";
+
+					continue;
+				}
+			}
+		}
+	}
+
+
+	//РІС‹РґРµР»СЏРµРј С‚РµРєСѓС‰РµРµ СЃР»РѕРІРѕ РґР»СЏ РЅР°Р±РѕСЂР°
+	//РµСЃР»Рё РѕС€РёР±РєР° РІС‹РґРµР»СЏРµРј СЃР»РѕРІРѕ РґСЂСѓРіРёРј С†РµС‚РѕРј
+	function select_word()
+	{
+		var pos1
+		var pos2
+
+		//РµСЃР»Рё РјС‹ С‚РѕР»СЊРєРѕ РЅР°С‡Р°Р»Рё РёС‰РµРј РїРµСЂРІС‹Р№ РїСЂРѕР±РµР»
+		temp = 0
+		while(word_array[curr_word_array][temp] != " ")
+		{
+			temp++;
+		}
+		
+		//РїРѕРєР° РјРµРЅСЊС€Рµ РїРѕР·РёС†РёРё РїРµСЂРІРѕРіРѕ РїСЂРѕР±РµР»Р° РІС‹РґРµР»СЏРµРј СЃР»РѕРІРѕ
+		if(char_count < (temp + 1) )
+		{
+			pos1 = 0;
+			pos2 = temp;
+		}
+		else //РµСЃР»Рё РїРѕСЃР»Рµ РїРµСЂРІРѕРіРѕ РїСЂРѕР±РµР»Р°- С‚.Рµ. РјС‹ РїСЂРѕРґРІРёРЅСѓР»РёСЃСЊ РІ С‚РµРєСЃС‚Рµ
+		{
+			//char_count СЌС‚Рѕ РґР»РёРЅРЅР° СЃС‚СЂРѕРєРё (РЅСѓР¶РЅРѕ РѕС‚РЅСЏС‚СЊ РµРґРёРЅРёС†Сѓ)
+			temp = char_count - 1;
+
+			//РёС‰РµРј РїСЂРѕР±РµР» РґРѕ СЃР»РѕРІР° - pos1
+			while(word_array[curr_word_array][temp] != " ")
+			{
+				if(temp > 0)
+					temp--;
+				else
+				{
+					temp = 0;
+					break;
+				}
+			}
+
+			pos1 = temp + 1
+
+			temp = char_count;
+
+			//РёС‰РµРј РїСЂРѕР±РµР» РїРѕСЃР»Рµ СЃР»РѕРІР° - pos2
+			while(word_array[curr_word_array][temp] != " ")
+			{
+				if(temp < word_array[curr_word_array].length)
+					temp++;
+				else
+				{
+					temp = word_array[curr_word_array].length;
+					break;
+				}
+				
+			}
+			
+			pos2 = temp
+		}
+
+		//РґР»РёРЅРЅР° СЃР»РѕРІР° РјРµР¶РґСѓ РїСЂРѕР±РµР»РѕРј РґРѕ СЃР»РѕРІР° Рё РїРѕСЃР»Рµ СЃР»РѕРІР°
+		s_len1 = pos2 - pos1
+
+		//РґР»РёРЅРЅР° РѕС‚ РєРѕРЅС†Р° СЃС‚СЂРѕРєРё РґРѕ РїСЂРѕР±РµР»Р° РїРѕСЃР»Рµ СЃР»РѕРІР°
+		s_len2 = word_array[curr_word_array].length - pos2
+
+		//РїРѕР»СѓС‡Р°РµРј СЃС‚СЂРѕРєСѓ РѕС‚ РЅР°С‡Р°Р»Р° РґРѕ РІС‹РґРµР»РµРЅРѕРіРѕ СЃР»РѕРІР°
+		str1 = word_array[curr_word_array].substr(0, pos1);
+
+		//РїРѕР»СѓС‡Р°РµРј СЃС‚СЂРѕРєСѓ - РІС‹РґРµР»РµРЅРѕРµ СЃР»РѕРІРѕ
+		str2 = word_array[curr_word_array].substr(pos1, s_len1);
+
+		//РїРѕР»СѓС‡Р°РµРј СЃС‚СЂРѕРєСѓ РїРѕСЃР»Рµ РІС‹РґРµР»РµРЅРѕРіРѕ СЃР»РѕРІР° РґРѕ РєРѕРЅС†Р° СЃС‚СЂРѕРєРё
+		str3 = word_array[curr_word_array].substr(pos2, s_len2);
+
+		//РµСЃР»Рё РІ РЅР°Р±РѕСЂРµ РѕС€РёР±РєР°
+		if (char_error == "true")
+		{
+
+			document.getElementById('source_text').innerHTML = '<font color=black>' + str1 + '</font><font color=darkred class=text1> ' + str2 + '</font><font color=black>' + str3 + '</font>';
+			document.getElementById('source_text').innerHTML += '</font><font color=black> ' + word_array[curr_word_array + 1] + '</font>';
+		}
+		else //РµСЃР»Рё РІ РЅР°Р±РѕСЂРµ РЅРµС‚ РѕС€РёР±РєРё
+		{
+			document.getElementById('source_text').innerHTML = '<font color=black>' + str1 + '</font><font color=royalblue class=text2> ' + str2 + '</font><font color=black>' + str3 + '</font>';
+			document.getElementById('source_text').innerHTML += '</font><font color=black> ' + word_array[curr_word_array + 1] + '</font>';
+
+		}
+	}
+
+	//СЃРѕР·РґР°РµРј РјР°СЃСЃРёРІ СЃС‚СЂРѕРє РґР»СЏ РЅР°Р±РѕСЂР°
+	ret_str_length();
+	//РІС‹Р±РёСЂР°РµРј РїРµСЂРІРѕРµ СЃР»РѕРІРѕ
+	select_word();
+
+	//С„СѓРЅРєС†РёСЏ РІС‹Р·С‹РІР°РµС‚СЃСЏ РїСЂРё РЅР°Р¶Р°С‚РёРё РЅР° РєР»Р°РІРёС€Сѓ
+	function fn_start()
+	{
+
+		if( !bool_start )
+			return
+
+		if(var_start == "true")
+		{
+			handle = setInterval(fn_interval, 1000)
+			var_start = "false"
+
+			fn_check();
+		}
+		else
+		{
+			fn_check();
+		}
+	}
+
+	down_val = 0;
+
+	//С„СѓРЅРєС†РёСЏ РѕР±РЅРѕРІР»СЏРµС‚ Р·РЅР°РµРЅРёРµ С‚Р°Р№РјРµСЂР° РЅР° СЃС‚СЂР°РЅРёС†Рµ
+	//РµСЃР»Рё С‚Р°Р№РјРµСЂ РІС‹С€РµР» - РІС‹РІРѕРґРёС‚ СЃС‚Р°С‚РёСЃС‚РёРєСѓ РЅР°Р±РѕСЂР° С‚РµРєСЃС‚Р°
+	function fn_interval()
+	{
+
+		val = 60;
+
+		if(val - down_val != 0)
+		{
+
+			document.getElementById('countdown_timer').innerHTML = val - down_val;
+
+			down_val++;
+		}
+		else
+		{
+
+			word_count_total += word_count;
+
+			char_count_total += char_count;
+
+			wr_char = wrong_char;
+
+
+			res_str = 'Typed words: ' + Math.round(char_count_total/5) + '<br>Typed chars: '+ char_count_total + '<br>Wrong chars: ' + wr_char;
+
+			document.getElementById('countdown_timer').innerHTML =  res_str;
+
+			clearInterval(handle)
+		}
+
+	}
+
+	error_state = "false";
+
+	//С„СѓРЅРєС†РёСЏ РїСЂРѕРІРµСЂРєРё РЅР°Р±РѕСЂР° - РµСЃР»Рё РѕС€РёР±РєР° РІ РЅР°Р±РѕСЂРµ, СѓСЃС‚Р°РЅР°РІР»РёРІР°РµС‚СЃСЏ
+	//РїРµСЂРµРјРµРЅРЅР°СЏ error_state Рё СЃР»РѕРІРѕ РІС‹РІРѕРґРёС‚СЃСЏ РґСЂСѓРіРёРј С†РІРµС‚РѕРј
+	function fn_check()
+	{
+
+		res_string = typingtext.value;
+
+		dst_string = res_string_main + res_string;
+
+		var l = dst_string.length;
+	
+		val1 = word_array[curr_word_array].substr(0, l);
+		val2 = dst_string
+
+		word_arr_len = word_array[curr_word_array].length;
+
+		//РµСЃР»Рё РЅРµС‚ РѕС€РёР±РєРё РІ РЅР°Р±РѕСЂРµ
+		if( (val1 == val2))
+		{
+
+			error_state = "false";
+
+			char_count = dst_string.length;
+			
+			//РµСЃР»Рё Р·Р°РєРѕРЅС‡РёР»Рё СЃС‚СЂРѕРєСѓ РґР»СЏ РЅР°Р±РѕСЂР° РїРµСЂРµС…РѕРґРёРј Рє СЃР»РµРґСѓСЋС‰РµР№	
+			if(char_count == word_arr_len)
+			{
+			
+				word_count_total += word_count;
+
+				word_count = 1;
+
+				char_count_total += char_count;
+
+				char_count = 0;
+
+				res_string_main = "";
+				dst_string = "";
+				res_string = "";
+
+				typingtext.value = "";
+
+				curr_word_array++;
+
+				select_word()
+
+				return;
+			
+			}
+
+			//РµСЃР»Рё Р·Р°РєРѕРЅС‡РёР»Рё С‚РµРєСѓС‰РµРµ СЃР»РѕРІРѕ (РЅРµ РєРѕРЅРµС† СЃС‚СЂРѕРєРё РґР»СЏ РЅР°Р±РѕСЂР°)
+			s_len = res_string.length;
+			if(res_string[s_len - 1] == " ")
+			{
+				res_string_main +=res_string;
+				typingtext.value = "";
+				word_count++;
+			}
+
+			//РІ РЅР°Р±РѕСЂРµ РЅРµС‚ РѕС€РёР±РєРё
+			char_error = "false"
+			//РІС‹РґРµР»СЏРµРј СЃР»РѕРІРѕ
+			select_word();
+		}
+		else //РµСЃР»Рё РІ РЅР°Р±РѕСЂРµ РѕС€РёР±РєР°
+		{
+
+			//СЃС‡РёС‚Р°РµРј РґР»СЏ СЃС‚Р°С‚РёСЃС‚РёРєРё СЃРєРѕР»СЊРєРѕ РѕС€РёР±РѕС‡РЅРѕ РЅР°Р±СЂР°РЅС‹С… СЃРёРјРІРѕР»РѕРІ
+			if(error_state == "false")
+			{
+				wrong_char = wrong_char + 1;
+				error_state = "true";
+			}
+
+			//СѓСЃС‚Р°РЅР°РІР»РёРІР°РµРј РѕС€РёР±РєСѓ
+			char_error = "true";
+			//РІС‹РґРµР»СЏРµРј СЃР»РѕРІРѕ РґСЂСѓРіРёРј С†РІРµС‚РѕРј
+			select_word()
+	}
+
+}
+
+</script>
+
+</body>
+</html>

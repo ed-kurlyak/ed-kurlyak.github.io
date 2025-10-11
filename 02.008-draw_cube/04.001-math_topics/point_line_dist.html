@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+
+	<title>Расстояние от точки до линии</title>
+
+	<link href="./style00.css" rel="stylesheet" type="text/css" />
+
+	<meta name="DESCRIPTION" content="Расстояние от точки до линии">
+	<meta name="KEYWORDS" content="Расстояние от точки до линии">
+
+
+
+
+
+</head>
+<body>
+
+	<h3>Расстояние от точки до линии</h3>
+
+<pre>
+#include &ltmath.h&gt
+
+<span class="mt">struct</span> vector3
+{
+	vector3() {};
+	vector3(<span class="kt">float</span> xi, <span class="kt">float</span> yi,  <span class="kt">float</span> zi) : x(<span class="mt">xi</span>), y(<span class="mt">yi</span>), z(<span class="mt">zi</span>) {};
+
+	<span class="kt">float</span> x;
+	<span class="kt">float</span> y;
+	<span class="kt">float</span> z;
+
+	<span class="mt">vector3</span> operator - (<span class="mt">vector3</span> v)
+	{
+		<span class="mt">vector3</span> t;
+		t.x = x - v.x;
+		t.y = y - v.y;
+		t.z = z - v.z;
+		<span class="mt">return</span> t;
+	}
+	
+	<span class="mt">vector3</span> operator / (<span class="kt">float</span> v)
+	{
+		<span class="mt">vector3</span> t;
+		t.x = x / v;
+		t.y = y / v;
+		t.z = z / v;
+		<span class="mt">return</span> t;
+	}
+
+	<span class="kt">float</span> operator * (<span class="mt">vector3</span> v)
+	{
+		<span class="mt">return</span> x * v.x + y * v.y + z * v.z;
+	}
+
+	<span class="mt">vector3</span> operator * (<span class="kt">float</span> v)
+	{
+		<span class="mt">vector3</span> t;
+		t.x = x * v;
+		t.y = y * v;
+		t.z = z * v;
+		<span class="mt">return</span> t;
+	}
+
+	<span class="mt">vector3</span> operator + (<span class="mt">vector3</span> v)
+	{
+		<span class="mt">vector3</span> t;
+		t.x = x + v.x;
+		t.y = y + v.y;
+		t.z = z + v.z;
+		<span class="mt">return</span> t;
+	}
+
+
+};
+
+<span class="kt">float</span> Vec3Len(<span class="mt">vector3</span> v)
+{
+	<span class="mt">return</span> sqrtf(v.x * v.x + v.y * v.y + v.z * v.z);
+}
+
+<span class="kt">float</span> Point_Line_Distance(<span class="mt">vector3</span> start, <span class="mt">vector3</span> end, <span class="mt">vector3</span> p)
+{
+	<span class="mt">vector3</span> vec = end - start;
+	<span class="mt">vector3</span> vec_p = p - start;
+
+	<span class="kt">float</span> len = Vec3Len(vec);
+
+	<span class="mt">vector3</span> vec_n = vec / len;
+
+	<span class="kt">float</span> t = vec_n * vec_p;
+
+	<span class="mt">vector3</span> vec_t = vec_n * t;
+
+	<span class="mt">vector3</span> vec_res = start + vec_t;
+
+	<span class="mt">vector3</span> vec_to = vec_res - p;
+
+	<span class="kt">float</span> dist = Vec3Len(vec_to);
+
+
+	<span class="mt">return</span> dist;
+}
+
+int main (void)
+{
+	<span class="mt">vector3</span> s = <span class="mt">vector3</span>(0.0, 0.0, 0.0);
+	<span class="mt">vector3</span> e = <span class="mt">vector3</span>(0.0, 10.0, 0.0);
+	<span class="mt">vector3</span> p = <span class="mt">vector3</span>(5.0, 5.0, 0.0);
+
+	<span class="kt">float</span> dist = Point_Line_Distance(s, e, p); <span class="kt">// равно 5.0</span>
+
+	<span class="mt">return</span> 0;
+}
+
+
+
+</pre>
+
+
+
+</body>
+</html>

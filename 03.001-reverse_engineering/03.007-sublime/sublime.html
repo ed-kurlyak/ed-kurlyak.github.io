@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Ломаем Sublime Text 2</title>
+
+	<meta name="DESCRIPTION" content="Ломаем Sublime Text 2">
+	<meta name="KEYWORDS" content="Ломаем Sublime Text 2">
+
+	<meta property="og:url"                content="https://kurlyak.ho.ua/03.001-reverse_engineering/03.007-sublime/sublime.html" />
+	<meta property="og:type"               content="article" />
+	<meta property="og:title"              content="Ed Kurlyak - Ломаем Sublime Text 2" />
+	<meta property="og:description"        content="Как избавиться от надоедливого окошка купить Sublime Text 2" />
+	<meta property="og:image"              content="https://kurlyak.ho.ua/03.001-reverse_engineering/03.007-sublime/sublime2.jpg" />
+
+
+<style type="text/css">
+body {
+	font-size: 24px;
+	font-family: "Consolas";
+	background-color: #000;
+	color: #ffffff;
+}
+
+pre {
+	font-size: 24px;
+	font-family: "Consolas";
+	background-color: #ffffaa;
+	color: #000;
+	width: max-content;
+	min-width: 100%;
+
+}
+
+div.my_selected {
+	width: 100%;
+	background-color: #ffff55;
+	position: relative;
+}
+
+a:link, a:visited { color: #aaaaaa; text-decoration: none; font-weight: normal;} 
+a:active, a:hover { color: #aaaaaa; text-decoration: underline;}
+
+p {
+	text-align: justify;
+	margin-right: 20px;
+}
+
+</style>	
+</head>
+<body>
+
+<h3>
+Ломаем Sublime Text 2
+</h3>
+
+<p>
+Во время использования текстового редактора Sublime Text 2, после 3- 5 сохранений файла выскакивает надоедливое окошко с просьбой купить программу (см.скриншот ниже).
+</p>
+
+<img src="./sublime2.jpg" width="800">
+
+<p>
+Можно убрать это надоедливое окошко без покупки. Для этого потребуется программа для reverse engineering IDA, и HEX редактор - мы будем использовать HIEW.
+</p>
+
+<p>
+Запускаем IDA на анализ файла sublime_text.exe и видим, что в программе есть функция main() и программа написана с использованием C++ (см.скриншот ниже).
+</p>
+
+<img src="./pic1.jpg" width="1000">
+
+<p>
+Далее в IDA запускаем поиск по тексту строки из этого надоедливого окошка: "Hello! Thanks". Нашли- данный текст используется по адресу: 0x004CADDB (см.скриншот ниже).
+</p>
+
+<img src="./pic2.jpg" width="1000">
+
+<p>
+Выход из данной функции на метке: .text:004CAE11 loc_4CAE11: (см.скриншот ниже).
+</p>
+
+
+<img src="./pic3.jpg" width="1000">
+
+<p>
+Причем в начале функции где используется наш текст "Hello! Thanks" есть переход по условию на конец функции (см.скриншот ниже).
+</p>
+
+<img src="./pic4.jpg" width="1000">
+
+<p>
+Давайте теперь запустим HIEW и отредактируем этот переход на конец функции:
+</p>
+
+<pre>
+
+	//до редактирования
+	.text:004CAD9D                 js      short loc_4CAE11
+
+	//нам нужно после редактирования в HIEW
+	.text:004CAD9D                 jmps      short loc_4CAE11
+
+</pre>
+
+<p>
+Вот наш код в HIEW который нужно изменить (см.скриншот ниже).
+</p>
+
+
+<img src="./pic5.jpg" width="1000">
+
+<p>
+В этом месте кода в HIEW нажимаем клавишу F3 для редактирования, и затем F2 для перехода в режим ассемблера - теперь мы можем вводить простые команды ассемблера для редактирования файла.
+</p>
+
+<p>
+Что есть после нажатия клавиши F2 (см.скриншот ниже).
+</p>
+
+<img src="./pic6.jpg" width="1000">
+
+<p>
+После редактирования в режиме ассемблера должно быть так (см.скриншот ниже).
+</p>
+
+
+<img src="./pic7.jpg" width="1000">
+
+<p>
+Для окончания редактирования нажимаем Enter, осуществляется переход к следующей строке, и нажимаем  Esc для выхода из режима редактирования. Нажимаем F9 для сохранения результата редактирования, и нажимаем F10 для выхода из HIEW.
+</p>
+
+<p>
+После редактирования и выхода из режима редактирования и сохранения результата должно быть так (см.скриншот ниже).
+</p>
+
+
+<img src="./pic8.jpg" width="1000">
+
+
+<p>
+Теперь файл sublime_text.exe отредактирован и его можно копировать в рабочую папку программы. Надоедливое окошко больше не будет беспокоить.
+</p>
+
+<p>
+Теперь во время работы Sublime Text 2 при нажатии Ctrl + S (для сохранения текстового файла) окошко с просьбой купить программу не появляется.
+</p>
+
+</body>
+</html>

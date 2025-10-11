@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+
+	<title>Вычислить какая сторона треугольника длинее</title>
+
+
+	<meta name="DESCRIPTION" content="Вычислить какая сторона треугольника длинее">
+	<meta name="KEYWORDS" content="Вычислить какая сторона треугольника длинее">
+
+
+
+<link href="./style00.css" rel="stylesheet" type="text/css" />
+
+
+</head>
+<body>
+
+	<h3>Вычислить какая сторона треугольника длинее</h3>
+
+<pre>
+
+//вершина v1 находиться первой сверху 
+//т.е. y3 > y1 и y2 > y1 и y3 > y2
+
+#include &ltwindows.h>
+#include &ltstdio.h>
+
+#define SWAP(a,b,t) {t=a; a=b; b=t;}
+
+void Side_Triangle()
+{
+
+	float x1 = 400, y1 = 100;
+	float x2 = 550, y2 = 250;
+	float x3 = 250, y3 = 400;
+
+	float t;
+
+	if( y2 < y1 )
+	{
+		SWAP(x2, x1, t);
+		SWAP(y2, y1, t);
+	}
+
+	if( y3 < y1 )
+	{
+		SWAP(x3, x1, t);
+		SWAP(y3, y1, t);
+	}
+
+	if( y3 < y2 )
+	{
+		SWAP(x3, x2, t);
+		SWAP(y3, y2, t);
+	}
+
+	float dxdy1 = 0.0f;
+	float dxdy2 = 0.0f;
+
+	if ( y2 > y1 )
+		dxdy1 = (x2 - x1) / (y2 - y1);
+	if ( y3 > y1 )
+		dxdy2 = (x3 - x1) / (y3 - y1);
+	
+	int side = dxdy2 > dxdy1;
+	
+	if (y1 == y2)
+		side = x1 > x2;
+	if (y3 == y2)
+		side = x3 > x2;
+
+	if( !side )
+	{
+		printf("Longer is left side\n");
+	}
+	else
+	{
+		printf("Longer is right side\n");
+	}
+
+}
+
+int main()
+{
+	
+	Side_Triangle();
+	
+	return 0;
+}
+
+</pre>
+
+</body>
+</html>

@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Эксперименты с матрицей Вида</title>
+
+	<meta name="DESCRIPTION" content="Эксперименты с матрицей Вида">
+	<meta name="KEYWORDS" content="Эксперименты с матрицей Вида">
+
+<style type="text/css">
+body {
+	font-size: 24px;
+	font-family: "Consolas";
+	background-color: #000;
+	color: #ffffff;
+}
+
+pre {
+	font-size: 24px;
+	font-family: "Consolas";
+	background-color: #ffffaa;
+	color: #000;
+	width: max-content;
+	min-width: 100%;
+}
+
+div.my_selected {
+	width: 100%;
+	background-color: #ffff55;
+	position: relative;
+}
+
+a:link, a:visited { color: #aaaaaa; text-decoration: none; font-weight: normal;} 
+a:active, a:hover { color: #aaaaaa; text-decoration: underline;}
+
+p {
+	text-align: justify;
+	margin-right: 20px;
+}
+
+
+</style>	
+</head>
+<body>
+
+
+<p>
+Эксперименты с матрицей Вида
+</p>
+
+<p>
+Загрузить архив с примерами <a href="../source.rar">ЗДЕСЬ</a>.
+</p>
+
+
+<p>
+Я вынес в отдельный проект расчет матрицы Вида и теперь мы можем немного поэкспериментировать, что бы наглядно показать, что матрица Вида делает с вершиной. Пусть у нас есть вершина:
+</p>
+
+<pre>
+
+vector3 vert = { 0.0f, 0.0f, 2.0f };
+	
+</pre>
+
+<p>
+Так же пусть у нас есть позиция камеры на сцене, правый вектор vRight и вектор взгляда vLook (см.функцию Get_View_Matrix()):
+</p>
+
+<pre>
+
+vector3 vPos = { 0.0f, 5.0f, -15.0f };
+vector3 vRight = { 1.0f, 0.0f, 0.0f };
+vector3 vLook = { 0, 0, 1.0f};
+	
+</pre>
+
+<p>
+То есть мы разместили камеру на -15.0f по оси Z. Теперь поставим точку останова строке кода в функции main():
+</p>
+
+
+<pre>
+
+//тут ставим точку останова
+return 0;
+	
+</pre>
+
+<p>
+И запускаем проект на выполнение. После того как отладчик остановится на строке return 0; мы можем посмотреть что значение v равно:	
+</p>
+
+<pre>
+
+//результат работы программы v.z  = 17.0f
+v = { 0.0f, -5.0f, 17.0f };
+	
+</pre>
+
+<p>
+Как видим v.z = 17.0f при исходных данных vPos.z = -15, vector3 vRight = { 1.0f, 0.0f, 0.0f }; и vLook = { 0.0f, 0.0f, 1.0f };.
+</p>
+
+<p>
+Теперь давайт поменяем исходные данные и размесим камеру на +15 по оси Z:	
+</p>
+
+<pre>
+
+vector3 vPos = { 0.0f, 5.0f, 15.0f };
+//инвертируем vRight так как камера смотрит Z = -1
+vector3 vRight = { -1.0f, 0.0f, 0.0f };
+vector3 vLook = { 0.0f, 0.0f, -1.0f };
+	
+</pre>
+
+<p>
+В результате мы получим v.z: 	
+</p>
+
+<pre>
+
+//результат работы программы v.z = 13.0f;
+v.z = { 0.0f, 5.0f, 13.0f };	
+
+</pre>
+
+<p>
+
+Как мы можем видеть у нас точка в позиции Z = 2.0f, в первом случае камера была в позиции Z = -15.0f и в результате мы получили значение вектора Z = 17.0f. Во втором случаем камера была в позиции Z = 15.0f и в результате мы получили значение вектора Z = 13.0f. О чем это говорит? Что после умножения на матрицу Вида исходная вершина переходит в новую систему координат, видовую координатную систему. Все что видит камера перед собой - имеет положительную координату. Все что находится за камерой - имеет отрицательную координату, мы этих объектов не видим. Центр новой координатной системы находится в том месте где расположена камера. Но игрок может перемещать камеру в процессе игры при помощи клавишь клавиатуры, тогда центр сцены смещается вместе в камерой и центр сцены находится в месте где расположена камера в данный момент.
+</p>
+
+<p>
+Давайте посчитаем отдельно компоненту Z вектора при умножении на матрицу Вида. Пусть есть такие исходные данные:
+</p>
+
+<pre>
+
+//пример 1
+vert.z = 2.0f;
+vPos.z = -15.0f;
+vLook.z = 1.0f;
+
+//пример 2
+vert.z = 2.0f;
+vPos.z = 15.0f;
+vLook.z = -1.0f;
+	
+</pre>
+
+<p>
+Тогда мы получим такой расчет согласно тому как вектор умножается на матрицу Вида, но мы будем расчитывать только компоненту Z:	
+</p>
+
+<pre>
+
+//пример 1 исходные данные
+vert.z = 2.0f;
+vPos.z = -15.0f
+vLook.z = 1.0f;
+
+float zp = - Vec3_Dot(vPos, vLook); zp = -(vPos.z * vLook.z) = 15.0f;
+
+//результат v.z
+Z = vert.z * vLook.z + vPos.z = 2.0f * 1.0f + 15.0f = 17.0f;
+
+//пример 2 исходные данные
+vert.z = 2.0f;
+vPos.z = 15.0f
+vLook.z = -1.0f;
+
+float zp = - Vec3_Dot(vPos, vLook); zp = -(vPos.z * vLook.z) = 15.0f;
+
+//результат v.z
+Z = vert.z * vLook.z + vPos.z = 2.0f * (-1.0f) + 15.0f = 13.0f;
+	
+</pre>
+
+<p>
+Так же предположим вершина у нас имеет y = 0 в мировом пространстве. А камера у нас расположена на y = +5 в мировом пространстве. Тогда после умножения на матрицу вида вершина в видовом пространстве будет иметь координату y = -5, потому что камера возвышается над вершиной (при условии что vector3 vLook = { 0, 0, 1.0f}; и vRight = { 1.0f, 0.0f, 0.0f };). Попробуйте сами поэкспериментировать с кодом примера. Но только помните если вы меняете направление камеры vLook.z = -1 то надо менять правый вектор vRight = { -1.0f, 0.0f, 0.0f };
+</p>
+
+<p>
+Загрузить проект /src/01.009-mx_view_exp/mxView_Experiments_1.
+</p>
+
+<p>
+Второй пример показывает как меняется матрица Вида при повороте VecRight, VecUp, VecLook на 90 градусов. Загрузить проект /src/01.009-mx_view_exp/mxView_Experiments_2.
+</p>
+
+<p>
+Код первого примера mxView_Experiments_1 ниже.
+</p>
+
+<pre>
+
+#include &ltwindows.h>
+#include &ltmath.h>
+
+struct vector3
+{
+	float x,y,z;
+};
+
+typedef float matrix4x4[4][4];
+
+float Vec3_Dot(vector3 v1, vector3 v2)
+{
+	return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
+}
+
+//нормализация вектора- приведение к единичной длинне
+vector3 Vec3_Normalize(vector3 v)
+{
+	float len = sqrtf((v.x * v.x) + (v.y * v.y) + (v.z * v.z));
+	vector3 t = { v.x / len, v.y / len, v.z / len };
+	return t;
+}
+
+//векторное произведение векторов
+vector3 Vec3_Cross(vector3 v1, vector3 v2)
+{
+	vector3 t = { v1.y * v2.z - v1.z * v2.y,
+		     v1.z * v2.x - v1.x * v2.z,
+		     v1.x * v2.y - v1.y * v2.x };
+
+	return t;
+}
+
+void Get_View_Matrix(matrix4x4 * mxView)
+{
+	vector3 vPos = { 0.0f, 5.0f, -15.0f };
+	vector3 vUp = { 0.0f, 1.0f, 0.0f };
+	vector3 vLook = { 0, 0, 1.0f};
+	vector3 vRight;
+	if(vLook.z > 0)
+	{
+		vRight.x = 1.0f;
+		vRight.y = 0.0f;
+		vRight.z = 0.0f;
+	}
+
+	if(vLook.z < 0)
+	{
+		vRight.x = -1.0f;
+		vRight.y = 0.0f;
+		vRight.z = 0.0f;
+	}
+
+	vLook = Vec3_Normalize(vLook);
+
+	vUp = Vec3_Cross(vLook, vRight);
+	vUp = Vec3_Normalize(vUp);
+	vRight = Vec3_Cross(vUp, vLook);
+	vRight = Vec3_Normalize(vRight);
+
+	float xp = - Vec3_Dot(vPos, vRight);
+	float yp = - Vec3_Dot(vPos, vUp);
+	float zp = - Vec3_Dot(vPos, vLook);
+
+	matrix4x4 mView = {
+	vRight.x,	vUp.x,	vLook.x,	0.0,
+	vRight.y,   vUp.y,  vLook.y,    0.0,
+	vRight.z,   vUp.z,  vLook.z,    0.0,
+	xp,			yp,		zp,			1.0 };	
+
+	memcpy(mxView, &mView, sizeof(matrix4x4));
+}
+
+vector3 Vec3_Mat4x4_Mul(vector3 v, matrix4x4 m)
+{
+	vector3 out;
+
+	out.x = v.x * m[0][0] +
+			v.y * m[1][0] +
+			v.z * m[2][0] +
+				m[3][0];
+
+	out.y = v.x * m[0][1] +
+			v.y * m[1][1] +
+			v.z * m[2][1] +
+				m[3][1];
+
+	out.z = v.x * m[0][2] +
+			v.y * m[1][2] +
+			v.z * m[2][2] +
+				m[3][2];
+
+	return out;
+}
+
+int main(void)
+{
+	vector3 vert = { 0.0f, 0.0f, 2.0f };
+
+	matrix4x4 mxView;
+	Get_View_Matrix(&mxView);
+
+	vector3 v = Vec3_Mat4x4_Mul(vert, mxView);
+
+	return 0;
+}
+	
+</pre>
+
+
+</body>
+</html>

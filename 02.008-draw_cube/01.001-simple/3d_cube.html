@@ -1,0 +1,174 @@
+<html>
+
+<head>
+
+<script>
+
+class vertex3
+{
+
+constructor(ix, iy, iz)
+{
+this.x = ix;
+this.y = iy;
+this.z = iz;
+}
+
+};
+
+var ePT = {
+A : 0,
+B : 1,
+C : 2,
+D : 3,
+E : 4,
+F : 5,
+G : 6,
+H : 7 };
+
+var vert_buff = Array(
+new vertex3(-4.0, -4.0, -4.0),
+new vertex3( 4.0, -4.0, -4.0),
+new vertex3(-4.0,  4.0, -4.0),
+new vertex3( 4.0,  4.0, -4.0),
+
+new vertex3(-4.0, -4.0,  4.0),
+new vertex3( 4.0, -4.0,  4.0),
+new vertex3(-4.0,  4.0,  4.0),
+new vertex3( 4.0,  4.0,  4.0) );
+
+var vert_buff_transformed = Array(
+new vertex3(0.0, 0.0,  0.0),
+new vertex3(0.0, 0.0,  0.0),
+new vertex3(0.0, 0.0,  0.0),
+new vertex3(0.0, 0.0,  0.0),
+
+new vertex3(0.0, 0.0,  0.0),
+new vertex3(0.0, 0.0,  0.0),
+new vertex3(0.0, 0.0,  0.0),
+new vertex3(0.0, 0.0,  0.0) );
+
+
+
+/*
+	front side		back side
+	C - D 			G - H
+	|	|			|	|
+	A - B			E - F
+
+*/
+
+var index_buff = Array(
+ePT.A, ePT.B,
+ePT.B, ePT.D,
+ePT.D, ePT.C,
+ePT.C, ePT.A,
+
+ePT.E, ePT.F,
+ePT.F, ePT.H,
+ePT.H, ePT.G,
+ePT.G, ePT.E,
+
+ePT.A, ePT.E,
+ePT.B, ePT.F,
+ePT.D, ePT.H,
+ePT.C, ePT.G );
+
+angle = 0.0;
+
+setInterval("Draw_Cube()", 25);
+
+function Vec3_Mat4x4_Mul(v, m)
+{
+t = new vertex3();
+
+t.x = 	v.x * m[0][0] +
+	v.y * m[1][0] +
+	v.z * m[2][0] +
+		m[3][0];
+
+t.y = 	v.x * m[0][1] +
+	v.y * m[1][1] +
+	v.z * m[2][1] +
+		m[3][1];
+
+t.z =	v.x * m[0][2] +
+	v.y * m[1][2] +
+	v.z * m[2][2] +
+		m[3][2];
+
+return t;
+}
+
+
+
+
+function Draw_Cube()
+{
+
+var mxRotateY = Array(
+
+Array(Math.cos(angle),	0.0,	Math.sin(angle),	0.0),
+Array(0.0,		1.0,	0.0,			0.0),
+Array(-Math.sin(angle),	0.0,	Math.cos(angle),	0.0),
+Array(0.0,		0.0,	0.0,			1.0) );
+
+angle = angle + (3.1415926 / 100.0);
+if(angle > (3.1415926 * 2.0) )
+angle = 0.0;
+
+for ( i = 0; i < 8; i++ )
+{
+
+var my_val = Vec3_Mat4x4_Mul(vert_buff[i], mxRotateY);
+
+x = my_val.x;
+y = my_val.y;
+z = my_val.z;
+
+z = z + 20.0;
+
+x = x / (500.0 / 500.0);
+
+x = x / z;
+y = y / z;
+
+vert_buff_transformed[i].x = x * 500.0 / 2.0 + 500.0 / 2.0;
+vert_buff_transformed[i].y =-y * 500.0 / 2.0 + 500.0 / 2.0;
+
+
+}
+
+
+
+var ctx = document.getElementById("canvas").getContext("2d");
+ctx.beginPath();
+ctx.clearRect(0, 0, 500, 500);
+ctx.lineWidth = 5;
+ctx.strokeStyle = "#ff0000";
+
+for ( i = 0; i < 12; i++ )
+{
+x1 = vert_buff_transformed[ index_buff[ i * 2 ] ].x;
+y1 = vert_buff_transformed[ index_buff[ i * 2 ] ].y;
+x2 = vert_buff_transformed[ index_buff[ i * 2 + 1 ] ].x;
+y2 = vert_buff_transformed[ index_buff[ i * 2 + 1 ] ].y;
+
+ctx.moveTo(x1, y1);
+ctx.lineTo(x2, y2);
+
+}
+
+ctx.stroke();
+
+}
+
+</script>
+
+</head>
+<body>
+
+<canvas id="canvas" width="500" height="500"></canvas>
+
+</body>
+</html>

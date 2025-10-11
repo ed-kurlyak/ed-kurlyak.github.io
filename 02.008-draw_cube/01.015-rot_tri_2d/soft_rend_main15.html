@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Поворачиваем треугольник в 2D</title>
+
+	<meta name="DESCRIPTION" content="Поворачиваем треугольник в 2D">
+	<meta name="KEYWORDS" content="Поворачиваем треугольник в 2D">
+
+<style type="text/css">
+body {
+	font-size: 24px;
+	font-family: "Consolas";
+	background-color: #000;
+	color: #ffffff;
+}
+
+pre {
+	font-size: 24px;
+	font-family: "Consolas";
+	background-color: #ffffaa;
+	color: #000;
+	width: max-content;
+	min-width: 100%;
+}
+
+div.my_selected {
+	width: 100%;
+	background-color: #ffff55;
+	position: relative;
+}
+
+a:link, a:visited { color: #aaaaaa; text-decoration: none; font-weight: normal;} 
+a:active, a:hover { color: #aaaaaa; text-decoration: underline;}
+
+p {
+	text-align: justify;
+	margin-right: 20px;
+}
+
+
+</style>	
+</head>
+<body>
+
+<h3>
+Поворачиваем треугольник в 2D
+</h3>
+
+<p>
+Загрузить архив с примерами <a href="../source.rar">ЗДЕСЬ</a>.
+</p>
+
+
+<p>
+Загрузить проект /src/01.015-rot_tri_2d/Rotate_Triangle
+</p>
+
+<p>
+Нам необходим равносторонний треугольник, у которого центр масс (геометрический центр) находится в начале координат (0, 0) в декартовой системе координат.
+</p>
+
+
+<p>
+Теория
+</p>
+
+<p>
+Для равностороннего треугольника центр тяжести (центр масс)	— это точка пересечения медиан, и он всегда находится на расстоянии	1/3 высоты от основания вверх (или вниз, в зависимости от ориентации треугольника).
+</p>
+
+<p>
+Если сторона треугольника a, то:
+</p>
+
+<p>
+высота:
+</p>
+
+<p>
+h = sqrt(3.0f) / 2.0f * a
+</p>
+
+<p>
+чтобы центр был в начале координат (0, 0), надо:
+</p> 
+
+<p>
+поднять вершину на 2/3 * h
+</p>
+
+
+<p>
+опустить основание на 1/3 * h
+</p>
+
+
+</body>
+</html>

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+	
+	
+	<title>Есть три вершины полигона рассчитать плоскость</title>
+
+	<meta name="DESCRIPTION" content="Есть три вершины полигона рассчитать плоскость">
+	<meta name="KEYWORDS" content="Есть три вершины полигона рассчитать плоскость">
+
+
+
+<link href="./style00.css" rel="stylesheet" type="text/css" />
+
+</head>
+<body>
+
+	<h3>Есть три вершины полигона рассчитать плоскость</h3>
+
+<pre>
+#include &ltmath.h&gt
+
+struct plane
+{
+	float a, b, c, d;
+};
+
+struct vertex
+{
+        vertex(float sx = 0, float sy = 0, float sz = 0): x(sx), y(sy), z(sz) {};
+	~vertex(){};
+
+        float x;
+        float y;
+        float z;
+        
+	vertex &operator = (vertex &vIn)
+	{
+		x = vIn.x;
+		y = vIn.y;
+		z = vIn.z;
+
+		return *this;
+	}
+	vertex operator - (vertex vIn)
+	{
+		vertex t;
+		t.x = x - vIn.x;
+		t.y = y - vIn.y;
+		t.z = z - vIn.z;
+		return t;
+	}
+};
+
+plane Get_Plane(vertex *Vertex)
+{
+	plane p;
+
+	vertex edge1, edge2;
+	edge1 = Vertex[1] - Vertex[0];
+	edge2 = Vertex[2] - Vertex[0];
+
+	p.a = edge1.y * edge2.z - edge1.z * edge2.y;
+	p.b = edge1.z * edge2.x - edge1.x * edge2.z;
+	p.c = edge1.x * edge2.y - edge1.y * edge2.x;
+
+	float len = sqrtf(p.a * p.a + p.b * p.b + p.c * p.c);
+
+	p.a = p.a / len;
+	p.b = p.b / len;
+	p.c = p.c / len;
+
+	p.d=-(p.a*Vertex[0].x+p.b*Vertex[0].y+p.c*Vertex[0].z);
+
+	return p;
+};
+
+int main ()
+{
+
+	vertex Vertex[3];
+	Vertex[0].x = -12.0f;
+	Vertex[0].y = 0.0f;
+	Vertex[0].z = 12.0f;
+
+	Vertex[1].x = 12.0f;
+	Vertex[1].y = 12.0f;
+	Vertex[1].z = 12.0f;
+
+	Vertex[2].x = 12.0f;
+	Vertex[2].y = 0.0f;
+	Vertex[2].z = 12.0f;
+
+	plane p = Get_Plane(Vertex);
+
+	return 0;
+}
+
+</pre>
+
+<p>
+В функции main мы заполняем вершины треугольника. Причем отодвигаем треугольник по оси Z на 12 единиц от зрителя, то есть в положительном направлении оси Z. В результате выполнения этого кода мы получим плоскость:
+</p>
+
+<pre>
+plane p = plane(0.0, 0.0, -1.0, 12.0);
+</pre>
+
+<p>
+Как видим это правильное решение, так как мы отодвинули треугольник на 12 единиц по оси Z и нормаль (лицевая сторона треугольника) смотрит в отрицательном направлении оси Z, то есть -1.
+</p>
+
+</body>
+</html>

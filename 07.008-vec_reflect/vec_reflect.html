@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+
+	<title>Vector reflect - отражения</title>
+
+
+	<meta name="DESCRIPTION" content="Vector reflect - отражения">
+	<meta name="KEYWORDS" content="Vector reflect - отражения">
+
+
+
+<style type="text/css">
+body {
+	font-size: 24px;
+	font-family: "Consolas";
+	background-color: #000;
+	color: #ffffff;
+}
+
+pre {
+	font-size: 24px;
+	font-family: "Consolas";
+	background-color: #ffffaa;
+	color: #000;
+	width: max-content;
+	min-width: 100%;
+
+}
+
+div.my_selected {
+	width: 100%;
+	background-color: #ffff55;
+	position: relative;
+}
+
+a:link, a:visited { color: #aaaaaa; text-decoration: none; font-weight: normal;} 
+a:active, a:hover { color: #aaaaaa; text-decoration: underline;}
+
+p {
+	text-align: justify;
+	margin-right: 20px;
+}
+
+</style>	
+
+
+
+
+</head>
+<body>
+
+	<h3>Vector reflect - отражения</h3>
+
+<pre>
+
+struct vector3 {
+	float x,y,z;
+};
+
+int main (void)
+{
+	vector3 vIn = { 1.0, -1.0, 0.0 };
+	vector3 vNorm = { 0.0, 1.0, 0.0 };
+
+	vector3 vOut;
+
+	float s = 2.0f * ( vIn.x * vNorm.x + vIn.y * vNorm.y + vIn.z * vNorm.z );
+
+	vOut.x = vIn.x - s * vNorm.x;
+	vOut.y = vIn.y - s * vNorm.y;
+	vOut.z = vIn.z - s * vNorm.z;
+
+	return 0;
+}
+
+</pre>
+
+</body>
+</html>

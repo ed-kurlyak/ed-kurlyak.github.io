@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Реализация камеры на сцене.Сцена из треугольников. Отсечение по передней плоскости просмотра</title>
+
+	<meta name="DESCRIPTION" content="Реализация камеры на сцене.Сцена из треугольников. Отсечение по передней плоскости просмотра">
+	<meta name="KEYWORDS" content="Реализация камеры на сцене.Сцена из треугольников. Отсечение по передней плоскости просмотра">
+
+<style type="text/css">
+body {
+	font-size: 24px;
+	font-family: "Consolas";
+	background-color: #000;
+	color: #ffffff;
+}
+
+pre {
+	font-size: 24px;
+	font-family: "Consolas";
+	background-color: #ffffaa;
+	color: #000;
+}
+
+div.my_selected {
+	width: 100%;
+	background-color: #ffff55;
+	position: relative;
+}
+
+a:link, a:visited { color: #aaaaaa; text-decoration: none; font-weight: normal;} 
+a:active, a:hover { color: #aaaaaa; text-decoration: underline;}
+
+p {
+	text-align: justify;
+	margin-right: 20px;
+}
+
+
+</style>	
+</head>
+<body>
+
+<h3>
+Реализация камеры на сцене.Сцена из треугольников. Отсечение по передней плоскости просмотра
+</h3>
+
+<p>
+Загрузить архив с примерами <a href="../source.rar">ЗДЕСЬ</a>.
+</p>
+
+<p>
+В данном примере мы рассмотрим создание и отображение не сложной сцены, по сцене можно перемещаться с помощью клавиатуры и делать повороы камеры мышью, near plane clipping, backface culling, software triangle rasterization. Код примера можно загрузить /src/03.005-camera_soft_near_plane2/Camera_Soft_Near_Plane6 (более сложный способ отсечения по Z) и /src/03.005-camera_soft_near_plane2/Camera_Soft_Near_Plane7 (еще однин простой способ отсечения по Z - алгоритм аналогичный отсечению по экранным координатам, но разница- что это отсечение по Z).
+</p>
+
+<p>
+После запуска примера перемещатся по сцене можно с помощью клавиш W,S,A,D и поворачивать камеру мышей.
+</p>
+
+<img src="./camera_soft.jpg" width="800" alt="Реализация камеры на сцене. Использование Z- буфера">
+
+
+<p>
+В примере используется отсечение по передней плоскости просмотра. Оно осуществляется следующим способом:	
+</p>
+
+<img src="./front_plane.jpg" width="600" alt="Реализация камеры на сцене. Использование Z- буфера">
+
+</body>
+</html>

@@ -1,0 +1,90 @@
+<html>
+<head>
+	<title>JavaScript Example</title>
+
+	<style type="text/css">
+
+	body {
+		padding: 0;
+		margin: 0;
+		font-family: "Consolas";
+	}
+
+	.big-wrapper {
+		position: relative;
+		width: 100%;
+		height: 100vh;
+		display: flex;
+		justify-content: left;
+		background-color: black;
+		
+	}
+
+
+	.big-wrapper h2 {
+		position: relative;
+		margin-left: 6rem;
+	}
+
+	</style>
+
+
+</head>
+<body>
+
+	<div class="big-wrapper">
+
+		<h2 class="teletype-text">SOFTWARE DEVELOPER - ED KURLYAK - ЭД КУРЛЯК - PERSONAL PAGE</h2>
+
+	</div>
+
+
+	<script type="text/javascript">
+
+let my_body = document.body;
+let teletype_text = document.querySelector(".teletype-text");
+	
+
+
+
+	function my_teletype()
+	{
+
+		let buff = "SOFTWARE DEVELOPER - ED KURLYAK - ЭД КУРЛЯК - PERSONAL PAGE";
+
+		let my_str = "";
+
+		let i = 0;
+		
+			let timerid = setInterval(() => {
+
+				let char = buff[i]
+
+				my_str += char;
+
+				teletype_text.innerHTML = my_str;
+
+				teletype_text.style.color = "#fff"
+
+				i++;
+
+				if (i == buff.length)
+				{
+					clearTimeout(timerid);
+				}
+	
+		}, 64);
+
+	}
+
+	my_body.onload = function()
+	{
+		setTimeout(my_teletype, 1000);
+	}
+
+
+
+	</script>
+
+</body>
+</html>

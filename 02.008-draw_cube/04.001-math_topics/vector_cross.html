@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+
+	<title>Векторное произведение векторов cross product</title>
+
+
+	<meta name="DESCRIPTION" content="Векторное произведение векторов cross product">
+	<meta name="KEYWORDS" content="Векторное произведение векторов cross product">
+
+
+
+<link href="./style00.css" rel="stylesheet" type="text/css" />
+
+
+
+</head>
+<body>
+
+	<h3>Векторное произведение векторов (cross product)</h3>
+
+<pre>
+
+struct vector3
+{
+	float x,y,z;
+};
+
+vector3 Vec3_Cross(vector3 v1, vector3 v2)
+{
+	vector3 t;
+
+	t.x = v1.y * v2.z - v1.z * v2.y;
+	t.y = v1.z * v2.x - v1.x * v2.z;
+	t.z = v1.x * v2.y - v1.y * v2.x;
+
+	return t;
+}
+
+int main()
+{
+	vector3 v1 = { 1.0f, 0.0f, 0.0f };
+	vector3 v2 = { 0.0f, 1.0f, 0.0f };
+
+	vector3 ret = Vec3_Cross(v1, v2);
+
+	return 0;
+}
+
+</pre>
+
+<p>
+Что бы проверить суждения, и расчет выше, давайте возьмем два вектора- один направлен вдоль оси X, другой направлен вдоль оси Y, и по идее- третий вектор будет направлен по оси Z так как этот вектор перпендикулярен двоим исходным.
+</p>
+
+<p>
+Берем два вектора направленых вдоль осей X и Y:
+</p>
+
+<pre>
+vector3 v1 = { 1.0f, 0.0f, 0.0f };
+vector3 v2 = { 0.0f, 1.0f, 0.0f };
+</pre>
+
+<p>
+Результат векторного произведения векторов будет третий вектор направленный вдоль оси Z:
+</p>
+
+<pre>
+vector3 ret = {0.0f, 0.0f, 1.0f};	
+</pre>
+
+</body>
+</html>

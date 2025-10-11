@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Математические основы трехмерной графики. Програмный рендеринг на С++ (без DirectX/OpenGL)</title>
+
+	<meta name="DESCRIPTION" content="Математические основы трехмерной графики. Програмный рендеринг на С++ (без DirectX/OpenGL)">
+	<meta name="KEYWORDS" content="Математические основы трехмерной графики. Програмный рендеринг на С++ (без DirectX/OpenGL)">
+
+<style type="text/css">
+body {
+	font-size: 24px;
+	font-family: "Consolas";
+	background-color: #000;
+	color: #ffffff;
+}
+
+pre {
+	font-size: 24px;
+	font-family: "Consolas";
+	background-color: #ffffaa;
+	color: #000;
+}
+
+div.my_selected {
+	width: 100%;
+	background-color: #ffff55;
+	position: relative;
+}
+
+a:link, a:visited { color: #aaaaaa; text-decoration: none; font-weight: normal;} 
+a:active, a:hover { color: #aaaaaa; text-decoration: underline;}
+
+p {
+	text-align: justify;
+	margin-right: 20px;
+}
+
+</style>	
+</head>
+<body>
+
+<h3>
+Математические основы трехмерной графики. Програмный рендеринг на С++ (без DirectX/OpenGL)
+</h3>
+
+<p>
+Аннотация.
+</p>
+
+<p>
+Данная серия глав излагает основные принципы трехмерной графики. Перед тем как браться изучать DirectX или OpenGL, лучше всего освоить основы, создав собственный конвеер рендеринга- чем мы и будем заниматся. На математических принципах, поданых в изложении, построены такие API как DirectX и OpenGL. Данная серия глав излагает закулисные механизмы DirectX и OpenGL. Если вы освоите основные математические принциы, излагаемые ниже, вы сможете освоить любое графическое API. Для изучения данного ниже материала необходимо иметь базовые знания о вектроной и матричной математике и знание языка программирования С++. Изложение предназначено не для новичков в программировании, а людей которые знакомы с программированием DirectX и OpenGL и трехмерной математикой. Например в данном изложении не объясняется что такое скалярное произведение векторов- просто подается код на С++ который выполняет скалярное произведение векторов, а что это такое- скалярное произведение векторов- читатель должен быть с этим знаком сам.
+</p>
+
+<p>
+Загрузить архив с примерами <a href="./source.rar">ЗДЕСЬ</a>.
+</p>
+
+
+<p>
+Содержание Раздел 1
+</p>
+
+<ul>
+
+<li> <a href="./01.001-simple/soft_rend_main1.html">Рисуем проволочную модель куба на С++</a>
+
+<li> <a href="./01.002-rot_y/soft_rend_main2.html">Вращаем проволочную модель куба вокруг оси Y</a>
+
+
+<li> <a href="./01.003-all_rot_y/soft_rend_main3.html">Весь код программы целиком - вращение модели куба вокруг оси Y</a>
+
+<li><a href="./01.004-no_index_buff/soft_rend_main4.html">Вращение модели куба вокруг оси Y - без использования индексного буфера</a>
+
+<li> <a href="./01.005-base_psevdocode/soft_rend_main5.html">Базовые концепции 3D графики на примере псевдокода
+
+<li> <a href="./01.006-mx_scale/soft_rend_main6.html">Добавим матрицу Машстабирования</a>
+
+
+<li> <a href="./01.007-mx_world/soft_rend_main7.html">Добавим матрицу Мира. Локальные координаты объекта</a>
+
+<li> <a href="./01.008-mx_view/soft_rend_main8.html">Добавим матрицу Вида</a>
+
+<li> <a href="./01.009-mx_view_exp/soft_rend_main9.html">Экперименты с матрицей Вида</a>
+
+<li> <a href="./01.010-mx_proj/soft_rend_main10.html">Добавим матрицу Проекции</a>
+
+<li> <a href="./01.011-mx_proj_exp/soft_rend_main11.html">Эксперименты с матрицей Проекции</a>
+
+
+<li> <a href="./01.012-mx_screen/soft_rend_main12.html">Добавим Экранную матрицу</a>
+
+<li><a href="./01.013-math_lib/soft_rend_main13.html">Математическая библиотека</a>
+
+
+<li><a href="./01.014-rot_line_2d/soft_rend_main14.html">Поворачиваем линию в 2D</a>
+
+<li><a href="./01.015-rot_tri_2d/soft_rend_main15.html">Поворачиваем треугольник в 2D</a>
+
+<li> <a href="./01.016-back_face_cul/back_face_cul.html">Отбрасывание задних поверхностей модели. Проволочная модель куба из треугольников</a>
+
+<li><a href="./01.017-back_buff/back_buff.html">Как добавить задний буфер backbuffer</a>
+
+<li><a href="./01.018-sphere_tri/sphere_tri.html">Проволочная модель сферы из треугольников</a>
+
+<li><a href="./01.019-coords/coords.html">Какими бывают координаты вершин</a>
+
+<li> <a href="./01.020-cube_model/cube_model.html">Как создать модель куба и сферы</a>
+
+<li> <a href="./01.021-brezenhame/brezenhame.html">Алгоритм Брезенхема рисования линий</a>
+
+<li> <a href="./01.022-draw_circle/draw_circle.html">Параметрическое описание окружности</a>
+
+<li> <a href="./01.023-bezier_curve/bezier_curve.html">Кубическая кривая Безье</a>
+
+<li> <a href="./01.024-bound_box/bound_box.html">Bounding Box</a>	
+
+<li> <a href="./01.025-draw_cylinder/draw_cylinder.html">Параметрическое описание цилиндра</a>	
+
+<li> <a href="./01.026-draw_geosphere/draw_geosphere.html">Построение геосферы</a>	
+
+<li> <a href="./01.027-surface/surface.html">Построение волнистой поверхности</a>	
+
+	
+
+</ul>
+
+
+<p>
+Содержание Раздел 2
+</p>
+
+<ul>
+
+<li> <a href="./02.001-solid_cube/solid_cube.html">Заливка треугольника сплошным цветом</a>
+
+<li> <a href="./02.002-color_cube/color_cube.html">Интерполяция цветов </a>
+
+<li> <a href="./02.003-light_soft/light_soft.html">Освещение поверхностей - Интерполяция цветов</a>
+
+<li> <a href="./02.004-perspect_tex/persp_tex.html">Текстурирование с учетом перспективы</a>
+
+<li> <a href="./02.005-fixed_math/fixed_math.html">	Арифметика с фиксированной точкой. Тестурирование куба</a>
+
+
+
+<li> <a href="./02.006-soft_sphere/soft_sphere.html">Накладываем текстуру на сферу</a>
+
+<li><a href="./02.007-bmp/bmp.html">Загрузить изображение BMP 8/24/32 BIT в текстуру</a>
+
+<li> <a href="./02.008-shadow/shadow.html">Реализация тени</a>
+
+<li> <a href="./02.009-affine_tex/affine_tex.html">Аффинное текстурирование, вывод текста, подсчет FPS, установка лимита FPS	</a>
+
+
+
+</ul>
+
+<p>
+Содержание Раздел 3	
+</p>
+
+<ul>
+
+<li><a href="./03.001-z_buff/z_buff.html">Использование Z буфера и сортировка полигонов по глубине</a>
+
+
+<li><a href="./03.002-draw_field_winapi/draw_field_winapi.html">Камера. Сетка из линий. Отсечение по передней плоскости просмотра</a>
+
+<li><a href="./03.003-draw_field_brezenhame/draw_field_brezenhame.html">Камера. Сетка из линий. Использование алгоритма Брезенхема</a>
+
+	
+
+<li> <a href="./03.004-camera_soft_near_plane1/camera_soft_near_plane1.html">Реализация камеры на сцене. Сцена из треугольников. Отсечение по передней плоскости просмотра - простой способ
+</a>
+	
+<li> <a href="./03.005-camera_soft_near_plane2/camera_soft_near_plane2.html">Реализация камеры на сцене.Сцена из треугольников. Отсечение по передней плоскости просмотра</a>
+
+<li> <a href="./03.006-camera_sphere_coord/camera_sphere_coord.html">Камера- Сферические координаты</a>	
+
+
+<li> <a href="./03.007-camera_euler_angles/camera_euler_angles.html">Камера- Использование углов Эйлера</a>	
+
+
+<li> <a href="./03.008-billboards/billboards.html">Камера. Billbords. Изучаем матрицу Мира. Реализуем Альфа- смешивание</a>	
+
+<li> <a href="./03.009-third_person_camera/third_person_camera.html">Камера от третьего лица</a>	
+
+	
+<li> <a href="./03.010-bsp_soft/bsp_soft.html">BSP Tree програмная растеризация треугольников</a>	
+
+<li> <a href="./03.011-morphing/morphing.html">Морфирующая анимация</a>
+
+<li> <a href="./03.012-wave_path/wave_path.html">Волновой алгоритм для поиска пути (Алгоритм Ли)</a>
+
+<li> <a href="./03.014-astar_path/a_star_path.html">Алгоритм AStar(A*) для поиска пути</a>
+
+
+</ul>
+
+
+
+
+
+<p>
+Содержание Раздел 4	
+</p>
+
+
+<ul>
+
+<li>
+<a href="./04.001-math_topics/plane_equation.html">Уравнение плоскости. Расстояние от точки до плоскости</a>
+<br>
+
+<li>
+<a href="./04.001-math_topics/get_plane.html">Есть три вершины полигона рассчитать плоскость</a>
+<br>
+
+<li>
+<a href="./04.001-math_topics/vector_cross.html">Векторное произведение векторов (cross product)</a>
+<br>
+
+<li>
+<a href="./04.001-math_topics/rotation2d3d.html">Повернуть 2D, 3D вектор на заданный угол</a>
+<br>
+
+<li>
+<a href="./04.001-math_topics/sphere3d/sphere3d.html">Параметрическое описание сферы</a>
+<br>
+
+<li>
+<a href="./04.001-math_topics/line_equation.html">Уравнение линии</a>
+<br>
+
+<li>
+<a href="./04.001-math_topics/ray_tri_intersect.html">Пересечение вектора и треугольника</a>
+<br>
+
+<li>
+<a href="./04.001-math_topics/polygon_normal.html">Вычислить нормаль к полигону</a>
+<br>
+
+<li>
+<a href="./04.001-math_topics/vec_reflect.html">Vector reflect - отражения</a>
+<br>
+
+<li>
+<a href="./04.001-math_topics/tri_side.html">Вычислить какая сторона треугольника длинее</a>
+<br>
+
+<li>
+<a href="./04.001-math_topics/sphere_ray/sphere_ray.html">Пересечение луча и сферы</a>
+<br>
+
+<li>
+<a href="./04.001-math_topics/square_equation/square_equation.html">Решение квадратных уравнений</a>
+<br>
+
+<li>
+<a href="./04.001-math_topics/draw_torus/draw_torus.html">Параметрическое уравнение торуса</a>
+<br>
+
+
+<li>
+<a href="./04.001-math_topics/split_polygon/split_polygon.html">Разбить треугольник плоскостью</a>
+<br>
+
+</ul>
+
+
+
+
+
+
+</body>
+</html>

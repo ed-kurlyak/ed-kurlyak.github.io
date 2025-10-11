@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Камера. Сетка из линий. Использование алгоритма Брезенхема</title>
+
+	<meta name="DESCRIPTION" content="Камера. Сетка из линий. Использование алгоритма Брезенхема">
+	<meta name="KEYWORDS" content="Камера. Сетка из линий. Использование алгоритма Брезенхема">
+
+<style type="text/css">
+body {
+	font-size: 24px;
+	font-family: "Consolas";
+	background-color: #000;
+	color: #ffffff;
+}
+
+pre {
+	font-size: 24px;
+	font-family: "Consolas";
+	background-color: #ffffaa;
+	color: #000;
+}
+
+div.my_selected {
+	width: 100%;
+	background-color: #ffff55;
+	position: relative;
+}
+
+a:link, a:visited { color: #aaaaaa; text-decoration: none; font-weight: normal;} 
+a:active, a:hover { color: #aaaaaa; text-decoration: underline;}
+
+p {
+	text-align: justify;
+	margin-right: 20px;
+}
+
+
+</style>	
+</head>
+<body>
+
+<h3>
+Камера. Сетка из линий. Использование алгоритма Брезенхема
+</h3>
+
+<p>
+Загрузить архив с примерами <a href="../source.rar">ЗДЕСЬ</a>.
+</p>
+
+
+<p>
+Ранее в примере для рисования сетки из линий мы использовали функции GDI MoveToEx() и LineTo(). Эти функции сами производят отсечение в экранных координатах. Например следующий код корректно обрежет и отобразит линию:
+</p>
+
+<pre>
+
+#define _WIN32_WINNT 0x0500
+#include &ltwindows.h>
+#include &ltstdio.h>
+
+int main(void)
+{
+	HWND hWnd = GetConsoleWindow();
+
+	HDC hDC = GetDC(hWnd);
+
+	HPEN hPen = CreatePen(PS_SOLID, 4, RGB(255, 255, 127));
+	HPEN hOldPen = (HPEN) SelectObject(hDC, hPen);
+
+	int x1 = 50;
+	int y1 = 50;
+
+	int x2 = -50;
+	int y2 = 150;
+
+	MoveToEx(hDC, x1, y1, NULL);
+	LineTo(hDC, x2, y2);
+
+	getchar();
+
+	SelectObject(hDC, hOldPen);
+	DeleteObject(hPen);
+	ReleaseDC(hWnd, hDC);
+
+	return 0;
+}
+
+</pre>
+
+<p>
+Теперь в этом примере мы будем сами рисовать линии при помощи алгоритма Брезенхема и нам самим нужно отсекать линии в экраннх координатах. В примере использовалась функция DrawDibDraw. Для клиппинга линий в экранных координатах использвался алгоритм Коэна-Сазерленда.
+</p>
+
+
+<p>
+Код примера можно загрузить /src/03.003-draw_field_brezenhame/Draw_Field_Brezenhame.
+</p>
+
+<p>
+После запуска примера перемещатся по сцене можно с помощью клавиш W,S,A,D и поворачивать камеру мышей.
+</p>
+
+<img src="./draw_field_brezenhame.jpg" width="800" alt="Камера. Сетка из линий. Использование алгоритма Брезенхема">
+
+
+<p>
+Реализация алгоритма Коэна-Сазерленда: Каждой вершине присваивается код региона. Биты кода указывают на положение точки относительно экранных границ. Внутренний регион (0000) указывает, что точка полностью видима.
+</p>
+
+<pre>
+
+	1001 | 1000 | 1010
+	-------------------
+	0001 | 0000 | 0010
+	-------------------
+	0101 | 0100 | 0110
+
+</pre>
+
+<pre>
+
+#include &ltiostream>
+
+const int LEFT = 1;   // 0001
+const int RIGHT = 2;  // 0010
+const int TOP = 4;    // 0100
+const int BOTTOM = 8; // 1000
+
+int ComputeCode(int x, int y, int left, int right, int top, int bottom)
+{
+    int code = 0;
+    if (x &lt left) code |= LEFT;
+    if (x > right) code |= RIGHT;
+    if (y &lt top) code |= TOP;
+    if (y > bottom) code |= BOTTOM;
+    return code;
+}
+
+void CohenSutherlandClip(int x1, int y1, int x2, int y2,
+                         int left, int right, int top, int bottom)
+{
+    int code1 = ComputeCode(x1, y1, left, right, top, bottom);
+    int code2 = ComputeCode(x2, y2, left, right, top, bottom);
+    bool accept = false;
+
+    while (true)
+    {
+        if (!(code1 | code2)) // Оба конца внутри окна
+        {
+            accept = true;
+            break;
+        }
+        else if (code1 & code2) // Оба конца вне окна в одном направлении
+        {
+            break;
+        }
+        else
+        {
+            int codeOut;
+            int x, y;
+
+            if (code1 != 0)
+                codeOut = code1;
+            else
+                codeOut = code2;
+
+            if (codeOut & TOP)
+            {
+                x = x1 + (x2 - x1) * (top - y1) / (y2 - y1);
+                y = top;
+            }
+            else if (codeOut & BOTTOM)
+            {
+                x = x1 + (x2 - x1) * (bottom - y1) / (y2 - y1);
+                y = bottom;
+            }
+            else if (codeOut & RIGHT)
+            {
+                y = y1 + (y2 - y1) * (right - x1) / (x2 - x1);
+                x = right;
+            }
+            else if (codeOut & LEFT)
+            {
+                y = y1 + (y2 - y1) * (left - x1) / (x2 - x1);
+                x = left;
+            }
+
+            if (codeOut == code1)
+            {
+                x1 = x;
+                y1 = y;
+                code1 = ComputeCode(x1, y1, left, right, top, bottom);
+            }
+            else
+            {
+                x2 = x;
+                y2 = y;
+                code2 = ComputeCode(x2, y2, left, right, top, bottom);
+            }
+        }
+    }
+
+    if (accept)
+    {
+        std::cout &lt&lt "Clipped Line: (" &lt&lt x1 &lt&lt ", " &lt&lt y1 &lt&lt ") to (" &lt&lt x2 &lt&lt ", " &lt&lt y2 &lt&lt ")" &lt&lt std::endl;
+    }
+    else
+    {
+        std::cout &lt&lt "Line is outside the clipping area" &lt&lt std::endl;
+    }
+}
+
+
+</pre>
+
+</body>
+</html>

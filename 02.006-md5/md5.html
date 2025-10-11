@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Реализация алгоритма хеширования MD5 на Visual Studio 2019</title>
+
+	<meta name="DESCRIPTION" content="Реализация алгоритма хеширования MD5 на Visual Studio 2019">
+	<meta name="KEYWORDS" content="Реализация алгоритма хеширования MD5 на Visual Studio 2019">
+
+<style type="text/css">
+body {
+	font-size: 24px;
+	font-family: "Consolas";
+	background-color: #000;
+	color: #ffffff;
+}
+
+pre {
+	font-size: 24px;
+	font-family: "Consolas";
+	background-color: #ffffaa;
+	color: #000;
+	width: max-content;
+	min-width: 100%;
+
+}
+
+div.my_selected {
+	width: 100%;
+	background-color: #ffff55;
+	position: relative;
+}
+
+a:link, a:visited { color: #aaaaaa; text-decoration: none; font-weight: normal;} 
+a:active, a:hover { color: #aaaaaa; text-decoration: underline;}
+
+p {
+	text-align: justify;
+	margin-right: 20px;
+}
+
+</style>	
+</head>
+<body>
+
+<h3>
+Реализация алгоритма хеширования MD5 на Visual Studio 2019
+</h3>
+
+
+
+<p>
+Загрузить исходный код для Visual Stduio 2005 <a href="./MD5_Sample.rar">ЗДЕСЬ</a>.
+</p>
+
+<p>
+Алгоритм следующий.
+</p>
+
+<p>
+
+1)Инициализируем MD буффер в функции md5_starts(). Буффер состоит из четырех констант, предназначенный для сбора хэша.
+ 
+ </p>
+
+ <pre>
+
+ void  md5_starts( md5_context *ctx )
+    {
+        ctx->total[ 0] = 0 ;
+        ctx->total[ 1] = 0 ;
+
+	//Инициализируем MD буффер
+	//Буффер состоит из четырех констант,
+	//предназначенный для сбора хэша.
+
+        ctx->state[ 0] = 0x67452301 ;
+        ctx->state[ 1] = 0xEFCDAB89 ;
+        ctx->state[ 2] = 0x98BADCFE ;
+        ctx->state[ 3] = 0x10325476 ;
+    }
+
+</pre>
+
+<p>
+2)В исходную строку в конец дописывается единичный байт 0х80.
+</p>
+
+<p>
+3)Далее в конец исходной строки дописываются 8 байт - длинна исходного сообщения.
+</p>
+
+<p>
+4)Далее в функции md5_process() исходная строка по 4 байта копируется в массив uint32 X[ 16 ].
+</p>
+
+<p>
+5)Определяем 4 логические функции в функции md5_process().
+</p>
+
+<pre>
+//Определяем 4 логические функции
+
+#define  F(x,y,z) (z ^ (x & (y ^ z)))
+
+...
+
+#undef  F
+
+#define  F(x,y,z) (y ^ (z & (x ^ y)))
+
+...
+
+#undef  F
+
+
+#define  F(x,y,z) (x ^ y ^ z)
+
+...
+
+#undef  F
+
+
+#define  F(x,y,z) (y ^ (x | ~z))
+
+...
+
+#undef  F
+
+</pre>	
+
+<p>
+5)Затем внутри функции md5_process() происходят так называемые преобразования-раунды, которых всего будет 4. Каждый раунд состоит из 16 элементарных преобразований, которые в общем виде можно представить в виде:
+</p>
+
+<pre>
+
+#define  P(a,b,c,d,k,s,t)                                \
+    {                                                       \
+        a += F(b,c,d) + X[k] + t; a = S(a,s) + b;           \
+    }
+
+
+</pre>
+
+<p>
+Эти 4 раунда по 16 элементарных преобразований происходят внутри определенных логических функций #define  F (там где троеточие).
+</p>
+
+<p>
+6)В конце функции md5_process() у нас есть результирующий хеш:
+</p>
+
+<pre>
+
+	ctx->state[ 0 ] += A;
+        ctx->state[ 1 ] += B;
+        ctx->state[ 2 ] += C;
+        ctx->state[ 3 ] += D;
+
+</pre>
+
+<p>
+7)В конце функции md5_finish() результирующий хеш записывается в char массив digest:
+</p>
+
+<pre>
+
+	PUT_UINT32( ctx->state[ 0], digest,  0  );
+        PUT_UINT32( ctx->state[ 1], digest,  4  );
+        PUT_UINT32( ctx->state[ 2], digest,  8  );
+        PUT_UINT32( ctx->state[ 3], digest, 12  );
+
+</pre>
+
+В конце функции main() массив digest выводиться на экран.
+
+В завершение добавлю - PUT_UINT32 берет 4 int32 ложит в один массив последовательно, GET_UINT32 берет из последовательного массива по 4 байта (int32) и ложит в другой массив uint32 X[ 16 ].
+
+</body>
+</html>

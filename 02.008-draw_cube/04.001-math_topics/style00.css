@@ -1,0 +1,47 @@
+p {
+	text-align: justify;
+	margin-right: 20px;
+}
+
+body {
+	font-size: 24px;
+	font-family: "Consolas";
+	background-color: #000;
+	color: #ffffff;
+}
+
+pre {
+	background-color: #ffffaa;
+	color: #000;
+	width: max-content;
+	min-width: 100%;
+}
+
+a:link, a:visited { color: #aaaaaa; text-decoration: none; font-weight: normal;} 
+a:active, a:hover { color: #aaaaaa; text-decoration: underline;}
+
+
+
+	@font-face {
+			font-family: "Consolas2";
+			src: url("../fonts/consolas/consola.eot");
+			src: url("../fonts/consolas/consola.eot?#iefix")format("embedded-opentype"),
+			url("../fonts/consolas/consola.woff") format("woff"),
+			url("../fonts/consolas/consola.ttf") format("truetype");
+			font-style: normal;
+			font-weight: normal;
+	}
+
+	
+
+.my_center{
+	position: relative;
+	left: 50%;
+	top: 5vh;
+	width: 700px;
+	margin-left: -350px;
+	
+
+}
+
+

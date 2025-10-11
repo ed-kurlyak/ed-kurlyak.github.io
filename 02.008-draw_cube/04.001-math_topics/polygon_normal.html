@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+
+	<title>Вычислить нормаль к полигону</title>
+
+	<link href="./style00.css" rel="stylesheet" type="text/css" />
+
+	<meta name="DESCRIPTION" content="Вычислить нормаль к полигону">
+	<meta name="KEYWORDS" content="Вычислить нормаль к полигону">
+
+
+
+
+
+</head>
+<body>
+
+	<h3>Вычислить нормаль к полигону</h3>
+
+<pre>
+#include &ltmath.h&gt
+
+
+struct vector3
+{
+	float x,y,z;
+};
+
+vector3 Vec3Subtract(vector3 v1, vector3 v2)
+{
+	vector3 temp;
+		
+	temp.x = v1.x - v2.x;
+	temp.y = v1.y - v2.y;
+	temp.z = v1.z - v2.z;
+		
+	return temp;
+}
+
+vector3 Vec3Cross(vector3 v1, vector3 v2)
+{
+	vector3 temp;
+
+	temp.x = v1.y * v2.z - v1.z * v2.y;
+	temp.y = v1.z * v2.x - v1.x * v2.z;
+	temp.z = v1.x * v2.y - v1.y * v2.x;
+
+	return temp;
+}
+
+vector3 Vec3Normalize(vector3 v)
+{
+	vector3 t;
+
+	float vlen = sqrtf( (v.x * v.x) + (v.y * v.y) + (v.z * v.z));
+
+	t.x = v.x/vlen;
+	t.y = v.y/vlen;
+	t.z = v.z/vlen;
+
+	return t;
+}
+
+
+int main ()
+{
+
+	vector3 v1 = {0.0, 0.0, 0.0};
+	vector3 v2 = {10.0, 10.0, 0.0};
+	vector3 v3 = {10.0, 0.0, 0.0};
+
+	vector3 edge1,edge2,vnormal;
+
+	edge1 = Vec3Subtract(v2, v1);
+	edge2 = Vec3Subtract(v3, v1);
+
+	edge1 = Vec3Normalize(edge1);
+	edge2 = Vec3Normalize(edge2);
+
+	vnormal = Vec3Cross(edge1, edge2);
+
+	vnormal = Vec3Normalize(vnormal);
+
+	return 0;
+}
+
+
+</pre>
+
+
+
+</body>
+</html>

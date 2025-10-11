@@ -1,0 +1,21 @@
+## РљРѕРґРёСЂРѕРІРєР° РґРѕРєСѓРјРµРЅС‚РѕРІ
+AddDefaultCharset utf-8
+#AddDefaultCharset koi8-u
+#AddDefaultCharset windows-1251
+
+## Р¤Р°Р№Р» РёРЅРґРµРєСЃРЅРѕРіРѕ РґРѕРєСѓРјРµРЅС‚Р°
+#DirectoryIndex index.shtml index.html index.htm index.php
+
+## Р’РѕСЃРїСЂРёРЅРёРјР°С‚СЊ С„Р°Р№Р»С‹ *.html РєР°Рє SSI
+#AddHandler server-parsed .html
+
+## Р’РєР»СЋС‡РёС‚СЊ РїР°СЂСЃРёРЅРі SSI РІС‹СЂР°Р¶РµРЅРёР№ РІ СѓСЃС‚Р°СЂРµРІС€РµРј С„РѕСЂРјР°С‚Рµ
+#SSILegacyExprParser on
+
+## Р Р°Р·СЂРµС€РµРЅРёРµ РІС‹РІРѕРґР° СЃРѕРґРµСЂР¶РёРјРѕРіРѕ РєР°С‚Р°Р»РѕРіР°
+#Options +Indexes
+
+## РќРµ РїРёСЃР°С‚СЊ РІ access.log РёРЅС„РѕСЂРјР°С†РёСЋ Рѕ С„Р°Р№Р»Р°С… *.gif Рё *.jpg
+#SetEnvIf Request_URI \.gif$ access_log
+#SetEnvIf Request_URI \.jpg$ access_log
+

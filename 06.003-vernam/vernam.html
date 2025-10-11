@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Шифр Вернама, реализация Visual Studio С++</title>
+
+	<meta name="DESCRIPTION" content="Шифр Вернама, реализация Visual Studio С++">
+	<meta name="KEYWORDS" content="Шифр Вернама, реализация Visual Studio С++">
+
+<style type="text/css">
+body {
+	font-size: 24px;
+	font-family: "Consolas";
+	background-color: #000;
+	color: #ffffff;
+}
+
+pre {
+	font-size: 24px;
+	font-family: "Consolas";
+	background-color: #ffffaa;
+	color: #000;
+	width: max-content;
+	min-width: 100%;
+
+}
+
+div.my_selected {
+	width: 100%;
+	background-color: #ffff55;
+	position: relative;
+}
+
+a:link, a:visited { color: #aaaaaa; text-decoration: none; font-weight: normal;} 
+a:active, a:hover { color: #aaaaaa; text-decoration: underline;}
+
+p {
+	text-align: justify;
+	margin-right: 20px;
+}
+
+</style>	
+</head>
+<body>
+
+<h3>
+	Шифр Вернама, реализация Visual Studio С++
+</h3>
+
+<p>
+Загрузить исходный код	
+<a href="./Sample.rar">ЗДЕСЬ</a>.
+</p>
+
+<pre>
+
+	#include &ltwindows.h>
+	#include &ltstdio.h>
+		
+	// реализация шифра Вернама
+		
+	int main() 
+	{
+		// Устанавливаем кодовую страницу для ANSI
+		SetConsoleOutputCP(1251); // 1251 - кодировка для русского языка
+		
+		char original = 'A';  // Исходный символ
+		char key = 'K';      // Ключ для шифрования
+		
+		char encrypted = original ^ key;  // Шифрование
+		char decrypted = encrypted ^ key;  // Расшифровка
+		
+		printf("Исходный символ: %c\n", original);
+		printf("Зашифрованный символ: %d\n", encrypted);
+		printf("Расшифрованный символ: %d -> %c\n", decrypted, decrypted);
+		
+		return 0;
+	}
+
+</pre>
+
+<p>
+Шифр Вернама, также известный как одноразовый пароль, является одним из самых безопасных методов шифрования. В этом шифре каждый символ сообщения шифруется с помощью случайного ключа, который должен быть такой же длины, как и само сообщение.
+</p>
+
+<p>
+Процесс шифрования включает в себя побитовую операцию XOR между символами сообщения и ключа. Главная особенность — ключ должен использоваться только один раз и храниться в секрете. Если ключ действительно случайный и одноразовый, то шифр Вернама обеспечивает абсолютную безопасность, так как без знания ключа расшифровать сообщение невозможно.	
+</p>
+
+<p>
+Операции для использования шифра Вернама: исходный символ, операция XOR 
+с символом ключа для шифрования, для расшифровки исходный символ, операция XOR с символом ключа. 
+XOR с ключем	
+</p>
+
+<p>
+В C++ операция XOR выполняется с помощью оператора ^.
+</p>
+
+<pre>
+
+	Шифр Вернама
+
+	Зашифрованный символ = Исходный символ  XOR Ключевой символ
+
+	Расшифрованный символ = Зашифрованный символ XOR Ключевой символ
+
+</pre>
+
+<p>
+В операции XOR порядок операндов не имеет значения:
+</p>
+
+<pre>
+	
+	A XOR B = B XOR A
+
+</pre>
+
+</body>
+</html>

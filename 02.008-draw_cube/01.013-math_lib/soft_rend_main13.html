@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Математическая библиотека</title>
+
+	<meta name="DESCRIPTION" content="Математическая библиотека">
+	<meta name="KEYWORDS" content="Математическая библиотека">
+
+<style type="text/css">
+body {
+	font-size: 24px;
+	font-family: "Consolas";
+	background-color: #000;
+	color: #ffffff;
+}
+
+pre {
+	font-size: 24px;
+	font-family: "Consolas";
+	background-color: #ffffaa;
+	color: #000;
+	width: max-content;
+	min-width: 100%;
+}
+
+div.my_selected {
+	width: 100%;
+	background-color: #ffff55;
+	position: relative;
+}
+
+a:link, a:visited { color: #aaaaaa; text-decoration: none; font-weight: normal;} 
+a:active, a:hover { color: #aaaaaa; text-decoration: underline;}
+
+p {
+	text-align: justify;
+	margin-right: 20px;
+}
+
+
+</style>	
+</head>
+<body>
+
+<h3>
+Математическая библиотека
+</h3>
+
+<pre>
+
+struct matrix4x4
+{
+	float Mat[4][4];
+};
+
+typedef float matrix4x4[4][4];	
+
+struct vector3
+{
+	float x,y,z;
+
+	vector3 operator - (const vector3 &VecIn)
+	{
+		vector3 VecOut;
+		
+		VecOut.x = x - VecIn.x;
+		VecOut.y = y - VecIn.y;
+		VecOut.z = z - VecIn.z;
+		
+		return VecOut;
+	}
+
+};
+
+
+	matrix4x4 MatRotateX={
+		1, 0, 0, 0,
+        	0, cosf(Angle), sinf(Angle), 0,
+        	0, -sinf(Angle), cosf(Angle), 0,
+        	0, 0, 0, 1};
+	
+	matrix4x4 MatRotateY={
+		cosf(Angle), 0, -sinf(Angle), 0,
+		0, 1, 0, 0,
+		sinf(Angle), 0, cosf(Angle), 0,
+		0, 0, 0, 1};
+
+	matrix4x4 MatRotateZ={
+		cosf(Angle), sinf(Angle), 0, 0,
+		-sinf(Angle), cosf(Angle), 0, 0,
+        	0, 0, 1, 0,
+        	0, 0, 0, 1};
+
+
+matrix4x4 Mat4x4_Mat4x4_Mul(matrix4x4 &MatIn1, matrix4x4 &MatIn2);
+vector3 Vec3_Mat4x4_Mul(vector3 &VecIn, matrix4x4 MatIn);
+float Vec3_Dot(vector3 &VecIn1, vector3 &VecIn2);
+vector3 Vec3_Cross(vector3 &VecIn1, vector3 &VecIn2);
+vector3 Vec3_Normalize(vector3 &VecIn);
+vector3 Vec3_Scale(vector3 &VecIn, float &ValIn);
+vector3 Vec3_Add(vector3 &VecIn1, vector3 &VecIn2);
+float Vec3_Len(vector3 &VecIn);
+vector3 Vec3_Reflect(vector3 &VecIn, vector3 &VecNorm);
+void Matrix_Rotation_Axis(vector3 &VecIn, float Angle, matrix4x4 *MatIn);
+
+matrix4x4 CMeshManager::Mat4x4_Mat4x4_Mul(matrix4x4 &MatIn1, matrix4x4 &MatIn2)
+{
+	matrix4x4 MatOut;
+
+	//row1 * col1
+	MatOut.Mat[0][0] = MatIn1.Mat[0][0]*MatIn2.Mat[0][0] + MatIn1.Mat[0][1]*MatIn2.Mat[1][0] + MatIn1.Mat[0][2]*MatIn2.Mat[2][0] + MatIn1.Mat[0][3]*MatIn2.Mat[3][0];
+	//row1 * col2
+	MatOut.Mat[0][1] = MatIn1.Mat[0][0]*MatIn2.Mat[0][1] + MatIn1.Mat[0][1]*MatIn2.Mat[1][1] + MatIn1.Mat[0][2]*MatIn2.Mat[2][1] + MatIn1.Mat[0][3]*MatIn2.Mat[3][1];
+	//row1 * col3
+	MatOut.Mat[0][2] = MatIn1.Mat[0][0]*MatIn2.Mat[0][2] + MatIn1.Mat[0][1]*MatIn2.Mat[1][2] + MatIn1.Mat[0][2]*MatIn2.Mat[2][2] + MatIn1.Mat[0][3]*MatIn2.Mat[3][2];
+	//row1 * col4
+	MatOut.Mat[0][3] = MatIn1.Mat[0][0]*MatIn2.Mat[0][3] + MatIn1.Mat[0][1]*MatIn2.Mat[1][3] + MatIn1.Mat[0][2]*MatIn2.Mat[2][3] + MatIn1.Mat[0][3]*MatIn2.Mat[3][3];
+
+	//row2 * col1
+	MatOut.Mat[1][0] = MatIn1.Mat[1][0]*MatIn2.Mat[0][0] + MatIn1.Mat[1][1]*MatIn2.Mat[1][0] + MatIn1.Mat[1][2]*MatIn2.Mat[2][0] + MatIn1.Mat[1][3]*MatIn2.Mat[3][0];
+	//row2 * col2
+	MatOut.Mat[1][1] = MatIn1.Mat[1][0]*MatIn2.Mat[0][1] + MatIn1.Mat[1][1]*MatIn2.Mat[1][1] + MatIn1.Mat[1][2]*MatIn2.Mat[2][1] + MatIn1.Mat[1][3]*MatIn2.Mat[3][1];
+	//row2 * col3
+	MatOut.Mat[1][2] = MatIn1.Mat[1][0]*MatIn2.Mat[0][2] + MatIn1.Mat[1][1]*MatIn2.Mat[1][2] + MatIn1.Mat[1][2]*MatIn2.Mat[2][2] + MatIn1.Mat[1][3]*MatIn2.Mat[3][2];
+	//row2 * col4
+	MatOut.Mat[1][3] = MatIn1.Mat[1][0]*MatIn2.Mat[0][3] + MatIn1.Mat[1][1]*MatIn2.Mat[1][3] + MatIn1.Mat[1][2]*MatIn2.Mat[2][3] + MatIn1.Mat[1][3]*MatIn2.Mat[3][3];
+
+	//row3 * col1
+	MatOut.Mat[2][0] = MatIn1.Mat[2][0]*MatIn2.Mat[0][0] + MatIn1.Mat[2][1]*MatIn2.Mat[1][0] + MatIn1.Mat[2][2]*MatIn2.Mat[2][0] + MatIn1.Mat[2][3]*MatIn2.Mat[3][0];
+	//row3 * col2
+	MatOut.Mat[2][1] = MatIn1.Mat[2][0]*MatIn2.Mat[0][1] + MatIn1.Mat[2][1]*MatIn2.Mat[1][1] + MatIn1.Mat[2][2]*MatIn2.Mat[2][1] + MatIn1.Mat[2][3]*MatIn2.Mat[3][1];
+	//row3 * col3
+	MatOut.Mat[2][2] = MatIn1.Mat[2][0]*MatIn2.Mat[0][2] + MatIn1.Mat[2][1]*MatIn2.Mat[1][2] + MatIn1.Mat[2][2]*MatIn2.Mat[2][2] + MatIn1.Mat[2][3]*MatIn2.Mat[3][2];
+	//row3 * col4
+	MatOut.Mat[2][3] = MatIn1.Mat[2][0]*MatIn2.Mat[0][3] + MatIn1.Mat[2][1]*MatIn2.Mat[1][3] + MatIn1.Mat[2][2]*MatIn2.Mat[2][3] + MatIn1.Mat[2][3]*MatIn2.Mat[3][3];
+
+	//row4 * col1
+	MatOut.Mat[3][0] = MatIn1.Mat[3][0]*MatIn2.Mat[0][0] + MatIn1.Mat[3][1]*MatIn2.Mat[1][0] + MatIn1.Mat[3][2]*MatIn2.Mat[2][0] + MatIn1.Mat[3][3]*MatIn2.Mat[3][0];
+	//row4 * col2
+	MatOut.Mat[3][1] = MatIn1.Mat[3][0]*MatIn2.Mat[0][1] + MatIn1.Mat[3][1]*MatIn2.Mat[1][1] + MatIn1.Mat[3][2]*MatIn2.Mat[2][1] + MatIn1.Mat[3][3]*MatIn2.Mat[3][1];
+	//row4 * col3
+	MatOut.Mat[3][2] = MatIn1.Mat[3][0]*MatIn2.Mat[0][2] + MatIn1.Mat[3][1]*MatIn2.Mat[1][2] + MatIn1.Mat[3][2]*MatIn2.Mat[2][2] + MatIn1.Mat[3][3]*MatIn2.Mat[3][2];
+	//row4 * col4
+	MatOut.Mat[3][3] = MatIn1.Mat[3][0]*MatIn2.Mat[0][3] + MatIn1.Mat[3][1]*MatIn2.Mat[1][3] + MatIn1.Mat[3][2]*MatIn2.Mat[2][3] + MatIn1.Mat[3][3]*MatIn2.Mat[3][3];
+
+	return MatOut;
+}
+
+vector3 CMeshManager::Vec3_Mat4x4_Mul(vector3 &VecIn, matrix4x4 MatIn)
+{
+	    vector3 VecOut;
+
+		VecOut.x =	VecIn.x * MatIn.Mat[0][0] +
+				VecIn.y * MatIn.Mat[1][0] + 
+				VecIn.z * MatIn.Mat[2][0] + 
+					  MatIn.Mat[3][0];
+        
+		VecOut.y =	VecIn.x * MatIn.Mat[0][1] + 
+				VecIn.y * MatIn.Mat[1][1] + 
+				VecIn.z * MatIn.Mat[2][1] + 
+					  MatIn.Mat[3][1];
+        
+		VecOut.z =	VecIn.x * MatIn.Mat[0][2] + 
+				VecIn.y * MatIn.Mat[1][2] + 
+				VecIn.z * MatIn.Mat[2][2] + 
+					  MatIn.Mat[3][2];
+
+		return VecOut;
+}
+
+float CMeshManager::Vec3_Dot(vector3 &VecIn1, vector3 &VecIn2)
+{
+	return VecIn1.x*VecIn2.x + VecIn1.y*VecIn2.y + VecIn1.z* VecIn2.z;
+}
+
+vector3 CMeshManager::Vec3_Cross(vector3 &VecIn1, vector3 &VecIn2)
+{
+	vector3 VecOut;
+
+	VecOut.x = VecIn1.y * VecIn2.z - VecIn1.z * VecIn2.y;
+	VecOut.y = VecIn1.z * VecIn2.x - VecIn1.x * VecIn2.z;
+	VecOut.z = VecIn1.x * VecIn2.y - VecIn1.y * VecIn2.x;
+
+	return VecOut;
+}
+
+vector3 CMeshManager::Vec3_Normalize(vector3 &VecIn)
+{
+	vector3 VecOut;
+
+	float Len = sqrtf(VecIn.x * VecIn.x + VecIn.y * VecIn.y + VecIn.z * VecIn.z);
+
+	VecOut.x = VecIn.x / Len;
+	VecOut.y = VecIn.y / Len;
+	VecOut.z = VecIn.z / Len;
+	
+	return VecOut;
+
+}
+
+vector3 CMeshManager::Vec3_Scale(vector3 &VecIn, float &ValIn)
+{
+	vector3 VecOut;
+
+	VecOut.x = VecIn.x * ValIn;
+	VecOut.y = VecIn.y * ValIn;
+	VecOut.z = VecIn.z * ValIn;
+
+	return VecOut;
+}
+
+vector3 CMeshManager::Vec3_Add(vector3 &VecIn1, vector3 &VecIn2)
+{
+	vector3 VecOut;
+
+	VecOut.x = VecIn1.x + VecIn2.x;
+	VecOut.y = VecIn1.y + VecIn2.y;
+	VecOut.z = VecIn1.z + VecIn2.z;
+
+	return VecOut;
+}
+
+float CMeshManager::Vec3_Len(vector3 &VecIn)
+{
+	return sqrtf(VecIn.x * VecIn.x + VecIn.y * VecIn.y + VecIn.z * VecIn.z);
+}
+
+vector3 CMeshManager::Vec3_Reflect(vector3 &VecIn, vector3 &VecNorm)
+{
+	vector3 VecOut;
+
+	//float s = 2.0f * ( VecIn.x * VecNorm.x + VecIn.y * VecNorm.y + VecIn.z * VecNorm.z );
+	float s = 2.0f * Vec3_Dot(VecIn, VecNorm);
+
+	VecOut.x = VecIn.x - s * VecNorm.x;
+	VecOut.y = VecIn.y - s * VecNorm.y;
+	VecOut.z = VecIn.z - s * VecNorm.z;
+
+	return VecOut;
+}
+
+
+void CMeshManager::Matrix_Rotation_Axis(vector3 &VecIn, float Angle, matrix4x4 *MatOut)
+{
+		float x = VecIn.x;
+		float y = VecIn.y;
+		float z = VecIn.z;
+	
+		float s = sin(Angle);
+		float c = cos(Angle);
+		float omc = 1.0f - c;
+
+		float xomc = x * omc;
+		float yomc = y * omc;
+		float zomc = z * omc;
+
+		float xxomc = x * xomc;
+		float xyomc = x * yomc;
+		float xzomc = x * zomc;
+		
+		float yyomc = y * yomc;
+		float yzomc = y * zomc;
+		float zzomc = z * zomc;
+
+		float xs = x * s;
+		float ys = y * s;
+		float zs = z * s;
+
+		matrix4x4 MatRotate= {xxomc + c,  xyomc + zs, xzomc - ys, 0.0f,
+			xyomc - zs, yyomc + c,  yzomc + xs, 0.0f,
+			xzomc + ys, yzomc - xs, zzomc + c, 0.0f,
+			0.0f ,0.0f, 0.0f, 1.0f};
+
+		memcpy(MatOut, &MatRotate, sizeof(matrix4x4));
+}
+
+
+
+</pre>
+
+<h3>
+Матрица вида и проекции, экранная матрица
+</h3>
+
+<p>
+Тут логика простая, сначала нужно подготовить входящие данные, что бы заполнить нужную матрицу. Когда мы подготовили данные, и потом заполнили этими данными матрицу- то каждую вершину модели мы будем умножать на эту матрицу. Как уже говорилось у куба 8м вершин в нашем примере, каждую из 8ми вершин куба мы будем умножать на матрицу, и это сводится к простому умножению вектора x,y,z на матрицу 4х4.	
+</p>
+
+<p>Матрица Вида</p>
+
+<pre>
+
+	typedef float matrix4x4[4][4];
+
+	vertex3 vRight = { 1.0, 0.0, 0.0 };
+	vertex3 vUp = { 0.0, 1.0, 0.0 };
+	vertex3 vPos = { 0.0, 0.0, -40.0 };
+	vertex3 vLook = { -1.0 * vPos.x, -1.0 * vPos.y, -1.0 * vPos.z };
+	//vertex3 vLook = { 0.0, 0.0, 1.0 };
+	vLook = Vec3Normalize(vLook);
+
+	vUp = Vec3Cross(vLook, vRight);
+	vUp = Vec3Normalize(vUp);
+	vRight = Vec3Cross(vUp, vLook);
+	vRight = Vec3Normalize(vRight);
+
+	float xp = - Vec3Dot(vPos, vRight);
+	float yp = - Vec3Dot(vPos, vUp);
+	float zp = - Vec3Dot(vPos, vLook);
+
+	matrix4x4 mView = {
+	vRight.x,	vUp.x,	vLook.x,	0.0,
+	vRight.y,       vUp.y,  vLook.y,        0.0,
+	vRight.z,       vUp.z,  vLook.z,        0.0,
+	xp,		yp,	zp,		1.0 };	
+
+</pre>
+
+<p>
+Матрица Проекции	
+</p>
+
+<pre>
+
+	typedef float matrix4x4[4][4];
+
+	float fFov = 3.14f/2.0f; // FOV 90 degree
+	float fAspect = 640.0/480.0;
+	float fZFar = 100.0f;
+	float fZNear = 1.0f;
+
+	float    h, w, Q;
+	w = (float)(1/tan(fFov*0.5f))/fAspect;
+	h = (float)1/tan(fFov*0.5f);
+	Q = fZFar/(fZFar - fZNear);
+
+    	matrix4x4 mProj={
+	w, 0, 0, 0,
+	0, h, 0, 0,
+	0, 0, Q, 1,
+	0, 0, -Q*fZNear, 0      };
+
+</pre>
+
+<p>
+Экранная матрица- еще один способ преобразования в экранные координаты.	
+</p>
+
+<pre>
+
+	float alpha = (0.5f*nViewWidth-0.5f);
+	float beta  = (0.5f*nViewHeight-0.5f);
+	
+	matrix4x4 mScreen(
+			alpha,  0,      0,    0, 
+			0,      -beta,  0,    0, 
+			0,	0,	1,    0,
+			alpha,  beta,	0,    1);
+
+	v0 = mScreen * v0;
+	v1 = mScreen * v1;
+	v2 = mScreen * v2;	
+
+</pre>
+
+
+
+</body>
+</html>

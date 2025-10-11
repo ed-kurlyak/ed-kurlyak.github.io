@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Шифр Цезаря, реализация Visual Studio С++</title>
+
+	<meta name="DESCRIPTION" content="Шифр Цезаря, реализация Visual Studio С++">
+	<meta name="KEYWORDS" content="Шифр Цезаря, реализация Visual Studio С++">
+
+<style type="text/css">
+body {
+	font-size: 24px;
+	font-family: "Consolas";
+	background-color: #000;
+	color: #ffffff;
+}
+
+pre {
+	font-size: 24px;
+	font-family: "Consolas";
+	background-color: #ffffaa;
+	color: #000;
+	width: max-content;
+	min-width: 100%;
+
+}
+
+div.my_selected {
+	width: 100%;
+	background-color: #ffff55;
+	position: relative;
+}
+
+a:link, a:visited { color: #aaaaaa; text-decoration: none; font-weight: normal;} 
+a:active, a:hover { color: #aaaaaa; text-decoration: underline;}
+
+p {
+	text-align: justify;
+	margin-right: 20px;
+}
+
+</style>	
+</head>
+<body>
+
+<h3>
+	Шифр Цезаря, реализация Visual Studio С++
+</h3>
+
+<p>
+Загрузить исходный код	
+<a href="./Sample.rar">ЗДЕСЬ</a>.
+</p>
+
+<pre>
+
+	#include <windows.h>
+	#include <iostream>
+	#include <string>
+		
+	std::string caesarCipher(const std::string& text, int shift)
+	{
+		std::string result = "";
+		
+		for (char ch : text)
+		{
+			// Проверяем, является ли символ буквой
+			if (isalpha(ch))
+			{
+				char base = islower(ch) ? 'a' : 'A';
+				// Шифрование с использованием модуля
+				result += (ch - base + shift) % 26 + base;
+			}
+			else
+			{
+				result += ch; // Не изменяем не буквенные символы
+			}
+		}
+	
+		return result;
+	}
+		
+	std::string caesarDecipher(const std::string& text, int shift)
+	{
+		std::string result = "";
+		
+		for (char ch : text)
+		{
+			// Проверяем, является ли символ буквой
+			if (isalpha(ch))
+			{
+				char base = islower(ch) ? 'a' : 'A';
+				// Расшифровка с использованием модуля
+				result += (ch - base - shift + 26) % 26 + base;
+			}
+			else
+			{
+				result += ch; // Не изменяем не буквенные символы
+			}
+		}
+		
+		return result;
+	}
+		
+	int main()
+	{
+		// Устанавливаем кодовую страницу для ANSI
+		SetConsoleOutputCP(1251); // 1251 - кодировка для русского языка
+		
+		std::string text = "Hello World!";
+		int shift = 3;
+		
+		std::cout &lt&lt "Исходный текст: " &lt&lt text.c_str() &lt&lt std::endl;
+
+		std::string encrypted = caesarCipher(text, shift);
+		std::cout &lt&lt "Зашифрованный текст: " &lt&lt encrypted &lt&lt std::endl;
+		
+		std::string decrypted = caesarDecipher(encrypted, shift);
+		std::cout &lt&lt "Расшифрованный текст: " &lt&lt decrypted &lt&lt std::endl;
+		
+		return 0;
+	}
+
+</pre>
+
+
+Шифр Цезаря - к каждому символу добавляют сдвиг, число сдвига не больше числа символов в алфавите, деление по модулю для избежания переполнения, например
+255 + 10 (сдвиг 10) будет = 266 - больше чем байт будет ошибка, поэтому нужно деление по модулю %.
+
+<pre>
+	
+	% 26
+
+	Деление по модулю в коде С++ для английского языка потому что 26 символов в алфавите
+
+</pre>
+
+-------------------------------------
+
+<pre>
+	
+	% 32
+
+	Деление по модулю в коде С++ для русского языка потому что 32 символа в алфавите
+
+</pre>
+
+<p>
+В примере выше используется размер одного символа 8 бит, то есть байт. Всего может быть сдвигов для английского языке 26, для  русского 32 - шифр легко взламать методом перебора, 26 и 32 комбинации небольшое число для перебора.
+</p>
+
+<p>
+Шифр Цезаря является одним из самых простых шифров и подвержен взлому с помощью brute force. Поскольку шифр использует фиксированный сдвиг, возможное количество комбинаций ограничено количеством символов в алфавите: 26 комбинаций для английского текста и 32 для русского. Перебрав все возможные сдвиги, можно легко подобрать правильный и расшифровать сообщение, что делает этот шифр уязвимым для таких атак.	
+</p>
+
+
+</body>
+</html>

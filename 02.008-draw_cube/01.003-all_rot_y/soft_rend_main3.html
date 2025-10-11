@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Програмный конвеер рендеринга</title>
+
+	<meta name="DESCRIPTION" content="Програмный конвеер рендеринга">
+	<meta name="KEYWORDS" content="Програмный конвеер рендеринга">
+
+<style type="text/css">
+body {
+	font-size: 24px;
+	font-family: "Consolas";
+	background-color: #000;
+	color: #ffffff;
+}
+
+pre {
+	font-size: 24px;
+	font-family: "Consolas";
+	background-color: #ffffaa;
+	color: #000;
+	width: max-content;
+	min-width: 100%;
+}
+
+div.my_selected {
+	width: 100%;
+	background-color: #ffff55;
+	position: relative;
+}
+
+a:link, a:visited { color: #aaaaaa; text-decoration: none; font-weight: normal;} 
+a:active, a:hover { color: #aaaaaa; text-decoration: underline;}
+
+p {
+	text-align: justify;
+	margin-right: 20px;
+}
+
+
+</style>	
+</head>
+<body>
+
+<p>
+Весь код программы целиком - вращение модели куба вокруг оси Y
+</p>
+
+<pre>
+#define _WIN32_WINNT 0x0500
+#include &ltwindows.h&gt
+#include &ltconio.h&gt
+#include &ltmath.h&gt
+
+HWND hWnd;
+
+struct vertex {
+	float x,y,z;
+};
+
+enum { A, B, C, D, E, F, G, H };
+
+vertex vert_buff[8] = {
+	-4.0, -4.0, -4.0,	//A
+	 4.0, -4.0, -4.0,	//B
+	-4.0,  4.0, -4.0,	//C
+	 4.0,  4.0, -4.0,	//D
+
+ 	-4.0, -4.0,  4.0,	//E
+	 4.0, -4.0,  4.0,	//F
+	-4.0,  4.0,  4.0,	//G
+	 4.0,  4.0,  4.0 };	//H
+
+vertex vert_buff_transformed[8];
+
+/*
+передняя сторона куба		задняя сторона куба
+C - D				G - H
+|   |				|   |
+A - B				E - F
+*/
+
+unsigned char index_buff[24] = {
+	//4-ре линии соединяют вершины передней стороны куба
+	A, B,
+	B, D,
+	D, C,
+	C, A,
+
+	//4-ре линии соединяют вершины задней стороны куба
+	E, F,
+	F, H,
+	H, G,
+	G, E,
+
+	//4-ре линии соединяют вершины передней и задней стороны куба
+	A, E,
+	B, F,
+	D, H,
+	C, G };
+
+
+typedef float matrix4x4[4][4];
+
+//функция умножения вектора на матрицу
+vertex Vec3_Mat4x4_Mul(vertex v, matrix4x4 m)
+{
+	vertex t;
+
+	t.x =   v.x * m[0][0] +
+                v.y * m[1][0] +
+                v.z * m[2][0] +
+                      m[3][0];
+
+	t.y =   v.x * m[0][1] +
+                v.y * m[1][1] +
+                v.z * m[2][1] +
+                      m[3][1];
+
+	t.z =   v.x * m[0][2] +
+                v.y * m[1][2] +
+                v.z * m[2][2] +
+                      m[3][2];
+
+	return t;
+}
+
+void Draw_Cube()
+{
+	RECT rc;
+	GetClientRect(hWnd, &rc);
+
+	static float angle = 0.0;
+
+	matrix4x4 mxRotateY = {
+		cosf(angle),	0.0,	-sinf(angle),	0.0,
+		0.0,		1.0,	0.0,		0.0,
+		sinf(angle),	0.0,	cosf(angle),	0.0,
+		0.0,		0.0,	0.0,		1.0 };
+
+	angle = angle + (3.1415926f / 100.0f);
+	if(angle > (3.1415926f * 2.0f) )
+		angle = 0.0f;
+
+	for ( int i = 0; i < 8; i++ )
+	{
+		vertex v = Vec3_Mat4x4_Mul(vert_buff[i], mxRotateY);
+		
+		v.z = v.z + 15.0f;
+		v.x = v.x / v.z;
+		v.y = v.y / v.z;
+		v.x = v.x / ((float)rc.right / (float)rc.bottom);
+
+		v.x = v.x * rc.right / 2.0f + rc.right / 2.0f;
+		v.y =-v.y * rc.bottom / 2.0f + rc.bottom / 2.0f;
+
+		vert_buff_transformed[i] = v;
+	}
+
+	HDC hDC = GetDC(hWnd);
+
+	HBRUSH hBrush = CreateSolidBrush( RGB ( 0, 0, 0) );
+	HBRUSH hOldBrush = (HBRUSH) SelectObject(hDC, hBrush);
+
+	Rectangle(hDC, 0, 0, rc.right, rc.bottom);
+
+	HPEN hPen = CreatePen(PS_SOLID, 4, RGB( 255, 255, 127 ) );
+	HPEN hOldPen = (HPEN) SelectObject(hDC, hPen);
+
+	for ( int i = 0; i < 12; i++ )
+	{
+		vertex v1 = vert_buff_transformed[ index_buff[ i * 2 ] ];
+		vertex v2 = vert_buff_transformed[ index_buff[ i * 2 + 1 ] ];
+
+		MoveToEx(hDC, (int)v1.x, (int)v1.y, NULL);
+		LineTo(hDC, (int)v2.x, (int)v2.y);
+	}
+
+
+	SelectObject(hDC, hOldBrush);
+	DeleteObject(hBrush);
+	
+	SelectObject(hDC, hOldPen);
+	DeleteObject(hPen);
+	
+	ReleaseDC(hWnd, hDC);
+
+	Sleep(25);
+}
+
+
+int main ()
+{
+	hWnd = GetConsoleWindow();
+
+	while ( !_kbhit() )
+	{
+		Draw_Cube();
+	}
+
+	return 0;
+}
+</pre>
+
+
+
+
+</body>
+</html>

@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Вращение объектов вокруг вектора- оси с помощью кватернионов</title>
+
+	<meta name="DESCRIPTION" content="Вращение объектов вокруг вектора- оси с помощью кватернионов">
+	<meta name="KEYWORDS" content="Вращение объектов вокруг вектора- оси с помощью кватернионов">
+
+<style type="text/css">
+body {
+	font-size: 24px;
+	font-family: "Consolas";
+	background-color: #000;
+	color: #ffffff;
+}
+
+pre {
+	font-size: 24px;
+	font-family: "Consolas";
+	background-color: #ffffaa;
+	color: #000;
+	width: max-content;
+	min-width: 100%;
+
+}
+
+div.my_selected {
+	width: 100%;
+	background-color: #ffff55;
+	position: relative;
+}
+
+a:link, a:visited { color: #aaaaaa; text-decoration: none; font-weight: normal;} 
+a:active, a:hover { color: #aaaaaa; text-decoration: underline;}
+
+p {
+	text-align: justify;
+	margin-right: 20px;
+}
+
+</style>	
+</head>
+<body>
+
+<h3>
+	Вращение объектов вокруг вектора- оси с помощью кватернионов
+</h3>
+
+<p>Загрузить проект С++ здесь <a href="./Rot_Quaternion1.rar">ПРИМЕР КОДА 1</a> - в этом примере кватернион поворачивается на 90 градусов вокруг вектора оси Z затем преобразуется в матрицу поворота</p>
+
+<p>Загрузить проект С++ здесь <a href="./Rot_Quaternion2.rar">ПРИМЕР КОДА 2</a> - в этом примере кватернион поворачивается на 90 градусов вокруг произвольной вектора оси</p>
+
+<p>Загрузить проект С++ здесь <a href="./Rot_Quaternion3.rar">ПРИМЕР КОДА 3</a> - в этом примере кватернион поворачивается на 90 градусов вокруг вектора оси Y</p>
+
+
+<p>Реализация в коде С++.</p>
+
+<p>
+В примере ниже кватернион поворачивается на 90 градусов вокруг вектора оси Z затем преобразуется в матрицу поворота
+</p>
+
+<pre>
+
+#include &ltmath.h>
+
+#define PI 3.1415926535897932384626433L
+
+struct Quaternion
+{
+    double w, x, y, z;
+
+    Quaternion operator*(const Quaternion& q) const
+	{
+		Quaternion q_out = {       
+            w * q.w - x * q.x - y * q.y - z * q.z,
+            w * q.x + x * q.w + y * q.z - z * q.y,
+            w * q.y - x * q.z + y * q.w + z * q.x,
+            w * q.z + x * q.y - y * q.x + z * q.w
+        };
+
+		return q_out;
+    }
+
+    Quaternion conjugate() const
+	{
+		Quaternion q_out = {w, -x, -y, -z};
+        
+		return q_out;
+    }
+};
+
+// Функция для создания матрицы вращения 4x4 из кватерниона
+void createRotationMatrix4x4(const Quaternion& q, double matrix[4][4]) {
+    double xx = q.x * q.x, yy = q.y * q.y, zz = q.z * q.z;
+    double xy = q.x * q.y, xz = q.x * q.z, yz = q.y * q.z;
+    double wx = q.w * q.x, wy = q.w * q.y, wz = q.w * q.z;
+
+    matrix[0][0] = 1.0 - 2.0 * (yy + zz);
+    matrix[0][1] = 2.0 * (xy - wz);
+    matrix[0][2] = 2.0 * (xz + wy);
+    matrix[0][3] = 0.0;
+
+    matrix[1][0] = 2.0 * (xy + wz);
+    matrix[1][1] = 1.0 - 2.0 * (xx + zz);
+    matrix[1][2] = 2.0 * (yz - wx);
+    matrix[1][3] = 0.0;
+
+    matrix[2][0] = 2.0 * (xz - wy);
+    matrix[2][1] = 2.0 * (yz + wx);
+    matrix[2][2] = 1.0 - 2.0 * (xx + yy);
+    matrix[2][3] = 0.0;
+
+    matrix[3][0] = 0.0;
+    matrix[3][1] = 0.0;
+    matrix[3][2] = 0.0;
+    matrix[3][3] = 1.0;
+}
+
+int main()
+ {
+
+    // Угол и ось вращения
+    double theta = PI / 2; // 90 градусов
+    Quaternion q = {cos(theta / 2), 0, 0, sin(theta / 2)};
+    Quaternion p = {0, 1, 0, 0}; // Вектор (1, 0, 0)
+    Quaternion q_inv = q.conjugate();
+
+    // Вращение: p' = q * p * q^-1
+    Quaternion p_rotated = q * p * q_inv;
+
+    // Создание матрицы вращения 4x4
+    double rotationMatrix[4][4];
+    createRotationMatrix4x4(q, rotationMatrix);
+
+    return 0;
+}
+
+</pre>
+
+<p>
+Кватернион — это математическая структура, состоит из четырех компонентов.
+</p>
+
+<pre>
+
+struct quaternion
+{
+    float w, x, y, z;
+};
+
+</pre>
+
+<p>
+Как видим подобно вектору кватернион состоит из компонент x,y,z и есть четвертая компонента w.
+</p>
+
+<p>
+Основные операции с кватернионами:
+</p>
+
+<ul>
+<li>Сложение и вычитание- выполняются поэлементно</li>
+<li>Умножение- выполняется по правилам умножения мнимых единиц и распределительного закона</li>
+<li>Норма кватерниона (длинна по формуле Пифагора)</li>
+<li>Сопряжение</li>
+<li>Обратный кватернион- если норма не равна нулю</li>
+</ul>
+
+<img src="./quaternion.jpg" width=800 alt="quaternion">
+
+<p>Применение кватернионов.</p>
+
+<ul>
+<li>Кватернионы применяются для представления вращений в трёхмерном пространстве без проблем, присущих матрицам поворота (например, эффекта "гимбаллок" — потери одной степени свободы).</li>
+<li>Единичный кватернион используется для вращений</li>
+<li>Для интерполяции поворотов (например, SLERP — Spherical Linear Interpolation)</li>
+<li>Для моделирования динамики твёрдого тела в физике</li>
+
+</ul>
+
+<p>Для вращения объекта с помощью кватерниона, сначала по определенной формуле надо создать кватерниона вращения, далее из кватерниона вращения создать матрицу вращения, а потом можно вершины модели умножать на эту матрицу вращения.</p>
+
+<p>
+Для вращения объекта в трёхмерном пространстве при помощи кватернионов используется формула:
+</p>
+
+<pre>
+
+	p<sup>1</sup> = qpq<sup>-1</sup>
+
+</pre>
+
+<p>p<sup>1</sup> - кватернион, представляющий повернутую точку</p>
+
+<p>q — единичный кватернион, задающий вращение</p>
+
+<p>p — вектор, представляющий точку, которую нужно повернуть, записывается как чисто мнимый кватернион: p=0+xi+yj+zk</p>
+
+<p>q<sup>−1</sup> - обратный кватернион для q</p>
+
+
+<p>
+Кватернион вращения создается по следующий формуле, угол вращения Phi и ось вращения u<sub>x</sub>, u<sub>y</sub>, u<sub>z</sub>:
+</p>
+
+<img src="./quat_rot.jpg" width=500 alt="quaternion rotate">
+
+
+</body>
+</html>

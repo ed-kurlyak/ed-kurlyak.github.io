@@ -1,0 +1,156 @@
+<html>
+<head>
+	<title>JavaScript Example</title>
+
+	<style type="text/css">
+
+	body {
+		padding: 0;
+		margin: 0;
+		font-family: "Consolas";
+	}
+
+	.big-wrapper {
+		position: relative;
+		width: 100%;
+		height: 100vh;
+		display: flex;
+		justify-content: left;
+		background-color: black;
+		
+	}
+
+
+	.big-wrapper h2 {
+		position: relative;
+		margin-left: 6rem;
+	}
+
+	</style>
+
+
+</head>
+<body>
+
+	<div class="big-wrapper">
+
+		<h2 class="teletype-text">SOFTWARE DEVELOPER - ED KURLYAK - ЭД КУРЛЯК - PERSONAL PAGE</h2>
+
+	</div>
+
+
+	<script type="text/javascript">
+
+
+let my_body = document.body;
+let teletype_text = document.querySelector(".teletype-text");
+
+
+let buff_src = String("SOFTWARE DEVELOPER - ED KURLYAK - ЭД КУРЛЯК - PERSONAL PAGE");
+let buff_len = buff_src.length;
+
+//let lang_src = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+let lang_src = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+let lang_len = lang_src.length;
+
+let arr = [];
+
+//массив сигналящий- заменять символ или оригинальный из строки
+for ( i = 0; i < buff_src.length; i++ )
+{
+	arr[i] = 1;
+}
+
+//случайные числа в диапазоне от 0 до max
+function getRandomInt(max)
+{
+  return Math.floor(Math.random() * max);
+}
+
+//функция перебора символов
+function my_teletype_digital()
+{
+
+	//всего число итераций подмены символов
+	let i = 0;
+	let my_exit = false;
+
+	//преобразуем строку в массив что бы был доступ к символам
+	let buff2 = Array.from(buff_src);
+
+	//через интервал выполняется наша функция помены символов
+	let timerid = setInterval(() => {
+
+		//каждый такт интервала меняем все символы в строке
+		for ( j = 0; j < buff_src.length; j++ )
+		{
+			
+			//каждый 18 кадр обнуляем массив- индикатор
+			if ( (i % 15) == 0)
+			{
+				arr[getRandomInt(buff_len)] = 0;	
+			}
+
+			//увеличиваем количество кадров
+			i++;
+
+			//если в массиве индикаторе не 0
+			//заменяем символ на случайный алфавитно-цифровой
+			if(arr[j] != 0)
+			{
+				if(buff2[j] != ' ' && buff2[j] != '-')
+					buff2[j] = lang_src[getRandomInt(lang_len)];
+			}
+			//если в массиве индикаторе 0
+			//значит символ вышел из цикла замены
+			//возвращаем оригинальный символ в массив		
+			else if(arr[j] == 0)
+			{
+				buff2[j] = buff_src[j];
+			}
+
+			//функция преобразует массив обратно в строку
+			//что бы осуществить вывод на экран
+			buff2.toString = function ()
+			{
+  				return this.join('');
+			}
+
+			//наша строка для вывод на экран
+			let buff = buff2;
+
+			//выводим нашу строку на экран
+			teletype_text.innerHTML = buff;
+
+			if(buff == buff_src)
+				my_exit = true;
+
+			//меняем цвет белый
+			//div с текстом потеряет разме если его оставить
+			//без строки, поэтому строка заполнитель изначально черного цвета
+			teletype_text.style.color = "#fff"
+		}	
+
+	//идем на выход - все символы строки оригинальные
+	if (my_exit)
+	{
+		teletype_text.innerHTML = buff_src;
+		clearTimeout(timerid);
+	}
+
+}, 64);
+}
+
+
+	my_body.onload = function()
+	{
+		//после загрузки страницы жедм 1 сек
+		setTimeout(my_teletype_digital, 1000);
+	}
+
+
+
+	</script>
+
+</body>
+</html>

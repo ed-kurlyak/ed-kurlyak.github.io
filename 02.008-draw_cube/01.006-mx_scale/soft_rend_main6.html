@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Програмный конвеер рендеринга</title>
+
+	<meta name="DESCRIPTION" content="Програмный конвеер рендеринга">
+	<meta name="KEYWORDS" content="Програмный конвеер рендеринга">
+
+<style type="text/css">
+body {
+	font-size: 24px;
+	font-family: "Consolas";
+	background-color: #000;
+	color: #ffffff;
+}
+
+pre {
+	font-size: 24px;
+	font-family: "Consolas";
+	background-color: #ffffaa;
+	color: #000;
+	width: max-content;
+	min-width: 100%;
+}
+
+div.my_selected {
+	width: 100%;
+	background-color: #ffff55;
+	position: relative;
+}
+
+a:link, a:visited { color: #aaaaaa; text-decoration: none; font-weight: normal;} 
+a:active, a:hover { color: #aaaaaa; text-decoration: underline;}
+
+p {
+	text-align: justify;
+	margin-right: 20px;
+}
+
+
+</style>	
+</head>
+<body>
+
+
+<p>
+Добавим матрицу Машстабирования
+</p>
+
+<p>
+Загрузить архив с примерами <a href="../source.rar">ЗДЕСЬ</a>.
+</p>
+
+
+<p>
+Матрица Масштабирования, как и матрицы вращения и перемещения относятся к матрице Мира. Матрица Масштабирования выглядит так.
+</p>
+
+<pre>
+
+typedef float matrix4x4[4][4];	
+
+matrix4x4 mxScale = {
+		ScaleX,	0.0,	0.0,	0.0,
+		0.0,	ScaleY,	0.0,	0.0,
+		0.0,	0.0,	ScaleZ,	0.0,
+		0.0,	0.0,	0.0,	1.0 };	
+
+
+matrix4x4 mxScale = {
+		1.5,	0.0,	0.0,	0.0,
+		0.0,	1.5,	0.0,	0.0,
+		0.0,	0.0,	1.5,	0.0,
+		0.0,	0.0,	0.0,	1.0 };	
+
+</pre>
+
+<p>
+Мы умножаем вершины на эту матрицу что бы изменить размер модели по оси X,Y,Z. Данная матрица увеличивает размер модели куба по оси X в полтора раза, и по Y,Z тоже в полтора раза. Загрузить пример /src/01.006-mx_scale/Cube_RotateY_mxScale. Если нам нужно уменьшить модель а не увеличить, то значения нужно брать меньше 1.0 для X,Y,Z. При применении матрицы масштабирования следует помнить, что изначально модель находится в локальных координатах, и мы сначала должны масштабировать модель, затем повернуть, а не наоборот. То есть сначала все вершины модели нужно умножить на матрицу масштабирования, а затем на матрицу поворота, перемещения и т.д.
+</p>
+
+
+
+</body>
+</html>

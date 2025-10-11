@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Определение виртуальных функций в дизасcемблерном листинге IDA</title>
+
+	<meta name="DESCRIPTION" content="Определение виртуальных функций в дизасcемблерном листинге IDA">
+	<meta name="KEYWORDS" content="Определение виртуальных функций в дизасcемблерном листинге IDA">
+
+<style type="text/css">
+body {
+	font-size: 24px;
+	font-family: "Consolas";
+	background-color: #000;
+	color: #ffffff;
+}
+
+pre {
+	font-size: 24px;
+	font-family: "Consolas";
+	background-color: #ffffaa;
+	color: #000;
+}
+
+div.my_selected {
+	width: 100%;
+	background-color: #ffff55;
+	position: relative;
+}
+
+a:link, a:visited { color: #aaaaaa; text-decoration: none; font-weight: normal;} 
+a:active, a:hover { color: #aaaaaa; text-decoration: underline;}
+
+p {
+	text-align: justify;
+	margin-right: 20px;
+}
+
+</style>	
+</head>
+<body>
+
+<h3>
+Определение виртуальных функций в дизасcемблерном листинге IDA
+</h3>
+
+<p>
+Пусть у нас есть код на С++ вызова виртуальной функции SetCooperativeLevel из библиотеки DirectDraw:
+</p>
+
+<pre>
+
+	#include &ltddraw.h>
+	#pragma comment (lib, "ddraw.lib")
+
+	HWND hWnd;
+	LPDIRECTDRAW lpdd;
+
+	void Func()
+	{
+	
+		DirectDrawCreate(NULL, &lpdd, NULL);
+
+		lpdd->SetCooperativeLevel(hWnd, DDSCL_NORMAL );
+
+	}
+	
+</pre>
+
+<p>
+В дизассемблере IDA функция трансформируется в следующих ассемблерный код:	
+</p>
+
+<pre>
+
+.text:00401000 Func            proc near               ; CODE XREF: WinMain(x,x,x,x)+DCp
+.text:00401000                 push    ebp
+.text:00401001                 mov     ebp, esp
+.text:00401003                 sub     esp, 40h
+.text:00401006                 push    ebx
+.text:00401007                 push    esi
+.text:00401008                 push    edi
+.text:00401009                 push    0               ; pUnkOuter
+.text:0040100B                 push    offset lpdd     ; lplpDD
+.text:00401010                 push    0               ; lpGUID
+.text:00401012                 call    _DirectDrawCreate@12 ; DirectDrawCreate(x,x,x)
+.text:00401017                 push    8
+.text:00401019                 mov     eax, hWnd
+.text:0040101E                 push    eax
+.text:0040101F                 mov     ecx, lpdd
+.text:00401025                 mov     edx, [ecx]
+.text:00401027                 mov     eax, lpdd
+.text:0040102C                 push    eax
+.text:0040102D                 mov     ecx, [edx+50h]
+.text:00401030                 call    ecx
+.text:00401032                 pop     edi
+.text:00401033                 pop     esi
+.text:00401034                 pop     ebx
+.text:00401035                 mov     esp, ebp
+.text:00401037                 pop     ebp
+.text:00401038                 retn
+.text:00401038 Func            endp
+
+	
+</pre>
+
+<p>
+Теперь мы видим что функция DirectDrawCreate создает указатель lpdd на интерфейс DirectDraw.
+</p>
+
+<p>
+В следующих строках происходит разыменование указателя на таблицу виртуальных функций интерфейса DirectDraw:	
+</p>
+
+<pre>
+	
+.text:0040101F                 mov     ecx, lpdd
+.text:00401025                 mov     edx, [ecx]
+
+</pre>
+
+<p>
+Теперь edx указывает на таблицу виртуальных функций интерфейса DirectDraw. Далее происходит вызов самой виртуальной функции которую мы определим:
+</p>
+
+<pre>
+	
+.text:0040102D                 mov     ecx, [edx+50h]
+.text:00401030                 call    ecx
+
+</pre>
+
+<p>
+Смещеине 50h в десятичном виде это число 80, которое нам надо разделить на 4, где 4 это число байт которое занимает указатель на одну виртуальную функцию в таблице. 80 разделить на 4 будет 20 десятичной системе счисления. Далее нам нужно отркыть файл ddraw.h и найти описание интерфеса DirectDraw:	
+</p>
+
+<pre>
+
+/*
+ * IDirectDraw
+ */
+#if defined( _WIN32 ) && !defined( _NO_COM )
+#undef INTERFACE
+#define INTERFACE IDirectDraw
+DECLARE_INTERFACE_( IDirectDraw, IUnknown )
+{
+    /*** IUnknown methods ***/
+    STDMETHOD(QueryInterface) (THIS_ REFIID riid, LPVOID FAR * ppvObj) PURE;
+    STDMETHOD_(ULONG,AddRef) (THIS)  PURE;
+    STDMETHOD_(ULONG,Release) (THIS) PURE;
+    /*** IDirectDraw methods ***/
+    STDMETHOD(Compact)(THIS) PURE;
+    STDMETHOD(CreateClipper)(THIS_ DWORD, LPDIRECTDRAWCLIPPER FAR*, IUnknown FAR * ) PURE;
+    STDMETHOD(CreatePalette)(THIS_ DWORD, LPPALETTEENTRY, LPDIRECTDRAWPALETTE FAR*, IUnknown FAR * ) PURE;
+    STDMETHOD(CreateSurface)(THIS_  LPDDSURFACEDESC, LPDIRECTDRAWSURFACE FAR *, IUnknown FAR *) PURE;
+    STDMETHOD(DuplicateSurface)( THIS_ LPDIRECTDRAWSURFACE, LPDIRECTDRAWSURFACE FAR * ) PURE;
+    STDMETHOD(EnumDisplayModes)( THIS_ DWORD, LPDDSURFACEDESC, LPVOID, LPDDENUMMODESCALLBACK ) PURE;
+    STDMETHOD(EnumSurfaces)(THIS_ DWORD, LPDDSURFACEDESC, LPVOID,LPDDENUMSURFACESCALLBACK ) PURE;
+    STDMETHOD(FlipToGDISurface)(THIS) PURE;
+    STDMETHOD(GetCaps)( THIS_ LPDDCAPS, LPDDCAPS) PURE;
+    STDMETHOD(GetDisplayMode)( THIS_ LPDDSURFACEDESC) PURE;
+    STDMETHOD(GetFourCCCodes)(THIS_  LPDWORD, LPDWORD ) PURE;
+    STDMETHOD(GetGDISurface)(THIS_ LPDIRECTDRAWSURFACE FAR *) PURE;
+    STDMETHOD(GetMonitorFrequency)(THIS_ LPDWORD) PURE;
+    STDMETHOD(GetScanLine)(THIS_ LPDWORD) PURE;
+    STDMETHOD(GetVerticalBlankStatus)(THIS_ LPBOOL ) PURE;
+    STDMETHOD(Initialize)(THIS_ GUID FAR *) PURE;
+    STDMETHOD(RestoreDisplayMode)(THIS) PURE;
+    STDMETHOD(SetCooperativeLevel)(THIS_ HWND, DWORD) PURE;
+
+	
+</pre>
+
+<p>
+Далее начиная с нуля (это функция QueryInterface) отсчитываем ровно 20 функций (функция AddRef будет 1я, Release 2я и т.д.), и получаем что 20я функция в списке виртуальных функций это SetCooperativeLevel, и это наша функция в коде С++.
+</p>
+
+<p>
+Так же следует отметить что негласно первым параметром при вызове виртуальной функции идет первый параметр это указатель на интерфейс. Как видим в ассемблерном коде ниже первый параметр lpdd не передается в коде С++. Первый параметр в коде С++ идет HWND окна:	
+</p>
+
+<pre>
+	
+.text:00401027                 mov     eax, lpdd
+.text:0040102C                 push    eax
+.text:0040102D                 mov     ecx, [edx+50h]
+.text:00401030                 call    ecx
+
+</pre>
+
+
+
+</body>
+</html>

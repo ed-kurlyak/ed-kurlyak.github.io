@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Програмный конвеер рендеринга</title>
+
+	<meta name="DESCRIPTION" content="Програмный конвеер рендеринга">
+	<meta name="KEYWORDS" content="Програмный конвеер рендеринга">
+
+<style type="text/css">
+body {
+	font-size: 24px;
+	font-family: "Consolas";
+	background-color: #000;
+	color: #ffffff;
+}
+
+pre {
+	font-size: 24px;
+	font-family: "Consolas";
+	background-color: #ffffaa;
+	color: #000;
+	width: max-content;
+	min-width: 100%;
+}
+
+div.my_selected {
+	width: 100%;
+	background-color: #ffff55;
+	position: relative;
+}
+
+a:link, a:visited { color: #aaaaaa; text-decoration: none; font-weight: normal;} 
+a:active, a:hover { color: #aaaaaa; text-decoration: underline;}
+
+p {
+	text-align: justify;
+	margin-right: 20px;
+}
+
+
+</style>	
+</head>
+<body>
+
+<p>
+Вращение модели куба вокруг оси Y - без использования индексного буфера
+</p>
+
+<p>
+Загрузить архив с примерами <a href="../source.rar">ЗДЕСЬ</a>.
+</p>
+
+
+<p>
+Этот пример сделан специально что бы продемонстрировать чем отличается этот пример от возможности использовать в программе индексный буфер. В примере показано, что можно выводить модель на экран просто используя один вершинный буфер (без индексного буфера), и показать на этом примере в чем заключается смысл использования вершинного и индексного буфера вместе при выводе модели.	
+</p>
+
+<p>
+Загрузить пример /src/01.004-no_index_buff/3d_CubeY_No_Index.
+</p>
+
+<p>
+Давайте теперь посмотрим. У нас в этом примере используется один буфер вершин, размером 24 элемента, каждый элемент массива вершин занимает 3 * 4 = 12 байт, т.е. хранит 3 float значения для x,y,z, так как sizeof(float) будет 4. То есть всео 24 * 12 будет 288 байт. В примере с вершинным и индексным буфером у нас буфер вершин 8 элементов, это 8 * 12 будет 96, плюс буфер индексов 24 элемента unsigned char по 1 байту, это будет 120 байт в общем. Поэтому при использовании индексного буфера больше экономии памяти. 
+</p>
+
+
+
+
+
+</body>
+</html>

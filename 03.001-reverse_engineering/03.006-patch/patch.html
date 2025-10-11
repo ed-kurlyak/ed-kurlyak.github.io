@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Как написать патч для ЕХЕ файла на С++</title>
+
+	<meta name="DESCRIPTION" content="Как написать патч для ЕХЕ файла на С++">
+	<meta name="KEYWORDS" content="Как написать патч для ЕХЕ файла на С++">
+
+<style type="text/css">
+body {
+	font-size: 24px;
+	font-family: "Consolas";
+	background-color: #000;
+	color: #ffffff;
+}
+
+pre {
+	font-size: 24px;
+	font-family: "Consolas";
+	background-color: #ffffaa;
+	color: #000;
+	width: max-content;
+	min-width: 100%;
+
+}
+
+div.my_selected {
+	width: 100%;
+	background-color: #ffff55;
+	position: relative;
+}
+
+a:link, a:visited { color: #aaaaaa; text-decoration: none; font-weight: normal;} 
+a:active, a:hover { color: #aaaaaa; text-decoration: underline;}
+
+p {
+	text-align: justify;
+	margin-right: 20px;
+}
+
+</style>	
+</head>
+<body>
+
+<h3>
+Как написать патч для ЕХЕ файла на С++
+</h3>
+
+<p>
+Загрузить пример патча можно <a href="./tr3_patch.rar">ЗДЕСЬ</a>. Это пример патча для игры Tomb Raider 3. Игра не рассчитана запускаться на широкоформатных дисплеях, и картинка в игре выглядит растянутой, так как игра создавалась до появления широкоформатных дисплеев. Наш патч будет исправлять этот недостаток.
+</p>
+
+<p>
+Нужно знать что данные в ЕХЕ файле располагаются от младших байтов к старшим и называется это little-endian, есть еще big-endian. Например число 1.333333 в двоичном виде хранится как последовательность байтов: AB AA AA 3F, где старший байт это 3F а младший байт это AB. На С++ это число записывается так: 0x3FAAAAAB. Это число является пропорцией экрана 4.0f / 3.0f и мы его ищем в ЕХЕ файле когда запускается наш патч. Если мы нашли это значение, мы заменяем его на 16.0f / 9.0f т.е. на 1.777778 это широкоформатные пропорции экрана, и игра запускается на широком экране с сохранением пропорций.
+</p>
+
+</body>
+</html>

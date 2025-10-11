@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Реализация тени</title>
+
+	<meta name="DESCRIPTION" content="Реализация тени">
+	<meta name="KEYWORDS" content="Реализация тени">
+
+<style type="text/css">
+body {
+	font-size: 24px;
+	font-family: "Consolas";
+	background-color: #000;
+	color: #ffffff;
+}
+
+pre {
+	font-size: 24px;
+	font-family: "Consolas";
+	background-color: #ffffaa;
+	color: #000;
+}
+
+div.my_selected {
+	width: 100%;
+	background-color: #ffff55;
+	position: relative;
+}
+
+a:link, a:visited { color: #aaaaaa; text-decoration: none; font-weight: normal;} 
+a:active, a:hover { color: #aaaaaa; text-decoration: underline;}
+
+p {
+	text-align: justify;
+	margin-right: 20px;
+}
+
+
+</style>	
+</head>
+<body>
+
+<h3>
+Реализация тени
+</h3>
+
+<p>
+Загрузить архив с примерами <a href="../source.rar">ЗДЕСЬ</a>.
+</p>
+
+
+<p>
+Описание функции D3DXMatrixShadow приведено ниже, это функция из библиотеки DirectX9. Почитать на сайте MSDN можно по ссылке: <a href="https://learn.microsoft.com/ru-ru/windows/win32/direct3d9/d3dxmatrixshadow">D3DXMatrixShadow</a>
+</p>
+<img src="./shadow_matrix.jpg" widht=600 alt="shadow">
+
+<img src="./shadow1par.jpg" widht=600 alt="shadow">
+<img src="./shadow2par.jpg" widht=600 alt="shadow">
+
+<img src="./shadow1point.jpg" widht=600 alt="shadow">
+<img src="./shadow2point.jpg" widht=600 alt="shadow">
+
+<p>
+Код примера для паралельного и точеченого источника света можно загрузить /src/02.008-shadow/Solid_Cube1_MatrixShadow.
+</p>
+
+<p>
+Так же пример (для проверки) для точечного источника света, использовалась функция DirectX9 D3DXMatrixShadow. Код примера можно загрузить /src/02.008-shadow/Solid_Cube1_MatrixShadow_DX9Shadow.
+</p>
+
+
+<p>
+Более подробно об этом можно почитать в книге Франка Луны Введение в программирование трехмерных игр с DirectX 9.0 за 2003 год.
+</p>
+
+<p>
+Матрица тени полный расчет показан ниже, используется 4х компонентный вектор x,y,z,w.
+</p>
+
+<p>
+Если используется матрица тени для паралельного источника света, то для lightDirection w компонента должна быть 0, и вектор должен быть нормализован, например так:
+</p>
+
+<pre>
+
+D3DXVECTOR4 lightDirection(0.707f, -0.707f, 0.707f, 0.0f);
+
+</pre>
+
+<p>
+Если используется матрица тени для точечного источника света, то для lightDirection w компонента должна быть равна 1.0f и вектор должен содержать не нормализованные координаты, например так:
+</p>
+
+<pre>
+
+D3DXVECTOR4 lightDirection(100.0f, -100.0f, 0.100f, 1.0f);
+
+</pre>
+
+<pre>
+
+
+	//D3DXVECTOR4 lightDirection(100.0f, -100.0f, 0.100f, 1.0f);
+	D3DXVECTOR4 lightDirection(0.707f, -0.707f, 0.707f, 0.0f);
+	D3DXVECTOR4 groundPlane(0.0f, -1.0f, 0.0f, 0.0f);
+	
+	float k = D3DXVec4Dot(&groundPlane, &lightDirection);
+	
+	D3DXMATRIX S = D3DXMATRIX(
+		k - groundPlane.x * lightDirection.x,
+		-groundPlane.x * lightDirection.y,
+		-groundPlane.x * lightDirection.z,
+		-groundPlane.x * lightDirection.w,
+
+
+		-groundPlane.y * lightDirection.x,
+		k - groundPlane.y * lightDirection.y,
+		-groundPlane.y * lightDirection.z,
+		-groundPlane.y * lightDirection.w,
+
+		-groundPlane.z * lightDirection.x,
+		-groundPlane.z * lightDirection.y,
+		k - groundPlane.z * lightDirection.z,
+		-groundPlane.z * lightDirection.w,
+
+		-groundPlane.w * lightDirection.x,
+		-groundPlane.w * lightDirection.y,
+		-groundPlane.w * lightDirection.z,
+		k - groundPlane.w * lightDirection.w	);
+
+</pre>
+
+<pre>
+
+	//D3DXVECTOR4 lightDirection(100.0f, -100.0f, 0.100f, 1.0f);
+	D3DXVECTOR4 lightDirection(0.707f, -0.707f, 0.707f, 0.0f);
+	D3DXVECTOR4 groundPlane(0.0f, -1.0f, 0.0f, 0.0f);
+
+	float k = -D3DXVec4Dot(&groundPlane, &lightDirection);
+	
+	S = D3DXMATRIX(
+		groundPlane.x * lightDirection.x + k,
+		groundPlane.x * lightDirection.y,
+		groundPlane.x * lightDirection.z,
+		groundPlane.x * lightDirection.w,
+
+		groundPlane.y * lightDirection.x,
+		groundPlane.y * lightDirection.y + k,
+		groundPlane.y * lightDirection.z,
+		groundPlane.y * lightDirection.w,
+
+		groundPlane.z * lightDirection.x,
+		groundPlane.z * lightDirection.y,
+		groundPlane.z * lightDirection.z + k,
+		groundPlane.z * lightDirection.w,
+
+		groundPlane.w * lightDirection.x,
+		groundPlane.w * lightDirection.y,
+		groundPlane.w * lightDirection.z,
+		groundPlane.w * lightDirection.w + k);
+	}
+
+</pre>
+
+
+</body>
+</html>

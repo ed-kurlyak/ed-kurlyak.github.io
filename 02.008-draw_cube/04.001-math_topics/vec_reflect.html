@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+
+	<title>Vector reflect - отражения</title>
+
+
+	<meta name="DESCRIPTION" content="Vector reflect - отражения">
+	<meta name="KEYWORDS" content="Vector reflect - отражения">
+
+
+
+<link href="./style00.css" rel="stylesheet" type="text/css" />
+
+
+</head>
+<body>
+
+	<h3>Vector reflect - отражения</h3>
+
+<pre>
+
+struct vector3 {
+	float x,y,z;
+};
+
+int main (void)
+{
+	vector3 vIn = { 1.0, -1.0, 0.0 };
+	vector3 vNorm = { 0.0, 1.0, 0.0 };
+
+	vector3 vOut;
+
+	float s = 2.0f * ( vIn.x * vNorm.x + vIn.y * vNorm.y + vIn.z * vNorm.z );
+
+	vOut.x = vIn.x - s * vNorm.x;
+	vOut.y = vIn.y - s * vNorm.y;
+	vOut.z = vIn.z - s * vNorm.z;
+
+	return 0;
+}
+
+</pre>
+
+</body>
+</html>

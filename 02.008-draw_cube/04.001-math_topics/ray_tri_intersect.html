@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+	
+	<title>Пересечение вектора и треугольника</title>
+
+	<meta name="DESCRIPTION" content="Пересечение вектора и треугольника">
+	<meta name="KEYWORDS" content="Пересечение вектора и треугольника">
+
+
+
+<link href="./style00.css" rel="stylesheet" type="text/css" />
+
+</head>
+<body>
+
+	<h3>Пересечение вектора и треугольника</h3>
+
+<pre>
+#include &ltd3dx9math.h&gt
+#pragma comment (lib,"d3dx9.lib")
+
+float Ray_Tri_Intersect(D3DXVECTOR3 *Vert, D3DXVECTOR3 *vPickRayOrig, D3DXVECTOR3 * vPickRayDir)
+{
+	//краткий алгоритм
+	//1)сначала определяем дистанцию до плоскости
+	//на которой лежит треугольник, расстояние до плоскости
+	//и точку пересечения с плоскостью
+	//2)далее мы конкретизируем- проеряем лежит ли точка
+	//пересечения внутри треугольника или вне
+	//если внутри значит есть пересечение с треугольником
+
+	//на основании трех точек треугольника
+	//вычисляем нормаль к плоскости на которой
+	//лежит треугольник - нормаль необходима для
+	//расчета дистанции до плоскости
+	D3DXVECTOR3 vedge1 = Vert[1] - Vert[0];
+	D3DXVECTOR3 vedge2 = Vert[2] - Vert[0];
+
+	D3DXVECTOR3 vPlaneNormal;
+	D3DXVec3Cross(&vPlaneNormal, &vedge1, &vedge2);
+
+	//нормализуем нормаль
+	D3DXVec3Normalize(&vPlaneNormal, &vPlaneNormal);
+
+	//вычисляем дистанцию до плоскости плогиона
+	//положение наблюдателя минус точка на полигоне - это не единичный вектор
+	//умножить на нормаль к плоскости получим расстояние до плоскости полигона
+	float fDistToPlane =  D3DXVec3Dot(&((*vPickRayOrig) - Vert[0]), &vPlaneNormal);
+			
+	//величина вектора перемещения
+	float fProjectedRayLen = D3DXVec3Dot(&((*vPickRayDir)*1.0), &-vPlaneNormal);
+	//if (fProjectedRayLen < 1e-5f) return -1.0;
+	float t= fDistToPlane / fProjectedRayLen;
+	if(t<0.0||t>1.0)
+		return -1.0;
+
+	//определяем точку пересечения
+	D3DXVECTOR3 vIntersectionPoint = (*vPickRayOrig) + ((*vPickRayDir*1.0)*t);
+
+
+	//*************************
+	//далее отределяем лежит точка пересечения
+	//за пределами треугольника или внутри треугольника
+	D3DXVECTOR3 vEdge,vEdgeNormal,vDirection;
+			
+	vEdge = Vert[1] - Vert[0];
+
+	D3DXVec3Cross(&vEdgeNormal, &vEdge, &vPlaneNormal);
+
+	vDirection = Vert[0] - vIntersectionPoint;
+
+
+	//если точка за пределами полигона (треугольника)
+	if(D3DXVec3Dot(&vDirection, &vEdgeNormal)<0.0)
+		return -1.0;
+
+	//*************************
+	vEdge = Vert[2] - Vert[1];
+
+	D3DXVec3Cross(&vEdgeNormal, &vEdge, &vPlaneNormal);
+
+	vDirection = Vert[1] - vIntersectionPoint;
+
+	//если точка за пределами полигона (треугольника)
+	if(D3DXVec3Dot(&vDirection, &vEdgeNormal)<0.0)
+		return -1.0;
+
+	//*************************
+	vEdge = Vert[0] - Vert[2];
+
+	D3DXVec3Cross(&vEdgeNormal, &vEdge, &vPlaneNormal);
+
+	vDirection = Vert[2] - vIntersectionPoint;
+
+	//если точка за пределами полигона (треугольника)
+	if(D3DXVec3Dot(&vDirection, &vEdgeNormal)<0.0)
+		return -1.0;
+			
+	//*************************
+	//если точка пересечения лежит внутри треугольника
+	else
+	{
+		D3DXVECTOR3 vLen = vIntersectionPoint- (*vPickRayOrig);
+		float fDistToTri = D3DXVec3Length(&vLen);
+
+		return fDistToTri;
+
+	}
+
+	return -1.0f;
+}
+
+int main ()
+{
+	//три точки треугольника с которым
+	//определяеться пересечение вектора
+	D3DXVECTOR3 Vertex[3];
+	Vertex[0].x = -12.0f;
+	Vertex[0].y = 0.0f;
+	Vertex[0].z = 0.0f;
+
+	Vertex[1].x = 0.0f;
+	Vertex[1].y = 12.0f;
+	Vertex[1].z = 0.0f;
+
+	Vertex[2].x = 12.0f;
+	Vertex[2].y = 0.0f;
+	Vertex[2].z = 0.0f;
+	
+	//точка расположения вектора
+	D3DXVECTOR3 vPickRayOrig = D3DXVECTOR3(0.0f, 6.0f, -12.0f);
+	//направление вектора с которым определяется пересечение
+	D3DXVECTOR3 vPickRayDir = D3DXVECTOR3(0.0f, 0.0f, 24.0f);
+	
+	float dist = Ray_Tri_Intersect(Vertex, &vPickRayOrig, &vPickRayDir); // dist = 12;
+
+	return 0;
+}
+</pre>
+
+</body>
+</html>

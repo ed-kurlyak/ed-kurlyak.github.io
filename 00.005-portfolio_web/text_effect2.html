@@ -1,0 +1,102 @@
+<html>
+<head>
+	<title>JavaScript Example</title>
+
+	<style type="text/css">
+
+	body {
+		padding: 0;
+		margin: 0;
+		font-family: "Consolas";
+	}
+
+	.big-wrapper {
+		position: relative;
+		width: 100%;
+		height: 100vh;
+		display: flex;
+		justify-content: left;
+		background-color: black;
+		
+	}
+
+
+	.big-wrapper h2 {
+		position: relative;
+		margin-left: 6rem;
+	}
+
+	</style>
+
+
+</head>
+<body>
+
+	<div class="big-wrapper">
+
+		<h2 class="teletype-text">SOFTWARE DEVELOPER - ED KURLYAK - ЭД КУРЛЯК - PERSONAL PAGE</h2>
+
+	</div>
+
+
+	<script type="text/javascript">
+
+
+let my_body = document.body;
+let teletype_text = document.querySelector(".teletype-text");
+	
+let buff_src = String("SOFTWARE DEVELOPER - ED KURLYAK - ЭД КУРЛЯК - PERSONAL PAGE");
+
+let lang_src = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+function getRandomInt(max)
+{
+  return Math.floor(Math.random() * max);
+}
+
+
+function my_teletype_invert()
+{
+
+	let i = 0;
+
+	let timerid = setInterval(() => {
+
+	let buff2 = Array.from(buff_src);
+
+	buff2[i] = lang_src[getRandomInt(lang_src.length)];
+
+	buff2.toString = function () {
+  			return this.join('');
+	}
+
+	let buff = buff2;
+
+	teletype_text.innerHTML = buff;
+
+	teletype_text.style.color = "#fff"
+
+	if (i == buff_src.length)
+	{
+		teletype_text.innerHTML = buff_src;
+
+		clearTimeout(timerid);
+	}
+
+	i++;
+
+}, 50);
+}
+
+
+	my_body.onload = function()
+	{
+		setTimeout(my_teletype_invert, 1000);
+	}
+
+
+
+	</script>
+
+</body>
+</html>
