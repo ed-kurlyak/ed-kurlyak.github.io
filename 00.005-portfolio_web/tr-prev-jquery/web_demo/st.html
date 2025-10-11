@@ -1,0 +1,702 @@
+<html>
+<meta charset=windows-1251>
+<title>Ed page</title>
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1251"> 
+<meta name="description" content="speed typing"> 
+<meta name="Keywords" content="speed typing"> 
+<style>
+.object1 {
+border-style:solid;
+border-width:1px;
+font-family:Arial;
+font-size:350%;
+font-weight:bold;
+background:white;
+padding:10px 10px 10px 10px;
+color:black;
+text-align:left;
+width:1100px; }
+
+#test {
+white-space: nowrap;
+visibility: hidden;
+border-style:solid;
+border-width:1px;
+font-family:Arial;
+font-size:350%;
+font-weight:bold;
+text-align:left;
+}
+
+.my_result {
+font-family:Arial;
+font-size:220%;
+font-weigh:bold; }
+
+.typing_window {
+font-family:Arial;
+font-size:320%;
+font-weigh:bold;}
+
+.my_timer {
+font-family:Arial;
+font-size:220%;
+font-weigh:bold; }
+
+
+.text1 {
+color:darkred;
+background:royalblue;
+}
+
+.text2 {
+color:royalblue;
+background:yellow;
+}
+
+</style>
+
+
+<script>
+function start()
+{
+
+	//document.clearInterval(handle);
+	//document.getElementById("typingtext").focus();
+	
+}
+</script>
+
+
+<body onload='start()'>
+
+
+<br>
+<br>
+
+<center>
+
+<div id='result' class='my_result'>Typing test black4</div>
+
+<br>
+
+<div id='source_text' class='object1'>Text</div>
+
+<br>
+
+
+
+<input type='text' value='' id='typingtext' class=typing_window size=15% maxlength=1024 onkeyup='fn_start()'>
+
+
+
+
+
+
+<br>
+<br>
+
+<div id='countdown_timer' class='my_timer'>60</div>
+
+<br>
+<br>
+
+<div id='my_debug'></div>
+
+</center>
+
+<span id='test'>string</span>
+
+<script>
+
+my_del_key = "nope";
+
+my_F5_key = "no";
+
+document.addEventListener("keydown", KeyCheck);
+
+
+
+function KeyCheck(event)
+{
+
+
+   var KeyID = event.keyCode;
+   switch(KeyID)
+   {
+      case 8:
+	{
+		//document.write("8");//backspace
+	  my_del_key = "ok";
+	}
+      break; 
+
+
+      case 46:
+	{
+		//document.write("46"); //del key
+	  my_del_key = "ok";
+	}
+      break; 
+
+	case 116:
+	{
+		//document.clearInterval(handle);
+		//document.write("116"); //F5 key
+		//clearInterval(handle)
+		//(document.getElementById('typingtext')).autofocus = "autofocus";
+		//typingtext.autofocus = "autofocus";
+		//alert("neoooo");
+		//document.getElementById("typingtext").focus();
+	  my_F5_key = "yes";
+	}
+
+      break;
+      
+      default:
+	{
+		//document.write(KeyID);
+	  my_del_key = "nope";
+	}
+
+      break;
+   }
+}
+
+//visibility: hidden;
+
+err_count = "one";
+
+//var_start = "false";
+var_start = "true";
+
+char_count_total = 0;
+char_count = 0
+char_error = "false"
+
+res_string = "";
+
+
+new_white_spaces = 0;
+old_white_spaces = 0;
+
+prev_newwhite = 0;
+prev_oldwhite = 0;
+
+word_count_total = 0;
+word_count = 1;
+
+curr_word_array = 0;
+
+wrong_char = 0;
+
+res_string_main = "";
+
+
+
+
+src_string = "It was night and I was alone, behind the locked door, the bulletproof glass. Outside, the city of New York was in the black grip of January. For the last two years, six times a week, I'd come in an hour before midnight and left at eight in the morning. I was neither content nor discontent. The room I worked in was warm, the work untaxing, the necessity to speak infrequent. My duties left me time for my own amusements, with no one to give me orders or change the routine of the night. I spent an hour on the Racing Form, preparing my bets for the next day. It was a lively paper, written with brio, confident of the future, renewing hope with each edition. Finished with my calculations of times, weights, distances, sunshine, and rain, I read, making sure always to have a supply of books on hand to suit my tastes. For other nourishment there was a sandwich and a bottle of beer that I picked up on the way to work. Twice during the night I did isometric exercises, for the arms, the gut, the legs. Despite my sedentary occupation, at the age of thirty-three I was stronger and in better condition than I had been at twenty.-I'm just short of six feet tall and weigh one hundred and eighty-five pounds. People are surprised when they hear I weigh that much. I'm vain enough to be pleased by this. But I wish I were taller. Some women have told me I look boyish, which I don't take as a compliment. I have never longed for a mother. Like most men I would prefer to resemble the sort of man who is cast on television as a captain in the Marines or the leading figure in a desperate enterprise.";
+
+
+
+
+
+
+
+
+
+word_array = new Array();
+
+
+
+
+function ret_str_length()
+{
+
+str1 = "";
+str2 = "";
+
+
+for( i = 0 ; i < src_string.length ; i++)
+{
+
+if(src_string[i] != " ")
+{
+str1 = str1 + src_string[i];
+
+continue;
+}
+else
+{
+
+str1 = str1 + " ";
+
+
+
+var test = document.getElementById('test');
+test.innerHTML = str1;
+
+var width = test.offsetWidth + 1;
+
+//s_my = str1 + "----" + width;
+
+//alert(s_my);
+
+
+if( width < 1100)
+{
+
+str2 = str1;
+val_i2 = i;
+
+continue;
+
+}
+else
+{
+
+
+
+i = val_i2;
+//if(str2[0] == " ")
+//{
+//str2 = str2.substr(1, str2.length - 1);
+//}
+
+
+word_array.push(str2);
+
+str1 = "";
+
+continue;
+
+
+}
+
+
+
+
+}
+}
+}
+
+
+ret_str_length()
+
+
+
+//val_c1 = word_array[curr_word_array].length;
+
+//val_t = word_array[0];
+
+//document.getElementById('my_debug').innerHTML = '<font class=text2>' + val_t + '--' + val_c1 + '</font>';
+
+
+
+
+function select_first()
+{
+
+
+temp = 0;
+while(word_array[curr_word_array][temp] != " ")
+{
+temp++;
+}
+
+s_len = word_array[curr_word_array].length - temp;
+
+str1 = word_array[curr_word_array].substr(0, temp);
+
+str2 = word_array[curr_word_array].substr(temp, s_len);
+
+document.getElementById('source_text').innerHTML = '<font color=royalblue class=text2>' + str1 + '</font><font color=black> ' + str2 + '</font>';
+document.getElementById('source_text').innerHTML += '</font><font color=black> ' + word_array[curr_word_array + 1] + '</font>';
+}
+
+
+
+ret_str_length();
+select_first();
+
+
+
+function select_string_parts()
+{
+
+
+
+prev_newwhite = new_white_spaces;
+prev_oldwhite = old_white_spaces;
+
+
+temp = char_count - 1;
+
+while((word_array[curr_word_array][temp] != " "))
+{
+
+if(temp > 0)
+	temp--;
+else
+{
+	temp = 0;
+	break;
+}
+
+}
+
+old_white_spaces = temp;
+
+temp = char_count;
+
+while(word_array[curr_word_array][temp] != " ")
+{
+if(temp < word_array[curr_word_array].length)
+{
+	temp++;
+}
+else
+{
+	temp = word_array[curr_word_array].length;
+	break;
+}
+}
+
+new_white_spaces = temp;
+
+
+
+
+
+if(old_white_spaces == 0)
+{
+
+
+str1 = word_array[curr_word_array].substr(0, new_white_spaces );
+
+s_len = word_array[curr_word_array].length - new_white_spaces;
+
+str2 = word_array[curr_word_array].substr(new_white_spaces, s_len);
+
+
+
+
+if(char_error == "false")
+{
+
+document.getElementById('source_text').innerHTML = '<font color=royalblue class=text2>' + str1 + '</font><font color=black> ' + str2 + '</font>';
+document.getElementById('source_text').innerHTML += '</font><font color=black> ' + word_array[curr_word_array + 1] + '</font>';
+
+}
+else if (char_error = "true")
+{
+
+document.getElementById('source_text').innerHTML = '<font color=darkred class=text1>' + str1 + '</font>' + '<font color=black>' + str2 + '</font>';
+document.getElementById('source_text').innerHTML += '</font><font color=black> ' + word_array[curr_word_array + 1] + '</font>';
+}
+
+
+
+}
+else if(new_white_spaces < word_array[curr_word_array].length)
+{
+
+
+
+str_len1 = old_white_spaces;
+str_len2 = new_white_spaces - old_white_spaces;
+str_len3 = word_array[curr_word_array].length - new_white_spaces;
+
+src_text1 = word_array[curr_word_array].substr(0, str_len1);
+src_text2 = word_array[curr_word_array].substr(old_white_spaces, str_len2);
+src_text3 = word_array[curr_word_array].substr(new_white_spaces, str_len3);
+
+if(char_error == "false")
+{
+
+document.getElementById('source_text').innerHTML = '<font color=black>' + src_text1 + '</font>' + '<font color=royalblue class=text2>' + src_text2 + '</font>' + '<font color=black>' + src_text3 + '</font>';
+document.getElementById('source_text').innerHTML += '</font><font color=black> ' + word_array[curr_word_array + 1] + '</font>';
+}
+else if (char_error == "true")
+{
+document.getElementById('source_text').innerHTML = '<font color=black>' + src_text1 + '</font>' + '<font color=darkred class=text1>' + src_text2 + '</font>' + '<font color=black>' + src_text3 + '</font>';
+document.getElementById('source_text').innerHTML += '</font><font color=black> ' + word_array[curr_word_array + 1] + '</font>';
+}
+
+}
+
+else if(new_white_spaces == word_array[curr_word_array].length)
+{
+
+
+
+
+str_len2 = old_white_spaces;
+str_len3 = word_array[curr_word_array].length - old_white_spaces;
+
+
+src_text2 = word_array[curr_word_array].substr(0, str_len2);
+src_text3 = word_array[curr_word_array].substr(old_white_spaces, str_len3);
+
+if(char_error == "false")
+{
+
+document.getElementById('source_text').innerHTML = '<font color=black>' + src_text2 + '</font>' + '<font color=royalblue class=text2>' + src_text3 + '</font>';
+document.getElementById('source_text').innerHTML += '</font><font color=black> ' + word_array[curr_word_array + 1] + '</font>';
+}
+else if (char_error = "true")
+{
+document.getElementById('source_text').innerHTML = '<font color=black>' + src_text2 + '</font>' + '<font color=darkred class=text1>' + src_text3 + '</font>';
+document.getElementById('source_text').innerHTML += '</font><font color=black> ' + word_array[curr_word_array + 1] + '</font>';
+}
+
+}
+/*
+else if(old_white_spaces == word_array[curr_word_array].length)
+{
+
+
+
+str1 = word_array[curr_word_array + 1].substr(0, new_white_spaces );
+
+s_len = word_array[curr_word_array + 1].length - new_white_spaces;
+
+str2 = word_array[curr_word_array + 1].substr(new_white_spaces, s_len);
+
+
+document.getElementById('source_text').innerHTML = '<font color=black>' + word_array[curr_word_array] + '</font>';
+document.getElementById('source_text').innerHTML += '<font color=royalblue class=text2>' + str1 + '</font><font color=black> ' + str2 + '</font>';
+
+
+}
+*/
+}
+
+function fn_start()
+{
+
+
+
+
+if(var_start == "true")
+{
+
+
+
+handle = setInterval(fn_interval, 1000)
+var_start = "false"
+
+select_first();
+
+fn_check();
+
+}
+else
+{
+
+
+fn_check();
+}
+
+}
+
+down_val = 0;
+
+function fn_interval()
+{
+
+val = 60;
+
+if(val - down_val != 0)
+{
+
+document.getElementById('countdown_timer').innerHTML = val - down_val;
+
+//res_str = 'There was wrong chars: ' + wr_char;
+//document.getElementById('result').innerHTML = wr_char;
+
+
+
+down_val++;
+}
+else
+{
+
+word_count_total += word_count;
+
+char_count_total += char_count;
+
+
+//wr_char = parseInt(( wrong_char + 2) / 2 );
+wr_char = wrong_char;
+
+
+//res_str = 'You typed words: ' + word_count_total + '<br>You typed chars: '+ char_count_total + '<//br>There was wrong chars: ' + wr_char;
+
+//res_str = 'You typed words: ' + Math.round(char_count_total/5) + '<br>You typed //chars: '+ char_count_total;
+
+res_str = 'Typed words: ' + Math.round(char_count_total/5) + '<br>Typed chars: '+ char_count_total + '<br>Wrong chars: ' + wr_char;
+
+//document.getElementById('countdown_timer').innerHTML = "";
+//document.getElementById('result').innerHTML = res_str;
+
+document.getElementById('countdown_timer').innerHTML =  res_str;
+
+clearInterval(handle)
+}
+
+}
+
+
+error_state = "false";
+
+
+function fn_check()
+{
+
+
+
+//document.getElementById('countdown_timer').innerHTML = res_string;
+
+//s_len = res_string.length;
+//if(res_string[s_len - 1] == " ")
+//{
+
+//typingtext.value = "";
+//word_count++;
+//}
+
+
+//val_cc = word_array[curr_word_array].length - 1;
+
+//my_ss = char_count + '--' + val_cc;
+
+//document.getElementById('my_debug').innerHTML = my_ss; 
+
+
+
+
+res_string = typingtext.value;
+
+dst_string = res_string_main + res_string;
+
+if (char_error == "false")
+{
+char_count = dst_string.length;
+}
+else
+{
+
+wr_c = dst_string.length;
+
+if((char_count - 1) == wr_c)
+{
+
+char_count = char_count - 1;
+
+}
+
+}
+
+
+val1 = word_array[curr_word_array][char_count - 1];
+val2 = dst_string[char_count - 1];
+
+
+if(val1 == val2)
+{
+
+error_state = "false";
+
+word_arr_len = word_array[curr_word_array].length;
+
+if(char_count == word_arr_len)
+{
+
+
+
+new_white_spaces = 0;
+old_white_spaces = 0;
+
+prev_newwhite = 0;
+prev_oldwhite = 0;
+
+word_count_total += word_count;
+
+word_count = 1;
+
+char_count_total += char_count;
+
+char_count = 0;
+
+res_string_main = "";
+dst_string = "";
+res_string = "";
+
+typingtext.value = "";
+
+curr_word_array++;
+
+
+
+select_first();
+
+return;
+
+}
+
+
+s_len = res_string.length;
+if(res_string[s_len - 1] == " ")
+{
+res_string_main +=res_string;
+typingtext.value = "";
+word_count++;
+//document.getElementById('my_debug').innerHTML = word_count;
+
+}
+
+
+char_error = "false"
+
+select_string_parts();
+
+
+}
+else
+{
+
+
+KeyCheck(event);
+
+if(my_del_key == "nope")
+{
+	if(error_state == "false")
+	{
+		wrong_char = wrong_char + 1;
+		error_state = "true";
+	}
+//document.getElementById('my_debug').innerHTML = wrong_char;
+
+//res_str = 'There was wrong chars: ' + wrong_char;
+//document.getElementById('result').innerHTML = res_str;
+
+}
+
+
+char_error = "true";
+select_string_parts();
+
+}
+
+
+
+}
+
+
+</script>
+
+
+
+</body>
+</html>

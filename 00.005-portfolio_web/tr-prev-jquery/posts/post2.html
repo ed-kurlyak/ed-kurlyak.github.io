@@ -1,0 +1,590 @@
+<html>
+<head>
+<link href="./../my_style.css" rel="stylesheet" type="text/css" />
+</head>
+
+
+<body>
+
+
+<div class="my_main2">
+<h4 class="my_font3">
+Использование шейдеров в программе на OpenGL.
+
+<br>
+
+<br>
+
+Для поддержки шейдеров в программе на С++ и OpenGL сначала необходимо загрузить из Интернет нужные файлы библиотеки, по адресу http://glew.sourceforge.net/. В результате загрузки имеется архив, к примеру с таким именем: glew-2.0.0-win32.zip. Его нужно разархивировать в отдельную папку. В этой папке, из подпапки /bin файл glew32.dll следует положить в папку C:\Windows\System32\. Файлы из папок /include и /lib следует положить в такие же папки для заголовков и библиотек в папку с Visual Studio. Вы можете положить файлы из этих папок куда угодно, но только нужно указать в настройках среде Visual Studio где искать эти файлы. В общем случае файлы заголовков и библиотек находятся по пути C:\Program Files\Microsoft Visual Studio 8\VC\PlatformSDK. Дальше в программе С++ в добавок к другим заголовочным файлам и библиотекам нужно подключить такие файлы и инициализировать библиотеку glew.
+Последовательность действий для работы с шейдерами в программе на OpenGL выглядит так:
+1 – Пункт 1 показывает действия необходимые в функции инициализации приложения;
+1.1 –Инициализируем библиотеку glew;
+1.2 – Определяем переменные к которым привязываем буфер вершин, цветов, текстурных координат, буфер индексов.
+1.3 – Полученные переменные, которые отвечают за буферы, привязываем в внутренним переменным в шедерах;
+1.4 – Загружаем из текстового файла вершинный и пиксельный шейдеры, компилируем их;
+1.5 – Создаем объект Программа; привязываем переменные шейдеров к объекту Программа; привязываем к нашему приложению сам объект программа и ипользуем его;
+2 – Пункт 2 показывает действия необходимые в функции рендеринга приложения;
+2.1 –Передаем в шейдерв данные, например матрицы вида, и проекции, вызываем функцию рисования, и отображения контекста.
+
+
+
+<br>
+<br>
+<br>
+Код примера на С++.
+<br>
+<br>
+
+
+
+
+<code>
+
+
+
+
+
+<br>//подключаем заголовочные файлы библиотеки glew
+
+<br>
+#include &ltgl/glew.h&gt
+<br>
+#pragma comment (lib, "glew32.lib")
+<br>
+
+
+
+<br>//создаем переменную для объекта программа, и переменные
+<br>//для буфера вершин, текстурных координат, буфера цветов
+<br>//и для буфера индексов
+
+
+<br>
+GLuint programHandle;
+<br>
+
+<br>
+GLuint vboVertex1;
+<br>
+GLuint vboTexCoord;
+<br>
+GLuint vboColor;
+<br>
+GLuint vboIndices;
+<br>
+
+<br>
+
+
+<br>//функция инициализации
+
+
+<br>
+void CMeshManager::InitMeshManager()
+<br>
+{
+<br>
+
+
+<br>//инициализируем библиотеку glew
+
+
+<br>
+GLenum err = glewInit();
+<br>
+If(GLEW_OK != err)
+<br>
+{
+<br>
+printf(“Error initializing GLEW: %s\n”,
+<br>
+glewGetErrorString(err));
+<br>
+}
+<br>
+
+<br>
+
+
+<br>//генерируем буфер на основе переменной vboVertex1
+<br>//и связываем с ними буфер вершин pVertsArray
+<br>//указываем размер данных, в примере 726 точек формата xyz float
+
+
+<br>
+glGenBuffers(1, &vboVertex1);
+<br>
+glBindBuffer(GL_ARRAY_BUFFER, vboVertex1);
+<br>
+glBufferData(GL_ARRAY_BUFFER, 726 * 3 * sizeof(float), pVertsArray, GL_STATIC_DRAW);
+<br>
+
+
+<br>//генерируем буфер на основе переменной vboTexCoord
+<br>//и связываем с ними буфер вершин pTexCoordArray
+<br>//указываем размер данных, в примере 726 точек формата xy float
+
+
+<br>
+glGenBuffers(1, &vboTexCoord);
+<br>
+glBindBuffer(GL_ARRAY_BUFFER, vboTexCoord);
+<br>
+glBufferData(GL_ARRAY_BUFFER, 726 * 2 * sizeof(float), pTexCoordArray, GL_STATIC_DRAW);
+<br>
+
+
+
+<br>//генерируем буфер на основе переменной vboColor
+<br>//и связываем с ними буфер вершин pColorArray
+<br>//указываем размер данных, в примере 726 точек формата rgb float
+
+
+
+<br>
+glGenBuffers(1, &vboColor);
+<br>
+glBindBuffer(GL_ARRAY_BUFFER, vboColor);
+<br>
+glBufferData(GL_ARRAY_BUFFER, 726 * 3 * sizeof(float), pColorArray, GL_STATIC_DRAW);
+<br>
+
+<br>
+
+
+
+<br>//генерируем буфер на основе переменной vboIndices
+<br>//и связываем с ними буфер вершин pIndicesArray
+<br>//указываем размер данных, в примере 1200 полигонов (треугольников) у каждого 3 вершины
+
+
+<br>
+int n_num_indx = 1200 * 3;
+<br>
+glGenBuffers(1, &vboIndices);
+<br>
+glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboIndices);
+<br>
+glBufferData(GL_ELEMENT_ARRAY_BUFFER, 1200 * 3 * sizeof(unsigned int) , pIndicesArray, GL_STATIC_DRAW);
+<br>
+
+<br>
+
+<br>
+
+<br>
+
+
+
+<br>//теперь когда переменные связали с буферами данных,
+<br>//передаем эти переменные в шейдер, передаем в шейдер
+<br>//буфер индексов
+
+
+<br>
+glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboIndices);
+<br>
+
+
+
+<br>//передаем в шейдер буфер вершин с индексом 0
+
+
+<br>
+glEnableVertexAttribArray(0);
+<br>
+glBindBuffer(GL_ARRAY_BUFFER, vboVertex1);
+<br>
+glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+<br>
+
+
+<br>//передаем в шейдер буфер текстурных координат, с индексом 1
+
+
+<br>
+glEnableVertexAttribArray(1);
+<br>
+glBindBuffer(GL_ARRAY_BUFFER, vboTexCoord);
+<br>
+glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, 0);
+<br>
+
+
+<br>//передаем в шейдер буфер цветов, с индексом 2
+
+
+
+<br>
+glEnableVertexAttribArray(2);
+<br>
+glBindBuffer(GL_ARRAY_BUFFER, vboColor);
+<br>
+glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, 0);
+<br>
+
+<br>
+
+<br>
+
+<br>
+
+
+
+<br>//создаем переменную вершинного шейдера, загружаем из текстового файла
+<br>//программу шейдера и компилируем шейдер, делая проверку на ошибки
+
+
+<br>
+GLuint vertShader = glCreateShader( GL_VERTEX_SHADER );
+<br>
+if ( 0 == vertShader )
+<br>
+{
+<br>
+MessageBox(NULL, "Error creating vertex shader", "Info", MB_OK);
+<br>
+}
+<br>
+
+<br>
+const GLchar* shaderCode = loadShaderAsStrig (".\\Shader\\basic_uniform.vert");
+<br>
+const GLchar* codeArray[] = {shaderCode};
+<br>
+glShaderSource (vertShader, 1, codeArray, NULL);
+<br>
+
+<br>
+glCompileShader(vertShader);
+<br>
+
+<br>
+GLint result;
+<br>
+glGetShaderiv( vertShader, GL_COMPILE_STATUS, &result);
+<br>
+if(GL_FALSE == result)
+<br>
+{
+<br>
+MessageBox(NULL, "Vert shader compilation failed", "Info", MB_OK);
+<br>
+
+<br>
+GLint loglen;
+<br>
+glGetShaderiv(vertShader, GL_INFO_LOG_LENGTH, &loglen);
+<br>
+if(loglen > 0)
+<br>
+{
+<br>
+char * log = (char *) malloc(loglen);
+<br>
+GLsizei written;
+<br>
+glGetShaderInfoLog(vertShader, loglen, &written, log);
+<br>
+char szBuff[1024];
+<br>
+sprintf_s(szBuff, 1024, "Shader log:\n%s", log);
+<br>
+MessageBox(NULL, szBuff, "Info", MB_OK);
+<br>
+}
+<br>
+}
+<br>
+
+<br>
+
+
+<br>//создаем переменную пиксельного шейдера, загружаем из текстового файла
+<br>//программу шейдера и компилируем шейдер, делая проверку на ошибки
+
+
+<br>
+GLuint fragShader = glCreateShader( GL_FRAGMENT_SHADER );
+<br>
+if ( 0 == fragShader )
+<br>
+{
+<br>
+MessageBox(NULL, "Error creating frag shader", "Info", MB_OK);
+<br>
+}
+<br>
+
+<br>
+const GLchar*	shaderCode_f = loadShaderAsStrig (".\\Shader\\basic_uniform.frag");
+<br>
+const GLchar* 	codeArray_f[] = {shaderCode_f};
+<br>
+glShaderSource (fragShader, 1, codeArray_f, NULL);
+<br>
+
+<br>
+glCompileShader(fragShader);
+<br>
+
+<br>
+//GLint result;
+<br>
+glGetShaderiv( fragShader, GL_COMPILE_STATUS, &result);
+<br>
+if(GL_FALSE == result)
+<br>
+{
+<br>
+MessageBox(NULL, "Frag shader compilation failed", "Info", MB_OK);
+<br>
+
+<br>
+GLint loglen;
+<br>
+glGetShaderiv(fragShader, GL_INFO_LOG_LENGTH, &loglen);
+<br>
+if(loglen > 0)
+<br>
+{
+<br>
+char * log = (char *) malloc(loglen);
+<br>
+GLsizei written;
+<br>
+glGetShaderInfoLog(fragShader, loglen, &written, log);
+<br>
+char szBuff[1024];
+<br>
+sprintf_s(szBuff, 1024, "Shader log:\n%s", log);
+<br>
+MessageBox(NULL, szBuff, "Info", MB_OK);
+<br>
+}
+<br>
+}
+<br>
+
+<br>
+
+<br>
+
+<br>
+
+
+<br>//создаем объект Программа
+
+
+<br>
+programHandle = glCreateProgram();
+<br>
+if( 0 == programHandle)
+<br>
+{
+<br>
+MessageBox(NULL, "Error creating programm object", "Info", MB_OK);
+<br>
+}
+<br>
+
+
+<br>//к объекту Программа привязываем вершинный и пиксельный шейдер
+
+
+<br>
+glAttachShader(programHandle, vertShader);
+<br>
+glAttachShader(programHandle, fragShader);
+<br>
+
+
+<br>//привязываем сам объект Программа
+
+
+<br>
+glLinkProgram(programHandle);
+<br>
+
+
+<br>//устанавливаем объект Программа в приложении
+
+
+<br>
+glUseProgram(programHandle);
+<br>
+
+<br>
+}
+<br>
+
+<br>
+
+<br>
+
+
+<br>//функция берет текстовый файл с программой шейдера и загружает его
+
+
+<br>
+GLchar *CMeshManager::loadShaderAsStrig(char *fn)
+<br>
+{
+<br>
+
+FILE *fp;
+<br>
+char *content = NULL;
+<br>
+
+<br>
+int count=0;
+<br>
+
+<br>
+if (fn != NULL) {
+<br>
+//fp = fopen(fn,"rt");
+<br>
+fopen_s(&fp, fn,"rt");
+<br>
+
+<br>
+if (fp != NULL) {
+<br>
+
+<br>
+fseek(fp, 0, SEEK_END);
+<br>
+count = ftell(fp);
+<br>
+rewind(fp);
+<br>
+
+<br>
+if (count > 0) {
+<br>
+content = (char *)malloc(sizeof(char) * (count+1));
+<br>
+count =(int) fread(content,sizeof(char),count,fp);
+<br>
+content[count] = '\0';
+<br>
+}
+<br>
+fclose(fp);
+<br>
+}
+<br>
+}
+<br>
+return content;
+<br>
+}
+<br>
+
+<br>
+
+<br>
+
+
+<br>//функция рендеринга в приложении
+
+
+<br>
+void CMeshManager::DrawMesh()
+<br>
+{
+<br>
+
+
+<br>//очищаем экран и буфер глубины
+
+
+<br>
+glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);Buffer
+<br>
+glLoadIdentity();
+<br>
+
+<br>
+
+
+<br>//получаем значения матриц вида и проекции что бы передать их в шейдер
+
+
+<br>
+GLfloat mvmatrix[16], projmatrix[16];
+<br>
+glGetFloatv(GL_MODELVIEW_MATRIX, mvmatrix);
+<br>
+glGetFloatv(GL_PROJECTION_MATRIX, projmatrix);
+<br>
+
+
+<br>//передаем в шейдер матрицу вида
+
+
+<br>
+GLuint mViewMatrix = glGetUniformLocation(programHandle, "ViewMatrix");
+<br>
+if( mViewMatrix >= 0 )
+<br>
+{
+<br>
+glUniformMatrix4fv(mViewMatrix, 1, GL_FALSE, (const GLfloat*)mvmatrix);
+<br>
+}
+<br>
+
+
+<br>//передаем в шейдер матрицу проекции
+
+
+<br>
+GLuint mProjMatrix = glGetUniformLocation(programHandle, "ProjMatrix");
+<br>
+if( mProjMatrix >= 0 )
+<br>
+{
+<br>
+glUniformMatrix4fv(mProjMatrix, 1, GL_FALSE, (const GLfloat*)projmatrix);
+<br>
+}
+<br>
+
+<br>
+
+
+<br>//рисуем модель
+
+
+<br>
+glDrawElements(GL_TRIANGLES,n_num_indx,GL_UNSIGNED_INT, 0);
+<br>
+
+
+<br>//делаем отображение на экране (переключаем буферы)
+
+
+<br>
+SwapBuffers(hDC);
+<br>
+
+<br>
+}
+<br>
+
+<br>
+
+
+
+
+
+</code>
+
+</h4>
+</div>
+
+</body>
+</html>

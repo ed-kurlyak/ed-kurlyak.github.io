@@ -1,0 +1,197 @@
+
+h1, h2,h3,h4,h5,h6
+	{
+		margin:0px;
+		padding:0px;
+		color:#ffffff;
+		margin-top:10px;
+		font-weight:normal;
+		margin-bottom:10px;
+		font-family: ExoLight;
+		
+	}
+
+.my_font1 {
+	text-align: center;
+}
+
+.my_font2 {
+	text-align: left;
+}
+
+.my_font3 {
+	text-align: justify;
+}
+
+@font-face {
+			font-family: "ExoLight";
+			src: url("../fonts/Exo2Light/Exo2Light.eot");
+			src: url("../fonts/Exo2Light/Exo2Light.eot?#iefix")format("embedded-opentype"),
+			url("../fonts/Exo2Light/Exo2Light.woff") format("woff"),
+			url("../fonts/Exo2Light/Exo2Light.ttf") format("truetype");
+			font-style: normal;
+			font-weight: normal;
+	}
+
+html {
+    height: 100%; /* Высота страницы */     
+   }
+body {
+	
+	background-image: url('../background/pic0.jpg');
+    -moz-background-size: cover; /* Firefox 3.6+ */
+    -webkit-background-size: cover; /* Safari 3.1+ и Chrome 4.0+ */
+    -o-background-size: cover; /* Opera 9.6+ */
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center center;
+	
+	margin: 0px 0px 0px 0px;
+
+	/*margin: 0;*/
+	/*padding: 0;*/
+	line-height: 1.5em;
+	font-family: ExoLight;
+	font-size: 12px;
+	background-color: #445566;
+
+	opacity:1;
+    overflow-x: hidden;		
+}
+		
+a:link, a:visited { color: #aaaaaa; text-decoration: none; font-weight: normal;} 
+a:active, a:hover { color: #aaaaaa; text-decoration: underline;}
+
+p { margin: 0px; padding: 0px; text-align: justify; }
+
+#my_div4
+{
+	position: relative;
+	margin-top: 12%;
+
+}
+
+
+.my_main1 {
+position: relative;
+margin-top: 25px;
+margin-bottom:auto;
+margin-left:auto;
+margin-right:auto;
+width:700px;
+padding: 50px 80px 50px 50px;
+background-color: #112233;	
+
+
+}
+
+
+
+.my_menu4 {
+	padding: 0px 0px 0px 0px;
+}
+
+.mnu_top ul {
+    list-style: none;
+
+
+}
+
+
+
+#my_menu4 ul li { float: none }
+
+
+
+#my_menu4 li {
+
+margin: 0; padding: 0;
+
+	float: left;
+	position: relative;
+	list-style: none;
+
+	background-color: #272829;
+	border:0px solid #272829;
+	
+
+}
+
+#my_menu4 ul {
+	position: absolute; left:0;
+	display: none;
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	border-left: 1px solid black;
+	border-right: 1px solid black;
+	border-bottom: 1px solid black;
+	background: #112233;
+}
+
+.mnu_top a {
+	padding: 8px 8px 8px 8px;
+	margin: 0px 0px 0px 0px;
+	border: none;
+	text-decoration: none;
+	display: block;
+	white-space: nowrap;
+}
+
+.mnu_top p {
+	color: #f99e0f;
+	text-align: left;
+	font-family: ExoLight;
+	font-size: 14px;
+	font-weight: bold;
+
+}
+/*
+.my_active
+{
+	
+	background-color: #667788;
+	border:6px solid #667788;
+	
+}
+
+a.my_active p,
+
+{
+
+	color: #ffffff;
+	text-align: center;
+	font-family: ExoLight;
+	font-size: 14px;
+	font-weight: bold;
+}
+*/
+
+.mnu_top li a.my_active,
+.mnu_top li a:hover{
+	
+	background-color: #667788;
+	
+	
+	
+}
+
+.mnu_top li a.my_active p,
+.mnu_top li a:hover p
+{
+	color: #ffffff;
+	font-family: ExoLight;
+	font-size: 14px;
+	font-weight: bold;
+	text-align: left;
+
+}
+
+
+.my_center
+{
+	width: 200px;
+	margin-left: auto;
+	margin-right: auto;
+	display: block;
+}

@@ -1,0 +1,91 @@
+body {
+    font-family: Arial, sans-serif;
+    position: relative;
+}
+
+.products {
+    display: flex;
+    gap: 20px;
+}
+
+.product {
+    border: 1px solid #ccc;
+    padding: 10px;
+    width: 150px;
+}
+
+.cart-icon {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    cursor: pointer;
+
+    z-index: 55;
+}
+
+.cart-icon i {
+    color: green;
+    font-size: 60px;
+    transition: 1s
+
+    
+}
+
+.cart-icon.active i {
+    color: #fff;
+    font-size: 60px;
+
+    
+}
+
+.cart-count {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background-color: red;
+    color: white;
+    border-radius: 50%;
+    padding: 2px 5px;
+    font-size: 14px;
+}
+
+.cart {
+    position: fixed;
+    top: 80px; /* Отступ от верхней части окна */
+    right: 20px;
+    border: 1px solid #ccc;
+    background: white;
+    padding: 10px;
+    display: none; /* Скрываем корзину по умолчанию */
+}
+
+.cart.visible {
+    display: block; /* Показываем корзину при необходимости */
+}
+
+
+/* cart right */
+
+.cart-right {
+    position: fixed;
+    display: block;
+    top: 0;
+    right: 0;
+    max-width: 500px;
+    width: 100%;
+    height: 100vh;
+    padding: 2rem 0 2rem 2rem;
+    z-index: 50;
+    background-color: #667788;
+    transform: translateX(100%);
+    transition: 1s;
+    color: #fff;
+}
+
+.cart-right.active {
+    transform: translateX(0);
+    display: block;
+}
+
+
+/* cart right end*/

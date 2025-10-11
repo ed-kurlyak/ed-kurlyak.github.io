@@ -1,0 +1,164 @@
+</h4>
+</div>
+<html>
+<head>
+<link href="./../my_style.css" rel="stylesheet" type="text/css" />
+</head>
+
+
+<body>
+
+
+<div class="my_main2">
+<h4 class="my_font3">
+
+Текст в в OpenGL программах
+
+
+<br>
+<br>
+
+
+
+
+Ниже приведено две функции, первая вызывается в той части программы где происходит инициализация, она создает фонт нужного типа и размера:
+<br>
+<br>
+FuncCreateFont("Courier New", FONT_HEIGHT);
+<br>
+<br>
+Вторая функция выводит текст, ее следует использовать в той части программы где происходит вывод изображений на экран:
+<br>
+<br>
+glPrint(const char *text):
+<br>
+<br>
+В нашем примере внутри Render_Scene() вызывается glPrint():
+<br>
+<br>
+<br>
+
+<code>
+
+#define FONT_HEIGHT	20
+<br>
+#define MAX_CHARS	256
+<br>
+unsigned int g_FontListID;
+<br>
+<br>
+GLvoid FuncCreateFont(char *strFontName, int height);
+<br>
+GLvoid glPrint(const char *text);
+<br>
+GLvoid Render_Scene();
+<br>
+<br>
+GLvoid CMyApp::FuncCreateFont(char *strFontName, int height)
+<br>
+{
+<br>
+	HFONT	font;
+<br>
+	HFONT	oldfont;
+<br>
+	g_FontListID = glGenLists(MAX_CHARS);
+<br>
+	font = CreateFont(	height,
+<br>
+						0,
+<br>
+						0,
+<br>
+						0,
+<br>
+						FW_BOLD,
+<br>
+						FALSE,
+<br>
+						FALSE,
+<br>
+						FALSE,
+<br>
+						ANSI_CHARSET,
+<br>
+						OUT_TT_PRECIS,
+<br>
+						CLIP_DEFAULT_PRECIS,
+<br>
+						ANTIALIASED_QUALITY,
+<br>
+						FF_DONTCARE|DEFAULT_PITCH,
+<br>
+						strFontName);
+<br>
+	oldfont = (HFONT)SelectObject(hDC, font);
+<br>
+	wglUseFontBitmaps(hDC, 0, MAX_CHARS - 1, g_FontListID);
+<br>
+	SelectObject(hDC, oldfont);
+<br>
+	DeleteObject(font);
+<br>
+}
+<br>
+<br>
+<br>
+GLvoid CMyApp::glPrint(const char *text)
+{
+<br>
+	glPushAttrib(GL_LIST_BIT);
+<br>
+	glListBase(g_FontListID);
+<br>
+	glCallLists(strlen(text), GL_UNSIGNED_BYTE, text);
+<br>
+	glPopAttrib();
+<br>
+}
+<br>
+<br>
+<br>
+GLvoid CMyApp::Render_Scene()
+<br>
+{
+<br>
+glMatrixMode(GL_MODELVIEW);						
+<br>
+glLoadIdentity();									
+<br>
+glColor4f(0, 1, 0, 1);
+<br>
+glTranslatef(0.0f, 0.0f, -50.0f);
+<br>
+glRasterPos2f( -26.0, 19.0);
+<br>
+//char *pTemp = {"hello my program!"};
+<br>
+//glPrint(pTemp);	// печатаем текст на экране
+<br>
+//в нашем примере из класса таймера получаем FPS
+<br>
+//затем выводим значение на экран
+<br>
+int n_fps = mTimer.CalculateFPS();
+<br>
+char pTemp[256];
+<br>
+sprintf(pTemp, "FPS %d", n_fps);
+<br>
+glDisable(GL_TEXTURE_2D);
+<br>
+glPrint(pTemp);	//печатаем текст на экране
+<br>
+glEnable(GL_TEXTURE_2D);
+<br>
+}
+
+</code>
+
+</h4>
+</div>
+
+</body>
+</html>

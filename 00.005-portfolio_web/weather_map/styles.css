@@ -1,0 +1,78 @@
+body {
+    font-family: Arial, sans-serif;
+    background: #f0f8ff;
+    color: #333;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+.container {
+    text-align: center;
+    background: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+    width: 300px;
+}
+
+input {
+    width: 70%;
+    padding: 8px;
+    margin-bottom: 10px;
+}
+
+button {
+    padding: 8px 12px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+#weather-info {
+    margin-top: 20px;
+    text-align: left;
+}
+
+#favorites-list {
+    list-style-type: none;
+    padding: 0;
+}
+
+#favorites-list li {
+    display: flex;
+    justify-content: space-between;
+    padding: 5px;
+    background: #e9ecef;
+    margin-bottom: 5px;
+    border-radius: 5px;
+}
+
+#favorites-list li a {
+    text-decoration: none;
+    font-family: Arial, sans-serif;
+    color: black;
+    transition: 0.3s;
+}
+
+#favorites-list li a:hover {
+    color: blue;
+    transform: scale(1.05);
+}
+
+.remove-btn {
+    background: red;
+    color: white;
+    border: none;
+    cursor: pointer;
+    padding: 0 5px;
+    border-radius: 3px;
+}

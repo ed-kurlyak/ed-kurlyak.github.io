@@ -1,0 +1,331 @@
+<html>
+<head>
+<link href="./../my_style.css" rel="stylesheet" type="text/css" />
+</head>
+
+
+<body>
+
+
+<div class="my_main2">
+<h4 class="my_font3">
+
+Шейдеры в программе DirectX11
+
+
+<br>
+<br>
+
+
+
+Сначала надо скомпилировать текст шейдеров, или файла эффектов с шейдерами, создать формат вершин, константный буфер для переменных которые передаются в шейдер, семплеры для текстур- в разделе инициализации программы. В части рендеринга устанавливается вершинный индексный буфер, формат вершин, текстуры, переменные которые подаются на вход шейдера через константный буфер, и рисуется примитив.
+
+<br>
+<br>
+
+
+<code>
+
+	//------------------------------------------
+<br>
+	//константный буфер передаем в шейдер матрицу WVP
+<br>
+	//в глобальной области видимости
+<br>
+	struct CBChangesEveryFrame
+<br>
+	{
+<br>
+	    XMMATRIX mxWVP;
+<br>
+	};
+<br>
+
+<br>
+		
+<br>
+	DWORD dwShaderFlags = D3DCOMPILE_ENABLE_STRICTNESS| D3DCOMPILE_DEBUG;
+<br>
+	HRESULT hr;
+<br>
+    ID3DBlob* pErrorBlob;
+<br>
+	ID3DBlob* pVSBlob = NULL;
+<br>
+
+<br>
+	//------------------------------------------
+<br>
+	//компилируем вершинный шейдер в файле эффектов
+<br>
+    hr = D3DX11CompileFromFile( szEffectFileName, NULL, NULL, "VS", "vs_4_0", 
+<br>
+        dwShaderFlags, 0, NULL, &pVSBlob, &pErrorBlob, NULL );
+<br>
+    if( FAILED(hr) )
+<br>
+    {
+<br>
+        if( pErrorBlob != NULL )
+<br>
+            MessageBox(NULL, (char*)pErrorBlob->GetBufferPointer(), "Info", MB_OK) ;
+<br>
+        if( pErrorBlob ) pErrorBlob->Release();
+<br>
+        return;
+<br>
+    }
+<br>
+    if( pErrorBlob ) pErrorBlob->Release();
+<br>
+
+<br>
+
+<br>
+	//------------------------------------------
+<br>
+	//создаем указатель на интерфейс вершинного шейдера
+<br>
+	hr = mDev->CreateVertexShader( pVSBlob->GetBufferPointer(), pVSBlob->GetBufferSize(), NULL, &m_pVertexShader );
+<br>
+	if( FAILED( hr ) )
+<br>
+    {    
+<br>
+        pVSBlob->Release();
+<br>
+        return;
+<br>
+    }
+<br>
+	
+<br>
+	//----------------------------------------------------------
+<br>
+	//компилируем пиксельный шейдер
+<br>
+	ID3DBlob* pPSBlob = NULL;
+<br>
+	hr = D3DX11CompileFromFile( szEffectFileName, NULL, NULL, "PS", "ps_4_0", 
+<br>
+        dwShaderFlags, 0, NULL, &pPSBlob, &pErrorBlob, NULL );
+<br>
+    if( FAILED(hr) )
+<br>
+    {
+<br>
+        if( pErrorBlob != NULL )
+<br>
+            MessageBox(NULL, (char*)pErrorBlob->GetBufferPointer(), "Info", MB_OK) ;
+<br>
+        if( pErrorBlob ) pErrorBlob->Release();
+<br>
+        return;
+<br>
+    }
+<br>
+    if( pErrorBlob ) pErrorBlob->Release();
+<br>
+		
+<br>
+    // создаем пиксельный шейдер
+<br>
+    hr = mDev->CreatePixelShader( pPSBlob->GetBufferPointer(), pPSBlob->GetBufferSize(), NULL, &m_pPixelShader );
+<br>
+    pPSBlob->Release();
+<br>
+    if( FAILED( hr ) )
+<br>
+        return;
+<br>
+
+<br>
+
+<br>
+	//формат вершины позиция и текстурные координаты
+<br>
+	D3D11_INPUT_ELEMENT_DESC vertexLayout[] =
+<br>
+	{
+<br>
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },  
+<br>
+		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+<br>
+	};
+<br>
+
+<br>
+	UINT numElements = sizeof( vertexLayout ) / sizeof( vertexLayout[0] );
+<br>
+
+<br>
+    //создаем input layout на базе имеющегося формата вершин
+<br>
+	m_pVertexLayout = NULL;
+<br>
+    mDev->CreateInputLayout( vertexLayout, numElements, pVSBlob->GetBufferPointer(),
+<br>
+                                          pVSBlob->GetBufferSize(), &m_pVertexLayout );
+<br>
+    pVSBlob->Release();
+<br>
+    if( FAILED( hr ) )
+<br>
+        return;
+<br>
+    
+<br>
+	//-------------------------------
+<br>
+	// создаем sample state для текстуры которая будет передаваться в шейдер
+<br>
+    D3D11_SAMPLER_DESC sampDesc;
+<br>
+    ZeroMemory( &sampDesc, sizeof(sampDesc) );
+<br>
+    sampDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+<br>
+    sampDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+<br>
+    sampDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+<br>
+    sampDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+<br>
+    sampDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+<br>
+    sampDesc.MinLOD = 0;
+<br>
+    sampDesc.MaxLOD = D3D11_FLOAT32_MAX;
+<br>
+    hr = mDev->CreateSamplerState( &sampDesc, &m_pSamplerLinear );
+<br>
+    if( FAILED( hr ) )
+<br>
+        return;
+<br>
+
+<br>
+	//--------------------------------------------
+<br>
+	//создаем константный буфер
+<br>
+	D3D11_BUFFER_DESC bd;
+<br>
+	ZeroMemory( &bd, sizeof(bd) );
+<br>
+    bd.Usage = D3D11_USAGE_DEFAULT;
+<br>
+    bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+<br>
+    bd.CPUAccessFlags = 0;
+<br>
+    bd.ByteWidth = sizeof(CBChangesEveryFrame);
+<br>
+    hr = mDev->CreateBuffer( &bd, NULL, &m_pCBChangesEveryFrame );
+<br>
+    if( FAILED( hr ) )
+<br>
+        return;
+<br>
+
+<br>
+
+<br>
+	//-------------------------------------------------
+<br>
+	//секция draw scene
+<br>
+	//буфер вершин будет отображатся как triangle list
+<br>
+    m_pImmediateContext->IASetPrimitiveTopology( D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
+<br>
+	//устанавливаем формат вершин для входа на шейдер
+<br>
+	m_pImmediateContext->IASetInputLayout( m_pVertexLayout );
+<br>
+
+<br>
+	//устанавливаем вершинный и индексный буфер
+<br>
+	UINT stride = sizeof( MY_VERTEX );
+<br>
+	UINT offset = 0;
+<br>
+	m_pImmediateContext->IASetVertexBuffers( 0, 1, &(pFrame->pMeshContainer->pVB), &stride, &offset );
+<br>
+	m_pImmediateContext->IASetIndexBuffer( pFrame->pMeshContainer->pIB, DXGI_FORMAT_R32_UINT, 0 );
+<br>
+
+<br>
+
+<br>
+	//подаем в шейдер матрицу WVP пользуясь константным буфером
+<br>
+	mWVP = mWorld * mView * mProj;
+<br>
+	CBChangesEveryFrame cb;
+<br>
+	cb.mxWVP = mxWVP;
+<br>
+    m_pImmediateContext->UpdateSubresource( m_pCBChangesEveryFrame, 0, NULL, &cb, 0, 0 );
+<br>
+
+<br>
+	//в цикле берем материал и рисуем примитив
+<br>
+	for(UINT i=0; i<pFrame->pMeshContainer->nNumMat; i++)
+<br>
+	{
+<br>
+		//устанавливаем текстуру
+<br>
+		m_pImmediateContext->PSSetShaderResources( 0, 1, &(pFrame->pMeshContainer->m_TextureArray[i].m_pTexture) );
+<br>
+		
+<br>
+		//устанавливаем вершинный шейдер
+<br>
+		m_pImmediateContext->VSSetShader( m_pVertexShader, NULL, 0 );
+<br>
+	    m_pImmediateContext->VSSetConstantBuffers( 0, 1, &m_pCBChangesEveryFrame );
+<br>
+		//устанавливаем пиксельный шейдер
+<br>
+		m_pImmediateContext->PSSetShader( m_pPixelShader, NULL, 0 );
+<br>
+		//устанавливаем буфер констант и семплеры для подачи в шейдер
+<br>
+		m_pImmediateContext->PSSetConstantBuffers( 0, 1, &m_pCBChangesEveryFrame );
+<br>
+		m_pImmediateContext->PSSetSamplers( 0, 1, &m_pSamplerLinear );
+<br>
+
+<br>
+		
+<br>
+		UINT nIndxCount = pFrame->pMeshContainer->atr[i].FaceCount * 3;
+<br>
+		UINT nStartIndexLocation = pFrame->pMeshContainer->atr[i].FaceStart * 3;
+<br>
+		UINT nBaseVertLocation = pFrame->pMeshContainer->atr[i].VertexStart;
+<br>
+		
+<br>
+		//рисум примитив с данным материалом
+<br>
+		m_pImmediateContext->DrawIndexed(nIndxCount,nStartIndexLocation, 0 );
+<br>
+	}
+<br>
+
+<br>
+
+
+</code>
+
+</h4>
+</div>
+
+</body>
+</html>

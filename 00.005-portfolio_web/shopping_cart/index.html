@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Магазин</title>
+    <link rel="stylesheet" href="https://unicons.iconscout.com/release/v4.0.8/css/line.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h1>Магазин</h1>
+    <div class="products">
+        <div class="product" data-name="Товар 1" data-price="100">
+            <h2>Товар 1</h2>
+            <p>Цена: 100 руб.</p>
+            <button class="add-to-cart">Добавить в корзину</button>
+        </div>
+        <div class="product" data-name="Товар 2" data-price="200">
+            <h2>Товар 2</h2>
+            <p>Цена: 200 руб.</p>
+            <button class="add-to-cart">Добавить в корзину</button>
+        </div>
+    </div>
+
+    <!-- Иконка корзины справа вверху экрана -->
+    <div class="cart-icon" id="cart">
+        <a href="#" class="cart-html">
+            <i class="uil uil-shopping-cart"></i>
+            <div class="cart-count" id="cart-count">0</div>
+        </a>
+    </div>
+
+    <!-- Кнопка для очистки корзины -->
+    <button id="clear-cart-index">Очистить корзину</button>
+
+    <!-- Меню выбранных товаров, сама корзина, выезжает справа -->
+    <div class="cart-right">
+        <h1>Корзина</h1>
+        <ul id="cart-items"></ul>
+        <p id="total-price">Итоговая цена: 0 руб.</p>
+        <button id="checkout">Оформить заказ</button>
+        <button id="clear-cart">Очистить корзину</button>
+    </div>
+    
+    <script src="cart.js"></script>
+    <script src="script.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta name="DESCRIPTION" content="tomb raider need for speed hot pursuit 2 widescreen patch ed kurlyak">
+
+<style>
+
+body {opacity:0; overflow-x: hidden; }
+
+</style>
+
+
+
+
+<link href="./style/style0.css" rel="stylesheet" type="text/css" />
+
+
+<link href="./style/960_12_col.css" rel="stylesheet" />
+
+<script src="./script/jquery-1.10.2.min.js" type="text/javascript"></script>
+<script type="text/javascript" src="./script/jquery.droppy.js"></script>
+
+
+
+
+<script type="text/javascript">
+
+
+	$(init);
+	
+	function init() {
+
+    $('#my_div4').load('./pages/page0.html');
+
+    $("#my_menu4").droppy({ speed: 100, persist: 100 });
+
+    //pathes
+    $("#my_menu_patches1").click(function(a) {
+
+        $("#my_menu4 a.my_active").removeClass("my_active");
+
+        $("#my_menu_patches1").addClass("my_active"); 
+
+        $('#my_div4').load('./pages/page0.html');
+
+    }); 
+    
+
+    //downloads
+    $("#my_menu_downloads").click(function(a) {
+
+        $("#my_menu4 a.my_active").removeClass("my_active");
+
+        $("#my_menu_downloads").addClass("my_active"); 
+        
+        $('#my_div4').load('./pages/page5.html');
+
+    }); 
+    
+    //Tomb Raider
+    $("#my_sub_menu_patches3 li a").click(function(a) {                       
+
+     v = parseInt($(this).attr("par"), 10);
+
+     $("#my_menu4 a.my_active").removeClass("my_active");
+
+     $("#my_sub_menu_patches3 a.content_my" + v).addClass("my_active"); 
+                            
+     $("#my_menu_patches3").addClass("my_active"); 
+                            
+     
+                            
+    $("#my_menu_patches1").removeClass("my_active"); 
+                            
+
+    var page1;
+    page1 = "page" +  v;
+    page1 = "./pages/" + page1 + '.html';
+
+    $('#my_div4').load(page1);
+                     
+    });
+
+
+
+    //fog bulb
+    $("#my_menu_fogbulb").click(function(a) {
+
+        $("#my_menu4 a.my_active").removeClass("my_active");
+
+        $("#my_menu_fogbulb").addClass("my_active"); 
+
+        $('#my_div4').load('./pages/page3.html');
+
+    }); 
+
+    //thanks
+    $("#my_menu_thanks").click(function(a) {
+
+        $("#my_menu4 a.my_active").removeClass("my_active");
+
+        $("#my_menu_thanks").addClass("my_active"); 
+
+        $('#my_div4').load('./pages/page6.html');
+
+    }); 
+    
+    
+    }
+
+
+</script>
+
+
+
+
+</head>
+
+<body>
+
+
+<div class="my_main1">
+
+
+<img src="./background/tr-widescreen.png" width="320"> </img>
+<br>
+
+ 
+
+
+<hr color=#444444 size=1 width=100% align=left>
+
+<nav class="mnu_top">
+
+<ul id = "my_menu4">
+
+
+
+<li><a href="#" id='my_menu_patches1' class="my_active"><p>Patches</p></a></li>
+
+<li><a href="#"  id='my_menu_downloads'><p>Downloads</p></a></li>
+
+<li><a href="#"  id='my_menu_fogbulb'><p>Fog Bulb</p></a></li>
+
+
+
+
+
+
+<li><a href="#" id='my_menu_patches3'><p>Tomb Raider</p></a>
+
+<ul id='my_sub_menu_patches3'>
+
+<li><a href="#" class="content_my1" par='1'><p>Music Show</p></a></li>
+
+<li><a href="#" class="content_my2" par='2'><p>Walk Of Fame</p></a></li>
+
+<li><a href="#" class="content_my4" par='4'><p>Related Links</p></a></li>
+
+</ul>
+
+</li>
+
+
+
+
+
+ <li><a href="#"  id='my_menu_thanks'><p>About</p></a></li>
+
+    
+
+
+
+</ul>
+</nav>
+
+
+
+<div id='my_div4'>
+
+</div>
+
+
+</div>
+
+
+</body>
+</html>
