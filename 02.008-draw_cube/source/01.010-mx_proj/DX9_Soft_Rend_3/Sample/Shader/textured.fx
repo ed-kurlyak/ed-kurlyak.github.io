@@ -6,7 +6,7 @@ struct VSInput
 
 struct PSInput
 {
-    float4 pos : SV_POSITION;
+    float4 pos : POSITION;
     float2 tex : TEXCOORD;
     float rhw : TEXCOORD1; // RHW для перспективной коррекции
 };
@@ -28,7 +28,7 @@ PSInput vs_main(VSInput input)
 
 sampler TextureScreen;
 
-float4 ps_main (PSInput input) : SV_TARGET
+float4 ps_main (PSInput input) : COLOR
 {
 	float rhw = 1.0f / input.rhw;
 
@@ -37,6 +37,8 @@ float4 ps_main (PSInput input) : SV_TARGET
 	float4 col = tex2D(TextureScreen, tex);
 
 	return col;
+
+    //return float4(1.0, 0.0, 0.0, 1.0);
 }
 
 technique TexturedTech

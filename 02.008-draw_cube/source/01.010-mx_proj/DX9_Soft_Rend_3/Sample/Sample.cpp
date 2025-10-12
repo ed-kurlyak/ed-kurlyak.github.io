@@ -403,7 +403,7 @@ int PASCAL WinMain(HINSTANCE hInstance,
 	}
 	if(FAILED(hr)) return 0;
 
-	g_hTech = pEffect->GetTechniqueByName("TextureTech");
+	g_hTech = pEffect->GetTechniqueByName("TexturedTech");
     //mhWVP  = pEffect->GetParameterByName(0, "gWVP");
 
 
