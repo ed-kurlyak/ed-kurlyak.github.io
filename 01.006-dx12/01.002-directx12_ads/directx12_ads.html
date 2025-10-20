@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Программирование DirectX 12 - Затенение по Фонгу, освещение ADS по Фонгу</title>
+
+	<meta name="DESCRIPTION" content="Программирование DirectX 12 - Затенение по Фонгу, освещение ADS по Фонгу">
+	<meta name="KEYWORDS" content="Программирование DirectX 12 - Затенение по Фонгу, освещение ADS по Фонгу">
+
+<style type="text/css">
+body {
+	font-size: 24px;
+	font-family: "Consolas";
+	background-color: #000;
+	color: #ffffff;
+}
+
+pre {
+	font-size: 24px;
+	font-family: "Consolas";
+	background-color: #ffffaa;
+	color: #000;
+	width: max-content;
+	min-width: 100%;
+
+}
+
+div.my_selected {
+	width: 100%;
+	background-color: #ffff55;
+	position: relative;
+}
+
+a:link, a:visited { color: #aaaaaa; text-decoration: none; font-weight: normal;} 
+a:active, a:hover { color: #aaaaaa; text-decoration: underline;}
+
+p {
+	text-align: justify;
+	margin-right: 20px;
+}
+
+</style>	
+</head>
+<body>
+
+<h3>
+Программирование DirectX 12 - Затенение по Фонгу, освещение ADS по Фонгу
+</h3>
+
+
+<img src="./cube.jpg" width="600" alt="cube directx 12 phong lighting">
+
+<p>
+Исходный код для Visual Studio 2019:
+</p>
+
+<a href="./Lighting_Phong_DX12_1_CmdList.rar">DirectX 12 Освещение по Фонгу - синхронизация CPU-GPU один CommandList</a>
+
+<br>
+
+<a href="./Lighting_Phong_DX12_3_CmdList.rar">DirectX 12 Освещение по Фонгу - синхронизация CPU-GPU три CommandList</a>
+
+<p>
+Что бы программировать DirectX12 вам необходимо минимум Windows 10.
+</p>
+
+<p>
+В первом примере в приложении имеется один CmdList. Мы подаем порцию команд (кадр) от CPU на GPU и после подачи команд CPU ждет GPU когда GPU закончит работу (см.функцию Draw_MeshManager()). После этого CPU подает на GPU следующий кадр.
+</p>
+
+<p>
+Второй пример - имеется три CmdList, и приложение постоянно подает кадры от CPU на GPU не дожидаясь окончания работы (хотя есть синхронизация для каждого CmdList). Таким образом GPU постоянно загружено очередью кадров, кадры в GPU посылаются один за другим, не дожидаясь окончания работы GPU как в первом примере.
+</p>
+
+<p>
+В обеих примерах производится расчет освещения по Фонгу - т.е. производится интерполяция нормалей, для каждого пикселя расчитывается освещение. Например при расчете освещения по Гуро методу, для каждой вершины треугольника рассчитывается освещение в зависимости от нормали. Потом цвета (освещенность) каждой вершины в треугольнике интерполируются во время растеризации. А в затенении по Фонгу - интерполируются нормали к каждой вершине, таким образом каждый пиксель при растеризации получает свою нормаль.
+</p>
+
+<p>
+Причем различают затенение по Фонгу - это интерполяция нормалей. И есть освещение по Фонгу - это расчет Ambient, Diffuse, Specular цветов - и в итоге сложение этих цветов в одну компоненту. Это так называемое освещение ADS по Фонгу. По модели Гуро просто рассчитывается диффузная освещенность в зависимости от нормали (по закону Ламберта).
+</p>
+
+
+</body>
+</html>

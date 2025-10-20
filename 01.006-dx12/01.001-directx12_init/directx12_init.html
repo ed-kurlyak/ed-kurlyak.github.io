@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Программирование DirectX 12 - Инициализация и вывод модели куба на экран</title>
+
+	<meta name="DESCRIPTION" content="Программирование DirectX 12 - Инициализация и вывод модели куба на экран">
+	<meta name="KEYWORDS" content="Программирование DirectX 12 - Инициализация и вывод модели куба на экран">
+
+<style type="text/css">
+body {
+	font-size: 24px;
+	font-family: "Consolas";
+	background-color: #000;
+	color: #ffffff;
+}
+
+pre {
+	font-size: 24px;
+	font-family: "Consolas";
+	background-color: #ffffaa;
+	color: #000;
+	width: max-content;
+	min-width: 100%;
+
+}
+
+div.my_selected {
+	width: 100%;
+	background-color: #ffff55;
+	position: relative;
+}
+
+a:link, a:visited { color: #aaaaaa; text-decoration: none; font-weight: normal;} 
+a:active, a:hover { color: #aaaaaa; text-decoration: underline;}
+
+p {
+	text-align: justify;
+	margin-right: 20px;
+}
+
+</style>	
+</head>
+<body>
+
+<h3>
+Программирование DirectX 12 - Инициализация и вывод модели куба на экран
+</h3>
+
+<img src="./box.jpg" width="600" alt="cube directx 12">
+
+<p>
+Исходный код для Visual Studio 2019:
+</p>
+
+<a href="./Init_DX12.rar">Инициализация DirectX12</a>
+
+<br>
+
+<a href="./Box_DX12.rar">Инициализация и вывод модели куба DirectX12</a>
+
+<p>
+Содержание
+</p>
+<ol>
+<li>Введение
+<li>Swap chain
+<li>Descriptor heap
+<li>Command list, Command allocator, Command queue
+<li>Fence
+<li>Resource barrier
+<li>Root signature & Descriptor tables
+<li>Pipeline state object PSO
+</ol>
+
+<p>
+1)Введение
+</p>
+
+<p>
+Что бы программировать DirectX12 вам необходимо минимум Windows 10.
+</p>
+
+<p>
+Windows Runtime Library предоставляет умный указатель для COM объектов:
+</p>
+
+<pre>
+
+Microsoft::WRL::ComPtr
+
+</pre>
+
+<p>
+Это класс умного указателя для COM. Необходимо включить заголовочный файл:
+</p>
+
+<pre>
+
+#include &ltwrl.h>
+
+</pre>
+
+<p>
+Используются три главных метода ComPtr:
+</p>
+
+<p>
+Get() возвращает указатель на лежащий в основе COM интефейс
+</p>
+<p>
+GetAddressOf() возвращает адрес указателя на лежащий в основе COM интерфейс
+</p>
+<p>
+Reset() устанавливает объект ComPtr в nullptr и уменьшает счетчик ссылок на лежащий в основе COM интерфейс.
+</p>
+<p>
+Файл d3dx12.h это не часть ядра DX12 SDK но этот файл можно загрузить из сайта Microsoft.
+</p>
+
+
+<p>
+Макрос:
+</p>
+
+<pre>
+
+IID_PPV_ARGS(p) 
+
+</pre>
+
+<p>
+Просто делает каст к void - reinterpret_cast&ltvoid **> p. 
+</p>
+
+
+<p>
+WARP адаптер это софтверный режим работы DX12.  Windows Advanced Rasterization Platform (WARP).
+</p>
+
+<p>
+Enable Debug Layer мы включаем для Debug mode. Когда Debug Layer включен DX12 позволяет получить более обширную информацию об отладке и посылает debug messages в Output window VC++. Например в приложении размер константного буфера должен быть кратен 256. Мы установим размер 64 и получим ошибку в окне VC++ Output
+</p>
+
+<pre>
+
+D3D12 ERROR: ID3D12Device::CreateConstantBufferView: Size of 64 is invalid.  Device requires SizeInBytes be a multiple of 256.
+
+</pre>
+
+<p>
+Ниже показан ошибочный код С++
+</p>
+
+<pre>
+	D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc;
+	cbvDesc.BufferLocation = cbAddress;
+	//cbvDesc.SizeInBytes = CalcConstantBufferByteSize(sizeof(ObjectConstants));
+	cbvDesc.SizeInBytes = 64;
+
+	md3dDevice->CreateConstantBufferView(
+		&cbvDesc,
+		mCbvHeap->GetCPUDescriptorHandleForHeapStart());
+</pre>
+
+<p>
+В следствии того что мы можем создавать WARP устройство (софтверное устройство) нам необходимо создать IDXGIFactory4объект что бы перечислить WARP устройства. IDXGIFactory4 объект так же нужен что бы создать swap chain, так как swap chain это часть DXGI (т.е. swap chain может быть использовано как для двухмерных так и для трехмерных приложений – общее для них DXGI).
+</p>
+
+
+<p>
+При помощи функции:
+</p>
+
+<pre>
+
+ID3D12Device::CheckFeatureSupport()
+
+</pre>
+
+<p>
+Мы можем получить параметры multisampling для заданного формата текстуры. Если в приложении вы не хотите использовать multisampling то установите в приложении sample count = 1 и quality level = 0. Back buffer и Depth buffer должны быть созданы с одними и теми же параметрами multisampling.
+</p>
+
+<p>
+MSAA – это сокращение от multisampling anti aliasing
+</p>
+
+<p>
+DXGI это сокращение от DirectX Graphics Infrastrucutre
+</p>
+
+<p>
+Feature support мы выбираем какую поддержку мы хотим получить DX9, DX10, DX11. Используется функция ID3D12Device::CheckFeatureSupport()
+</p>
+
+<p>
+Создание устройства DX
+</p>
+
+<p>
+В коде примера устройство DX создается при помощи функции D3D12CreateDevice. Сначала мы создаем hardware device, если его создание завершилось неудачей, следующим создаем software device, т.е. warp adapter.
+</p>
+
+<p>
+Процесс инициализации в коде примера разбит на следующие шаги
+</p>
+
+<ol>
+<li>Включаем debug level для отладки; создание устройства DX при помощи функции D3D12CreateDevice
+<li>Создаем Fence объект и запрашиваем размер дескрипторов
+<li>Проверяем 4X MSAA quality level support
+<li>Создаем command queue, command list allocator, command list
+<li>Описываем и создаем SwapChain
+<li>Создаем descriptor heaps
+<li>Resize back buffer и создаем render target view для back buffer
+<li>Создаем depth stencil buffer и связанный с ним depth stencil view
+<li>Устанавливаем viewport и scissor регионы
+<li>Создаем descriptor heap для константного буфера и создаем константный буфер и связанный с ним view
+<li>Создаем Root Signature корневую сигнатуру
+<li>Создаем шейдеры (вершинный, пиксельный) и input layout
+<li>Создаем вершинный и индексный буфер GPU
+<li>Создаем pipeline state object
+<li>Так же создаем матрицы мира, вида, проекции и результ. Матрицу записываем в константный буфер
+</ol>
+
+<p>
+В начале инициализации DX мы включаем debug layer – это улучшает отладку приложений DX12. debug layer используется в режиме debug build, когда debug layer включен то Direct3D посылает отладочную информацию в VC++ output window.
+</p>
+
+<p>
+DXGIFactory необходимо для создания SwapChain – это общее для 2D и 3D графики и там и там есть SwapChain. Когда мы создаем SwapChain фактически создаем две текстуры- задний буфер, фронт буфер. Эти две текстуры меняються попеременно- пока в одну рисуется изображение другая текстура выводиться на экран, потом они меняются местами (указатели на эти текстуры меняются местами).
+</p>
+
+<p>
+Мы создаем depth buffer это просто 2D текстура размером как back buffer. Каждому пикселю back buffer соответствует пиксель depth buffer.
+</p>
+
+<p>
+Constant buffer размер должен быть кратен 256 это вычисляет функция CalcConstantBufferByteSize. Константный буфер это  Resource DX12 ID3D12Resource.
+</p>
+
+<p>
+Vertex buffer и Index buffer загружаются следующим образом. Например у нас данные вершин хранятся в векторе vertex. Мы сначала этот массив vertex загружаем в UploadBuffer, потом из UploadBuffer в DefaultBuffer  Такое свойство работы GPU. Мы не может просто так вершинные данные загрузить в буфер вершин GPU. DefaultBuffer это и будет наш вершинный буфер – Resource DX12 ID3D12Resource.
+</p>
+
+<p>
+Буферы должны быть помещены в default heap для лучшей производительности. Однако ресурсы в default heap недоступны для записи ЦП. Чтобы загрузить данные буфера, приложение должно вместо этого создать буфер upload heap (upload buffer), загрузить данные в этот буфер, а затем скопировать upload buffer в исходный буфер с помощью CopyResource() или CopyBufferRegion().
+</p>
+
+<p>
+2)Swap chain
+</p>
+
+<p>
+Front buffer и Back buffer формируют цепочку swap chain. В Direct3D swap chain представлено в интерфейсе IDXGISwapChain. Этот интерфейс сохраняет front и back buffer текстуры, так же предоставляет методы:
+</p>
+
+<pre>
+
+IDXGISwapChain::ResizeBuffers изменяет размер буферов (текстур)
+IDXGISwapChain::Present для отрисовки изображения на экран
+
+</pre>
+
+<p>
+Использование двух буферов front и back называется двойной буферизацией. Front и Back buffer это просто текстуры которые хранят изображение.
+</p>
+
+
+<p>
+3)Descriptor heap
+</p>
+
+<p>
+Дескриптор переводится как описатель. Т.е. описывает ресурс.
+</p>
+
+<p>
+Мы привязываем ресурсы к конвееру рендеринга через дескрипторы или views.  Мы используем дескрипторы для render targets, depth/stencil, constant buffer, vertex и index buffers. Но для targets, depth/stencil, constant buffer мы дескрипторы размещаем в куче descriptor heaps, а для vertex и index buffers дескрипторы в куче descriptor heaps не нужны.
+</p>
+
+<p>
+Descriptor heap – массив однотипных дескрипторов. Для каждого типа дескриптора RTV, DSV, CBV и т.д. нужна своя Descriptor heap куча дескрипторов. Так же можно создать несколько Descriptor heap куч дескрипторов для одного и того самого типа (например несколько куч RTV, DSV, CBV и т.д.).
+</p>
+
+<p>
+Зачем нужны дескрипторы. Есть ресурс- например текстура- она одна, и находиться в памяти. А дескрипторы описывают как текстура будет использоваться. Например один дескриптор описывает для GPU текстуру как render target а другой дескриптор описывает для GPU эту же текстуру как shader resource view – а текстура она одна была и осталась. У нас может быть несколько дескрипторов которые ссылаются на один и тот же ресурс (например текстура).
+</p>
+
+<p>
+Дескриптор это структура описывает ресурс в GPU. Т.е. GPU может обратиться к ресурсу, к данным ресурса (например текстура) по описанию в дескрипторе. Дескрипторы не хранят ресурсы, дескрипторы хранят информацию которая описывает ресурсы.  Дескрипторы описывают то как ресурс будет использоватсья в GPU.
+</p>
+
+<p>
+Constant buffer view и constant buffer descriptor это одно и то же самое. Т.е. view и дескриптор это синонимы.
+</p>
+
+<p>
+У нас может быть несколько дескрипторов которые ссылаются на один и тот же ресурс. Например у нас может быть несколько дескрипторов которые ссылаются на разные субрегионы ресурса (например текстуры).
+</p>
+
+<p>
+Например использование одной текстуры как render target и как ресурс шейдера требует два дескриптора типа RTV и SRV. То есть ресурс это просто участок памяти, и на него ссылаются дескрипторы RTV и SRV.
+</p>
+
+<p>
+Descriptor heap это часть памяти где хранятся все дескрипторы, нужно разбить descriptor heap на части что бы хранить каждый тип дескриптора. Нужны разные Descriptor heap что бы хранить разные типы дескрипторов.
+</p>
+
+<p>
+При помощи функции CreateDescriptorHeap RTV мы создаем пустой дескриптор, а при помощи функции CreateRenderTargetView мы заполняем этот дескриптор информацией, что бы связать его с буферами SwapChain.
+</p>
+
+<p>
+Типы дескрипторов DX12:
+</p>
+
+<p>
+CBV/SRV/UAV дескриптор описывает константный буфер constant buffer, ресурс шейдера shader resource, unordered access view resource
+</p>
+
+<p>
+Sampler descriptor – используется в текстурировании
+</p>
+
+<p>
+RTV дескриптор описывает render target view ресурс
+</p>
+
+<p>
+DSV дескриптор описывает depth/stencil ресурс
+</p>
+
+<p>
+Дескрипторы просто идентифицируются как смещение и размер из кучи.
+</p>
+
+<p>
+Другие привязки ресурсов — буферы индексов, буфер вершин, буфер вывода потока, целевые объекты отрисовки и набор элементов глубины выполняются непосредственно в списке команд, а не с помощью дескрипторов.
+Следующие ресурсы не помещаются в таблицы дескриптора или кучу, но привязаны напрямую с помощью списков команд:
+</p>
+
+<ul>
+<li>Буферы индексов
+<li>Буферы вершин
+<li>ковая передача выходных буферов
+<li>вые объекты отрисовки
+<li>Представления трафаретов глубины
+</ul>
+
+<p>
+Почему для вершинных и индексных буферов не нужны дескрипторы. Вершинный и индексный буфер на любой стадии конвеера это всегда только вершины и их индексы. Нам не нужен вершинный буфер как render target а затем вершинный буфер как shader resource view.
+</p>
+
+<p>
+Например мы на одной стадии rendering pipeline описываем текстуру как render target RTV дескриптор, на другой стадии rendering pipeline мы эту же текстуру описываем как ресурс шейдера SRV – то есть мы что то нарисовали в текстуру когда использовали ее как RTV, а потом эту текстуру вывели на экран в screen aligned quad как SRV.
+</p>
+
+<p>
+Далее описан принцип рендеринга в текстуру. В DX12 для доступа к ресурсам используются дескрипторы, что бы сравнить как это было в DX11 например так: сначала создавалась текстура Texture, потом для этой текстуры создавалось RenderTargetView(Texture) и этот render target мы в него рисовали, потом что бы передать эту же текстуру в шейдер (после того как мы в нее что то нарисовали) мы делаем для этой текстуры создание ShaderResourceView(Texture) и передаем этот view в шейдер.  То есть для каждого этапа конвеера свой view. В DX12 это делается через дескрипторы. Для каждого этапа конвеера рендеринга свой дескриптор.
+</p>
+
+<p>
+Descriptor size изменяется в зависимости от GPU, поэтому мы должны получить эту информацию Поэтому мы должны вызвать функции:
+</p>
+
+<pre>
+	
+	mRtvDescriptorSize = md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+	mDsvDescriptorSize = md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
+	mCbvSrvUavDescriptorSize = md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+
+</pre>
+
+<p>
+IncrementSize присутсвует в названии функции, это потому что по размеру этого дескриптора мы узанем где в heap находится следующий дескриптор, то есть увеличиваем значение на величину этого дескриптора что бы получить следующий дескриптор из кучи. При помощи descriptor size мы в куче шагаем по последовательно размещенным дескрипторм. Например у нас 2 буфера в SwapChain когда мы создаем Remder Target View мы шагаем в куче дескрипторов RTV при помощи функции rtvHeapHandle.Offset(1, mRtvDescriptorSize); и получаем новый указатель rtvHeapHandle, который изначально указывал на начало кучи этого дескриптора RTV, мы получили его при помощи функции mRtvHeap->GetCPUDescriptorHandleForHeapStart() – это указатель на начало памяти где размещены дескрипторы RTV.
+</p>
+
+<p>
+Сначала мы создаем пустой дескриптор, вроде как резервируем память для дескриптора RTV при помощи функции CreateDescriptorHeap(RTV). А потом вызываем функцию CreateRenderTargetView() и этот пустой зарезервированный дескриптор заполняем информацией, 2 раза последовательно размещенные дескрипторы, так как 2 буфера в SwapChain. Так же происходит работа с другими типами дескрипторов- сначала создается дескриптор типа DSV или CBV, т.е. резервируется память, потом дескриптор заполняется данными (например CreateDepthStencilView или CreateConstantBufferVeiw() функции заполняют дескриптор данными).
+</p>
+
+<p>
+Почему при создании DST View мы сначала вызываем функцию CreateCommitedResource() а затем вызываем CreateDepthStencilView()? А когда создаем RTV View сразу вызываем CreateRenderTargetView()? Потому что перед этим мы создали SwapChain и у нас уже есть две текстуры (буферы SwapChain) и эти текстуры уже созданы, их создавать не нужно при помощи CreateCommitedResource(), мы берем эти текстуры (ресурсы) из SwapChain и создаем RTV View при помощи CreateRenderTargetView(). А в случае с DST View у нас готового ресурса для DST View (текстуры DST) нету, нам сначала надо ее создать вызвав CreateCommitedResource() а затем только когда ресурс DST создан вызвать CreateDepthStencilView() что бы создать DST View, т.е. заполнить дескриптор DST данными.
+</p>
+
+<p>
+Создание Render Target View.
+ </p>
+
+<p>
+Мы не можем прямо привязывать ресурсы к к стадии pipeline, вместо этого мы должны создать resource view (т.е.дескриптор) и привязать resource view к pipeline стадии конвеера. Что бы привязать back buffer к output merger stage конвеера (что бы DX12 мог рисовать в back buffer) мы должны создать render target view для back buffer. Первый шаг получить ресурс заднего буфера из swap chain:
+</p>
+
+<pre>
+
+	IDXGISwapChain::GetBuffer  
+ 
+ </pre>
+
+<p>
+Потом вызвать CreateRenderTargetView 
+</p>
+
+<p>
+Причем мы создаем столько render targets сколько у нас задних буферов (двойная или тройная буферизация).
+</p>
+
+<pre>
+
+	rtvHeapHandle.Offset(1, mRtvDescriptorSize) – переходим к следующему дескриптору в куче дескрипторов зная размер дескриптора.
+
+</pre>
+
+<p>
+Создание Descriptor heap
+</p>
+
+<p>
+Descriptor heap хранит дескрипторы. Мы должны создать descriptor heap что бы хранить дескрипторы  RTV/ DSV. Descriptor heap это просто последовательный набор дескрипторов, каждый дескриптор указывает на какой то ресурс, текстуру, RTV, DSV. Один дескриптор хранит информацию: адрес ресурса, размер ресурса, тип дескриптора (тип ресурса). Из таких дескрипторов состоит descriptor heap. Хандлер первого дескриптора в descriptor heap можно получить функцией:
+</p>
+
+<pre>
+ID3D12DescriptorHeap::GetCPUDescriptorHandleForHeapStart
+ID3D12DescriptorHeap::GetGPUDescriptorHandleForHeapStart
+</pre>
+
+<p>
+Здесь в этой функции нам пригодится descriptor size который мы получили ранее. Descriptor size необходим что бы можно было знать какого размера дескриптор, что бы перемещатся по куче дескрипторов от одного дескриптора к другому.</p>
+
+<p>
+Почему (например) для текстуры нужен один дескриптор как render target view а другой как shader resource view, а для вершинного индексного буфера нет. Потому что как уже говорилось- дескрипторы описывают ресурс. Может быть один ресурс – текстура, но несколько дескрипторов – для render target view и для shader resource view – текстура используется на разных стадиях конвеера рендеринга по разному, и дескрипторы это описывают. А вершинный (индексный) буфер он на любой стадии конвеера рендеринга один. Нету вершинного буфера как render target view и нету вершинного буфера как shader resource view – вершинный буфер ему не нужен дескриптор.
+</p>
+
+
+<p>
+4)Command list, Command allocator, Command queue
+</p>
+
+<p>
+При программировании графики у нас есть два процессора – CPU и GPU. GPU имеет command queue и CPU отправляет команды в command queue в GPU через command list. T.e. command list заполняет CPU. Command queue переводится как очередь команд.
+</p>
+
+<p>
+У GPU есть command queue. ExcecuteCommandList() метод добавляет команды в command queue и GPU начинает выполнять команды из очереди command queue.
+</p>
+
+<p>
+mCommandList->Close() мы сигнализиуем об окончинии что перестали добавлять команды в command list.
+</p>
+
+<p>
+Когда CPU заканчивает записывать команды в command list то вызывает функцию 
+mCommandList->Close().Т.е. перед тем как добавить команды в GPU command queue нужно закончить запись команд в command list вызывав функцию mCommandList->Close(). Затем вызывается ExcecuteCommandList().ExcecuteCommandList()передает команды из command list CPU в command queue GPU.
+</p>
+
+<p>
+После того как command list использован (после вызова Close() и ExcecuteCommandList() ) нужно вызвать функцию mCommandList->Reset()что бы обнулить command list и начать его использовать заново – после этого можем записывать новую порцию команд в command list. Команда mCommandList->Reset() не влияет на команды в command queue и command queue по прежнему ссылается на command allocator в котором хранятся команды для command queue.
+</p>
+
+<p>
+Когда мы отправили и выполнили команды для одного кадра на выполнение в GPU, мы так же должны очистить command allocator вызывал функцию mCommandAllocator->Reset(). Идея этого аналогична когда мы вызываем функцию std::vector::clear которая делает resize вектора обратно в ноль. Поскольку command queue ссылается на данные в command allocator то mCommandAllocator->Reset() может быть вызывана только после того как GPU закончит обрабатывать все команды в command allocator.
+</p>
+
+<p>
+Но фактически, когда команды записаны в command list они фактически сохраняются в command allocator. Когда вызывается функция ExcecuteCommandList() очередь команд  command queue будет ссылаться на команды в command allocator (переводится как распределитель).
+</p>
+
+<p>
+Сначала все команды для GPU записываются в command list, и заполняется связанный с commnad list так назыаемый command allocator а затем выполняется command list Close(). Затем после вызова ExecuteCommandList()команды передаются в command queue. CPU передает команды в command queue через command list. То есть cначала команды записываются в command list, затем сохраняются в  command allocator, затем выполняется command list Close() затем ExecuteCommandList() и команды передаются в command queue для выполнения. То есть command queue это порция команд для выполнения на GPU.
+</p>
+
+<p>
+При многопоточности необходимо указать сколько command list мы будем создавать (количство command list). Причем каждый поток имеет свой command list и свой command allocator. Но общим для всех потоков является command queue. Зачем нужно несколько потоков- например модель сцены разбита на четыре части, и есть четыре потока, каждый поток выводит свою часть сцены – это ускоряет работу.
+</p>
+
+<p>
+Если в функции инициализации в некотором месте кода не выполнить
+</p>
+
+<pre>
+
+	ThrowIfFailed(m_CommandList->Reset(m_DirectCmdListAlloc.Get(), nullptr));
+
+</pre>
+
+<p>
+А затем после инициализации
+</p>
+
+<pre>
+	ThrowIfFailed(m_CommandList->Close());
+</pre>
+
+<p>
+То в окне Output в Visual Studio будет сообщение об ошибке:
+</p>
+
+<pre>
+	D3D12 ERROR: ID3D12GraphicsCommandList::*: This API cannot be called on a closed command list.
+</pre>	
+
+
+<p>
+5)Fence
+</p>
+
+<p>
+Fence используется что бы GPU могло просигналить приложению (т.е. CPU) когда command list начинает и заканчивает свою работу, и ждет следующую порцию команд для графического процессора GPU. 
+</p>
+
+<p>
+Fence используется для синхронизации CPU и GPU.
+</p>
+
+<p>
+Signal() добавляет инструкции к концу command queue и эти инструкции устанавливают новое значение fence value. Потом когда GPU дойдет до этого места где новое значение fence он GPU установит событие event и программа пойдет дальше, событие ждет функция WaitForSigneObject().
+</p>
+
+<p>
+Например у нас есть ресурс R который хранит позиции геометрии (модели) которую мы хотим нарисовать. Далее предположим CPU обновило ресурс R и сохранило новую позицию p1. Затем CPU добавило команды С в command queue что бы нарисовать эту геометрию R в позиции p1. Добавление команд С в command queue не блокирует CPU так что CPU продолжает работать. И было бы ошибкой для CPU перезаписать данные R что бы сохранить новую позицию p2 перед тем как GPU выполнит команды рисования С.
+</p>
+
+<p>
+То есть fence используется для синхронизации работы CPU и GPU.
+</p>
+
+<pre>
+void FlushCommandQueue()
+{
+	//увеличиваем знаение Fence что бы пометить команды в этой точке
+	//fence point точка заграждения
+	mCurrentFence++;
+
+	//функция устанавливает новое значение для Fence
+//как только GPU дойдет до этого места выполняя команды, Signal для Fence 
+//установит новое значение, сработает event, и можно начинать выполнять 
+//следующий command list
+	ThrowIfFailed(mCommandQueue->Signal(mFence.Get(), mCurrentFence));
+
+	//подождать пока GPU выполнит команды queue в этой точке Fence
+	//mFence->GetCompletedValue() созвращает предыдущее значение fence point
+	//которое есть до вызова Signel()
+	if (mFence->GetCompletedValue()&lt mCurrentFence)
+	{
+		//создаем event
+		HANDLE eventHandle = CreateEventEx(nullptr, false, false, EVENT_ALL_ACCESS);
+
+		// устанавливаем event для Fence
+		ThrowIfFailed(mFence->SetEventOnCompletion(mCurrentFence, eventHandle));
+
+//подождать пока GPU не установит event
+// в случае если предыдущее значение Fence и текущее установленное
+//совпадает, значит GPU дошло до места вызова функции Signal()
+//и весь список команд в command queue выполнен
+//и можно начинать цикл рисования другого кадра
+		WaitForSingleObject(eventHandle, INFINITE);
+		CloseHandle(eventHandle);
+	}
+}
+
+</pre>
+
+<p>
+Функция ThrowIfFailed(mFence->SetEventOnCompletion(mCurrentFence, eventHandle)); устанавливает новое значение точки fence для проверки. И в конце очереди команд при помощи Signal() мы установили новое значение fence point. Event установится и программа продолжит выполнение, когда из очереди команд command queue выполнятся все команды и дойдет до того места где сохранен новое значение fence point при помощи функции Signal. То есть event установиться когда значение установленное при помощи  ThrowIfFailed(mFence->SetEventOnCompletion(mCurrentFence, eventHandle)); будет равно значению установленному в конец очереди при помощи ThrowIfFailed(mCommandQueue->Signal(mFence.Get(), mCurrentFence));
+</p>
+
+<p>
+Принцип такой- пока не выполнятся все команды в command queue – программа не продолжит выполнение, будет ждать event в функции WaitForSingleObject().
+</p>
+
+
+<p>
+6)Resource barrier
+</p>
+
+<p>
+Переходные состояния ресурсов. Когда ресурс создан- у него есть состояние по умолчанию. После этого ресурс готов к переходным состояниям. Например если мы записываем в ресурс (текстуру) мы для нее устанавливаем состояние render target statte, затем когда мы читаем из этой текстуры мы для нее устанавливаем состояние shader resource state.
+</p>
+
+<p>
+Resource barrier transition это команды которые инструктируют GPU.
+</p>
+
+<p>
+Resource barrier – используется что бы установить состояние ресурса. Например у нас есть текстура, в данный момент при помощи GPU она накладывается на изображение на экране, и мы не можем в нее ничего записать в эту текстуру. За тем что бы GPU случайно что то не записало в эту текстуру когда мы ее накладываем на модель следит resource barrier.
+</p>
+
+<p>
+Переходные состояния ресурсов. Например ресурс (тестура) создана в состоянии по умолчанию. Затем она меняет состояние когда мы в нее записываем и выставляем как render target, затем текстура меняет состояние когда мы из нее читаем shader resource view и выводим на экран при помощи screen aligned box. Переходные состояния ресурсов отслеживаются программистом. Это необходимо для того что бы когда в текстуру (ресурс) происхдит запись ее случайно нельзя было прочитать, и когда текстура (ресурс) читается его случайно нельзя было перезаписать. Переходные состояния ресурсов указываются программистом установкой массива transition resource barriers в command list.
+</p>
+
+<p>
+Например в функции Draw()  из примера перед рисованием устанавливаем в back buffer такое значение resource barrier для back buffer:
+</p>
+
+<pre>
+
+	mCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(),
+		D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
+
+</pre>		
+
+<p>
+Потом рисуем геометрию в back buffer:
+</p>
+
+<pre>
+	mCommandList->DrawIndexedInstanced();
+</pre>
+
+<p>
+Далее опять меняем значение resource barrier для back buffer что бы вызвать Present() и отобразить back buffer на экране:
+</p>
+
+<pre>
+	mCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(),
+		D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
+</pre>
+
+<p>
+Далее вызываем Present():
+</p>
+
+<pre>
+	ThrowIfFailed(mSwapChain->Present(0, 0));
+</pre>
+
+<p>
+В следующем кадре все повторяется сначала.
+</p>
+
+<p>
+7)Root signature & Descriptor tables
+</p>
+
+<p>
+Различные шейдеры ожидают что различные ресурсы будут привязаны в конвееру рендеринга. Ресурсы в шейдере привязываются к определенному слоту регистра register slot, через который шейдер получает доступ к ресурсу. Например константный буфер в шейдере может быть привязан к регистру b0 как в примере кода (загляните в шейдер)/ Текстуру в шейдере можно привязать например через регистр t0. Семплеры ресурсов можно привязать к семплер register slot s0. Например цвет материала или освещения diffuse color можно привязать к шейдеру через регистр b1, если b0 у нас занят. Например привязываем константный буфер в шейдере через регистр b0 (как в нашем примере шейдера):
+</p>
+
+<pre>
+
+	cbuffer cbPerObject : register(b0)
+	{
+		float4x4 gWorldViewProj; 
+	};
+
+</pre>
+
+<p>
+Корневая сигнатура root signature определяет какие ресурсы приложения будут привязаны в конвееру рендеринга перед выполнением отрисовки draw call, и на какие регистры в шейдере мапяться эти ресурсы. Фактически root signature привязывает ресурсы к регистрам в шейдере. Например текстуру из приложения к регистру t0 в шейдере. Root signature должна быть совместима с шейдерами, т.е. обеспечивать ресурсы которые ждет шейдер в конвеере рендеринга. Различные вызовы отрисовки draw calls ожидают различные шейдеры, поэтмоу должны быть различные корневые сигнатуры. Если мы подумаем о шейдере как о функции, а о ресурсах которые принимает шейдер- как о параметрах этой функции, то корневая сигнатура будет  сигнатурой этой функции (отсюда имя корневая сигнатура). Мы привязываем различные ресурсы как аргументы.
+</p>
+
+<p>
+Корневая сигнатура root signature это массив корневых параметров root parameters, эти корневые параметры ожиюают шейдеры перед вызовом отрисовки draw call.
+</p>
+
+<p>
+Корневые параметры root parameters могут быть root constants корневые константы, root descriptors корневые дескрипторы, или descriptor table таблица дескрипторов. В нашем примере мы будем использовать descriptor table таблицу дескрипторов. Таблица дескрипторов это непрерывный диапазон однотипных дескрипторов в куче дескрипторов descriptor heap.  Например у нас три константных буфера значит в начале кучи дескрипторов лежит первый буфер, за ним в куче дескрипторов лежит второй буфер, за вторым в куче лежит третий буфер- вместе эти три буфера образуют descriptor table таблицу дескрипторов. В нашем случае (смотри пример) мы создаем корневую сигнатуру (корневую подпись) с одним слотом, который указывает на диапазон дескрипторов, состоящий из одного буфера констант. То есть мы создаем root signature у которой один параметр – таблица дескрипторов для одного constant buffer veiw CBV.
+</p>
+
+<pre>
+	CD3DX12_DESCRIPTOR_RANGE cbvTable;
+	cbvTable.Init(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1, 0);
+</pre>
+
+<p>
+Здес в коде последний ноль обозначает что привязка CBV идет к регитру 0 в шейдере т.е. это регистр b0. Данная корневая сигнатура привязывает CBV к регистру b0 в шейдере.
+</p>
+
+<p>
+Корневая сигнатура определяет только какие ресурсы будут привязаны к конвееру рендеринга и шейдерам, корневая сигнатура сама по себе эти ресурсы не привязывает.
+</p>
+
+<pre>
+	
+	mCommandList->SetGraphicsRootSignature(mRootSignature.Get());
+
+	ID3D12DescriptorHeap* descriptorHeaps[] = { mCbvHeap.Get() };
+	mCommandList->SetDescriptorHeaps(_countof(descriptorHeaps), descriptorHeaps);
+
+	//смещение CBV которое мы хотим использовать для этого вызова отрисовки draw call
+	CD3DX12_GPU_DESCRIPTOR_HANDLE cbv(mCbvHeap->GetGPUDescriptorHandleForHeapStart());
+	cbv.Offset(cbvIndex, mCbvSrvUavDescriptorSize)
+
+	mCommandList->SetGraphicsRootDescriptorTable(0, cbv);
+
+</pre>
+
+<p>
+где 0 первый параметр это значит мы ссылаемся на первый cbv, второй будет иметь индекс 1 и т.д.
+</pre>
+
+<p>
+Перед каждым вызовом SetGraphicsRootDescriptorTable неоходимо установить соответсвующую кучу SetDescriptorHeaps, т.е. так как ниже:
+</p>
+
+<ol>
+<li>устанавливаем кучу constant buffesr SetDescriptorHeaps
+<li>делаем вызов SetGraphicsRootDescriptorTable
+<li>устанавливаем кучу shader resource views SetDescriptorHeaps
+<li>делаем вызов SetGraphicsRootDescriptorTable
+</ol>
+
+
+<pre>
+	UINT cbvIndex = m_CurrFrameResourceIndex * (UINT)m_AllRitems.size() + ri->ObjCBIndex;
+		auto cbvHandle = CD3DX12_GPU_DESCRIPTOR_HANDLE(m_CbvHeap->GetGPUDescriptorHandleForHeapStart());
+		cbvHandle.Offset(cbvIndex, m_CbvSrvUavDescriptorSize);
+
+		ID3D12DescriptorHeap* DescriptorHeapsCbv[] = { m_CbvHeap.Get() };
+		m_CommandList->SetDescriptorHeaps(_countof(DescriptorHeapsCbv), DescriptorHeapsCbv);
+
+		CmdList->SetGraphicsRootDescriptorTable(0, cbvHandle);
+
+		ID3D12DescriptorHeap* descriptorHeapsSRV[] = { m_SrvDescriptorHeap.Get() };
+		m_CommandList->SetDescriptorHeaps(_countof(descriptorHeapsSRV), descriptorHeapsSRV);
+
+		CD3DX12_GPU_DESCRIPTOR_HANDLE hDescriptor(m_SrvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
+		hDescriptor.Offset(i, m_CbvSrvUavDescriptorSize);
+
+		CmdList->SetGraphicsRootDescriptorTable(2, hDescriptor);
+
+		CmdList->DrawInstanced(
+			ri->VertexCount, 1, 0, 0);
+
+</pre>
+
+
+<p>
+8)Pipeline state object PSO
+</p>
+
+<p>
+PSO pipeline state object – предварительно откомпилированное состояние конвеера рендеринга, Экономит время GPU, по сравнению с предыдущими версиями DX как как состояние конвеера уже откомилировано предварительно, и в каждом кадре не нужно его переводить в состояния шейдера. Используется PSO во время отрисовки. Теперь нам не нужно создавать pipeline state на лету как в предыдущих версиях DX. PSO состоит из шейдеров (вершинных, пиксельных тп), и других состояний конвеера ( blend states, render states, alpha blening state, primitive topology), а так же входит layout вершин и т.п.
+</p>
+
+<p>
+У нас есть созданный root signature, input layout, vertex & pixel shaders, rasterizer state, но мы не связали эти объекты с конвеером рендеринга. Именно PSO связывает эти все объекты с конвеером рендеринга.
+</p>
+
+<pre>
+	mCommandList->Reset(mDirectCmdListAlloc.Get(), mPSO1.Get());
+
+	//рисуем объект используя PSO1
+
+	mCommandList->SetPipelineState(mPSO2.Get());
+
+	//рисуем объект используя PSO2
+
+	mCommandList->SetPipelineState(mPSO3.Get());
+
+	//рисуем объект используя PSO3
+
+</pre>
+
+<p>
+Графический конвеер DX12 состоит из таких частей:
+</p>
+
+<ul>
+<li>The Compute Shader
+<li>Input Assembler (IA) Stage
+<li>Vertex Shader (VS) Stage
+<li>Hull Shader (HS) Stage
+<li>Tessellator (TS) Stage
+<li>Domain Shader (DS) Stage
+<li>Geometry Shader (GS) Stage
+<li>Stream Output (SO) Stage
+<li>Rasterizer Stage (RS)
+<li>Pixel Shader (PS) Stage
+<li>Output Merger (OM) Stage
+</ul>
+
+
+</body>
+</html>
