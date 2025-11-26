@@ -37,7 +37,7 @@ enum {	M00, M01, M02, M03,
 
 MY_VERTEX VertBuff[24] = {
 	-5.000000f,-5.000000f,-5.000000f,	1.0f,	1.0f,1.0f,
-	-5.000000f,-5.000000f,-5.000000f,	1.0f,	1.0f,0.0f,
+	-5.000000f,-5.000000f,5.000000f,	1.0f,	1.0f,0.0f,
 	5.000000f,-5.000000f,5.000000f,		1.0f,	0.0f,0.0f,
 	5.000000f,-5.000000f,-5.000000f,	1.0f,	0.0f,1.0f,
 	-5.000000f,5.000000f,-5.000000f,	1.0f,	0.0f,1.0f,
@@ -80,8 +80,10 @@ WORD IndexBuff[36] = {
 
 typedef float matrix4x4[16];
 		
-void Vec4_Mat4x4_Mul(MY_VERTEX &VecOut, MY_VERTEX &VecIn, matrix4x4 Mat)
+MY_VERTEX Vec4_Mat4x4_Mul(MY_VERTEX &VecIn, matrix4x4 Mat)
 {
+	MY_VERTEX VecOut;
+
 	VecOut.x =	VecIn.x * Mat[M00] +
 				VecIn.y * Mat[M10] +
 				VecIn.z * Mat[M20] +
@@ -104,6 +106,8 @@ void Vec4_Mat4x4_Mul(MY_VERTEX &VecOut, MY_VERTEX &VecIn, matrix4x4 Mat)
 
 	VecOut.tu = VecIn.tu;
 	VecOut.tv = VecIn.tv;
+
+	return VecOut;
 }
 
 void Render_Scene()
@@ -120,6 +124,12 @@ void Render_Scene()
 		sinf(Angle),	0.0,	cosf(Angle),	0.0,
 		0.0,			0.0,	0.0,			1.0 };
 
+
+	matrix4x4 MatRotateX = {
+		1,		0,		0,		0,
+		0, 		cos(Angle),	sin(Angle),	0,
+		0,		-sin(Angle),	cos(Angle),	0,
+		0,		0,		0,		1 };
 
 	Angle = Angle + PI / 100.0f;
 	if (Angle > PI2)
@@ -162,28 +172,29 @@ void Render_Scene()
 	//куб имеет 24 вершины
 	for ( int i = 0; i < 24; i++ )
 	{
-		MY_VERTEX Vec1;
-		MY_VERTEX Vec2;
+		
+		
 
-		Vec4_Mat4x4_Mul(Vec1, VertBuff[i], MatRotateY);
-		Vec4_Mat4x4_Mul(Vec2, Vec1, MatWorld);
-		Vec4_Mat4x4_Mul(Vec1, Vec2, MatView);
-		Vec4_Mat4x4_Mul(Vec2, Vec1, MatProj);
+		MY_VERTEX Vec = Vec4_Mat4x4_Mul(VertBuff[i], MatRotateY);
+		Vec = Vec4_Mat4x4_Mul(Vec, MatRotateX);
+		Vec = Vec4_Mat4x4_Mul(Vec, MatWorld);
+		Vec = Vec4_Mat4x4_Mul(Vec, MatView);
+		Vec = Vec4_Mat4x4_Mul(Vec, MatProj);
 
 			
-		Vec2.x = Vec2.x / Vec2.w; //перспективное деление
-		Vec2.y = Vec2.y / Vec2.w; //перспективное деление
-		Vec2.z = Vec2.z / Vec2.w; //готовим Z для Z буфера значения от 0 до 1
-		Vec2.w = 1.0f / Vec2.w; //готовим W для текстурирования с учетом
+		Vec.x = Vec.x / Vec.w; //перспективное деление
+		Vec.y = Vec.y / Vec.w; //перспективное деление
+		Vec.z = Vec.z / Vec.w; //готовим Z для Z буфера значения от 0 до 1
+		Vec.w = 1.0f / Vec.w; //готовим W для текстурирования с учетом
 								//перспективы, если неправильно рассчитать
 								//W то неправильно наложится текстура
 								//например написать Vec2.w = Vec2.w;
 								//не поделить на 1
 
-		Vec2.x = Vec2.x * Rc.right / 2.0f + Rc.right / 2.0f;
-		Vec2.y = -Vec2.y * Rc.bottom / 2.0f + Rc.bottom / 2.0f;
+		Vec.x = Vec.x * Rc.right / 2.0f + Rc.right / 2.0f;
+		Vec.y = -Vec.y * Rc.bottom / 2.0f + Rc.bottom / 2.0f;
 
-		VertBuffTransformed[i] = Vec2;
+		VertBuffTransformed[i] = Vec;
 	}
 
 

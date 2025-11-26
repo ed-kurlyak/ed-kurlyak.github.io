@@ -35,7 +35,7 @@ MY_VERTEX g_VertBuffTransformed[24];
 
 MY_VERTEX g_VertBuff[24] = {
 D3DXVECTOR4(-5.000000f,-5.000000f,-5.000000f,	1.0f),	D3DXVECTOR2(1.0f,1.0f),
-D3DXVECTOR4(-5.000000f,-5.000000f,-5.000000f,	1.0f),	D3DXVECTOR2(1.0f,0.0f),
+D3DXVECTOR4(-5.000000f,-5.000000f,5.000000f,	1.0f),	D3DXVECTOR2(1.0f,0.0f),
 D3DXVECTOR4(5.000000f,-5.000000f,5.000000f,		1.0f),	D3DXVECTOR2(0.0f,0.0f),
 D3DXVECTOR4(5.000000f,-5.000000f,-5.000000f,	1.0f),	D3DXVECTOR2(0.0f,1.0f),
 D3DXVECTOR4(-5.000000f,5.000000f,-5.000000f,	1.0f),	D3DXVECTOR2(0.0f,1.0f),
@@ -88,6 +88,13 @@ void Render_Scene()
 		sinf(Angle),	0.0,	cosf(Angle),	0.0,
 		0.0,			0.0,	0.0,			1.0 );
 
+	D3DXMATRIX MatRotateX = D3DXMATRIX (
+		1,		0,		0,		0,
+		0, 		cos(Angle),	sin(Angle),	0,
+		0,		-sin(Angle),	cos(Angle),	0,
+		0,		0,		0,		1 );
+
+
 	Angle = Angle + PI / 100.0f;
 	if (Angle > PI2)
 		Angle = 0.0f;
@@ -130,27 +137,37 @@ void Render_Scene()
 		MY_VERTEX Vec1;
 		MY_VERTEX Vec2;
 
+		//разница между D3DXVec4Transform и D3DXVec4TransformNormal
+		//что в функции D3DXVec4Transform учитывается перемещение x,y,z
+		//в четвертой строке матрицы, а в функции D3DXVec4TransformNormal
+		//значения в четвертой строке матрицы x,y,z не учитываются и =0
+		//то есть эта функция D3DXVec4TransformNormal для преобразования
+		//нормалей при расчете освещения потому что для нормалей (векторов)
+		//позиция не имеет значение а для вершин позиция имеет значение
+		//то есть одна функция преобразовывает вершины
+		//другая функция преобразовывает вектора (нормали)
 		D3DXVec4Transform(&Vec1.p, &g_VertBuff[i].p, &MatRotateY);
-		D3DXVec4Transform(&Vec2.p, &Vec1.p, &MatWorld);
-		D3DXVec4Transform(&Vec1.p, &Vec2.p, &MatView);
-		D3DXVec4Transform(&Vec2.p, &Vec1.p, &MatProj);
+		D3DXVec4Transform(&Vec2.p, &Vec1.p, &MatRotateX);
+		D3DXVec4Transform(&Vec1.p, &Vec2.p, &MatWorld);
+		D3DXVec4Transform(&Vec2.p, &Vec1.p, &MatView);
+		D3DXVec4Transform(&Vec1.p, &Vec2.p, &MatProj);
 			
-		Vec2.p.x = Vec2.p.x / Vec2.p.w; //перспективное деление
-		Vec2.p.y = Vec2.p.y / Vec2.p.w; //перспективное деление
-		Vec2.p.z = Vec2.p.z / Vec2.p.w; //готовим Z для Z буфера значения от 0 до 1
-		Vec2.p.w = 1.0f / Vec2.p.w; //готовим W для текстурирования с учетом
+		Vec1.p.x = Vec1.p.x / Vec1.p.w; //перспективное деление
+		Vec1.p.y = Vec1.p.y / Vec1.p.w; //перспективное деление
+		Vec1.p.z = Vec1.p.z / Vec1.p.w; //готовим Z для Z буфера значения от 0 до 1
+		Vec1.p.w = 1.0f / Vec1.p.w; //готовим W для текстурирования с учетом
 								//перспективы, если неправильно рассчитать
 								//W то неправильно наложится текстура
 								//например написать Vec2.w = Vec2.w;
 								//не поделить на 1
 
-		Vec2.p.x = Vec2.p.x * Rc.right / 2.0f + Rc.right / 2.0f;
-		Vec2.p.y = -Vec2.p.y * Rc.bottom / 2.0f + Rc.bottom / 2.0f;
+		Vec1.p.x = Vec1.p.x * Rc.right / 2.0f + Rc.right / 2.0f;
+		Vec1.p.y = -Vec1.p.y * Rc.bottom / 2.0f + Rc.bottom / 2.0f;
 
-		Vec2.t.x = g_VertBuff[i].t.x;
-		Vec2.t.y = g_VertBuff[i].t.y;
+		Vec1.t.x = g_VertBuff[i].t.x;
+		Vec1.t.y = g_VertBuff[i].t.y;
 
-		g_VertBuffTransformed[i] = Vec2;
+		g_VertBuffTransformed[i] = Vec1;
 	}
 
 	HRESULT hr;
