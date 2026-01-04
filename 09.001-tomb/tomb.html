@@ -338,5 +338,100 @@ LOT->required_box - это временная цель, которую нужн�
 <p>
 Вспомогательная промежуточная цель, а не основная.
 </p>
+
+<p>
+Далее рассмотрим что такое g_Items[i].mesh_bits и зачем mesh_bits нужен. Например есть модель, у нее 10 мешей и для этой модели (item-а) установлен mesh_bits = -1, то есть фактически -1 это в машинном представлении 0xFFFFFFFF - то есть 32 единицы. Поскольку все 4 байта единицы- рисуются все 10 мешей модели - то есть каждый мешь модели - это одна единица или нуль в наборе битов mesh_bits. Если мы установим mesh_bits например 5 бит в 0 для этой модели- то 5 мешь рисоваться на экране не будет. Например в файле file.cpp есть функция BaddyObjects(), внутри функции есть код:
+</p>
+
+<pre>
+
+	if (g_Objects[O_WARRIOR1].loaded)
+	{
+		g_Objects[O_WARRIOR1].initialise = InitialiseCreature;
+		g_Objects[O_WARRIOR1].control = FlyerControl;
+		g_Objects[O_WARRIOR1].collision = CreatureCollision;
+		g_Objects[O_WARRIOR1].shadow_size = UNIT_SHADOW / 3;
+		g_Objects[O_WARRIOR1].hit_points = FLYER_HITPOINTS;
+		g_Objects[O_WARRIOR1].pivot_length = 150;
+		g_Objects[O_WARRIOR1].radius = FLYER_RADIUS;
+		g_Objects[O_WARRIOR1].smartness = FLYER_SMARTNESS;
+		g_Objects[O_WARRIOR1].intelligent = 1;
+		g_Objects[O_WARRIOR1].save_position = 1;
+		g_Objects[O_WARRIOR1].save_hitpoints = 1;
+		g_Objects[O_WARRIOR1].save_anim = 1;
+		g_Objects[O_WARRIOR1].save_flags = 1;
+		g_AnimBones[g_Objects[O_WARRIOR1].bone_index] |= BEB_ROT_Y;
+		g_AnimBones[g_Objects[O_WARRIOR1].bone_index + 8] |= BEB_ROT_Y;
+	}
+
+
+	if (g_Objects[O_WARRIOR3].loaded)
+	{
+		//информация о количестве мешей и стартовом меше переноситься из O_WARRIOR1
+		g_Objects[O_WARRIOR3] = g_Objects[O_WARRIOR1];
+		g_Objects[O_WARRIOR3].initialise = InitialiseWarrior2;
+	}
+
+</pre>
+
+<p>
+И функция InitialiseWarrior2 в файле mutant.cpp:
+</p>
+
+<pre>
+
+void InitialiseWarrior2(int16_t item_num)
+{
+	InitialiseCreature(item_num);
+	g_Items[item_num].mesh_bits = 0xFFE07FFF;
+}
+
+</pre>
+
+<p>
+Как видим O_WARRIOR1 и O_WARRIOR2 объекты одинаковы, за исключением что у O_WARRIOR3 установлен 	g_Items[item_num].mesh_bits = 0xFFE07FFF;
+</p>
+
+<p>
+Вот изображение этого персонажа игры из уровня City of Khamoon:
+</p>
+
+<img src="./pics/warrior1.jpg" width=800>
+
+<p>Это изображение O_WARRIOR1 и видим у него есть справа и слева по бокам такие своебразные крылья.</p>
+
+<p>Так вот в файле items.cpp в функции void InitialiseItem(int16_t item_num) установлено item->mesh_bits = -1; то есть стартовое значение для всех итемов на уровне - это рисовать все меши. И для O_WARRIOR1 это значение позже не меняется - рисовать все меши. Но для O_WARRIOR3 позже в функции InitialiseWarrior2() установлено g_Items[item_num].mesh_bits = 0xFFE07FFF; - то есть отображать мешь этого персонажа без крыльев. И в самом деле, в начале уровня City of Khamoon появляется O_WARRIOR3 то есть тот же O_WARRIOR1 но без крыльев. Как это проверить? Можно для теста установить mesh_bits = 0 и тогда видим меши модели вобще не рисуются, только тень модели.
+</p>
+
+<p>
+Кроме того в функции void TestTriggers(int16_t *data, int32_t heavy) в файле draw.cpp можно для отладки написать такой код: 
+</p>
+
+<pre>
+
+		switch (TRIG_BITS(trigger))
+		{
+		case TO_OBJECT:
+		{
+			if (g_Items[value].object_number == 20)
+				MessageBox(NULL, "WARRIOR_1", 0, 0);
+
+
+			if (g_Items[value].object_number == 22)
+				MessageBox(NULL, "WARRIOR_2", 0, 0);
+
+			ITEM_INFO *item = &g_Items[value];
+
+
+</pre>
+
+<p>
+То есть когда Лара наступает на сектор, и этот сектор помечен как "должен появиться WARRIOR_2" то будет всплывать MessageBox(). Например WARRIOR_2 в уровне City of Khamoon появляется в самом начале после того как Лара уничтожит черную пантеру и перепрыгивает через холм - срабатывает триггер в секторе и появляется WARRIOR_2.
+</p>
+
+<p>
+Также ExplodingDeath() функция использует mesh_bits для того что бы определять какие меши модели должны разлетаться в стороны после того как Лара застрелит этого врага (после смерти врага взрыв и части модели разлетаются в стороны).
+</p>
+
 </body>
 </html>
