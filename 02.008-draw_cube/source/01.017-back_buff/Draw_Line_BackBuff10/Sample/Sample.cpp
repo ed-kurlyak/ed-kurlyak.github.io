@@ -10,26 +10,59 @@
 #pragma comment (lib, ".\\scitech\\LIB\\WIN32\\VC\\MGLLT.LIB")
 #pragma comment(lib, "winmm.lib")
 
-//ignore LIBC.lib Linker options
-
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 600
 
 HWND g_hWnd;
-HINSTANCE g_hInstance;
+HINSTANCE g_hInst;
 
 MGLDC* windc;
 MGLDC* dibdc;
 
-void Init()
+unsigned char * BackBuffer = NULL;
+
+int Screen_Width;
+int Screen_Height;
+
+void Create_Palette()
 {
-	pixel_format_t	pf;
+	
+	palette_t Pal[256];
 
-	MGL_setAppInstance(g_hInstance);
+	for (int i = 0; i < 256; i++)
+	{
+		if (i == 0)
+		{
+			Pal[i].red = 0;
+			Pal[i].green = 0;
+			Pal[i].blue = 0;
+		}
+		else
+		{
+			Pal[i].red = 255;
+			Pal[i].green = 255;
+			Pal[i].blue = 127;
+		}
+	}
 
-	MGL_registerDriver(MGL_PACKED24NAME, PACKED24_driver);
+	MGL_setPalette(dibdc, Pal, 256, 0);
+	MGL_realizePalette(dibdc, 256, 0, false);
+}
 
-	//для оконного режима
+void Create_BackBuffer()
+{
+	RECT Rc;
+	GetClientRect(g_hWnd, &Rc);
+
+	Screen_Width = Rc.right;
+	Screen_Height = Rc.bottom;
+
+	pixel_format_t pf;
+
+	MGL_setAppInstance(g_hInst);
+
+	MGL_registerDriver(MGL_PACKED8NAME, PACKED8_driver);
+
 	MGL_initWindowed("");
 
 	if (!MGL_changeDisplayMode(grWINDOWED))
@@ -40,56 +73,43 @@ void Init()
 
 	MGL_getPixelFormat(windc, &pf);
 
-	if ((dibdc = MGL_createMemoryDC(WINDOW_WIDTH, WINDOW_HEIGHT, 24, &pf)) == NULL)
+	if ((dibdc = MGL_createMemoryDC(Screen_Width, Screen_Height, 8, &pf)) ==
+		NULL)
 		MGL_fatalError("Unable to create Memory DC!");
 }
 
-void Render_Scene()
+void Clear_BackBuffer()
 {
 	MGL_beginDirectAccess();
 
-	unsigned char* BackBuffer = (unsigned char*)dibdc->surface;
-
-	//очищаем m_BackBuffer (экран)
-	for (int x = 0; x < WINDOW_WIDTH; x++)
+	BackBuffer = (unsigned char *)dibdc->surface;
+	
+	for (int x = 0; x < Screen_Width; x++)
 	{
-		for (int y = 0; y < WINDOW_HEIGHT; y++)
+		for (int y = 0; y < Screen_Height; y++)
 		{
-			int Index = (y * WINDOW_WIDTH + x) * 3;
+			int Index = y * Screen_Width + x;
 
-			BackBuffer[Index + 0] = 77; //blue
-			BackBuffer[Index + 1] = 32; //green
-			BackBuffer[Index + 2] = 0; //red
+			BackBuffer[Index + 0] = 0;
 		}
 	}
+}
 
-	//рисуем линию
-	for (int y = 100; y < 120; y++)
-	{
-		for (int x = 100; x < 400; x++)
-		{
-			int Index = (y * WINDOW_WIDTH + x) * 3;
-
-			BackBuffer[Index + 0] = 127; //b
-			BackBuffer[Index + 1] = 255; //g
-			BackBuffer[Index + 2] = 255; //r
-
-		}
-	}
-
+void Present_BackBuffer()
+{
 	MGL_endDirectAccess();
 
-	//MGL present back buffer
+	// MGL present back buffer
 	HDC hdcScreen = GetDC(g_hWnd);
 	MGL_setWinDC(windc, hdcScreen);
 
-	MGL_bitBltCoord(windc, dibdc, 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, 0, 0, MGL_REPLACE_MODE);
+	MGL_bitBltCoord(windc, dibdc, 0, 0, Screen_Width, Screen_Height, 0, 0,
+					MGL_REPLACE_MODE);
 
 	ReleaseDC(g_hWnd, hdcScreen);
-
 }
 
-int Shutdown(void)
+void Delete_BackBuffer()
 {
 	if (windc)
 		MGL_destroyDC(windc);
@@ -97,7 +117,27 @@ int Shutdown(void)
 		MGL_destroyDC(dibdc);
 
 	windc = dibdc = NULL;
-	return 1;
+}
+
+void Render_Scene()
+{
+
+	Clear_BackBuffer();
+
+	//рисуем линию
+	for (int y = 100; y < 120; y++)
+	{
+		for (int x = 100; x < 400; x++)
+		{
+			int Index = y * Screen_Width + x;
+
+			BackBuffer[Index + 0] = 22;
+
+		}
+	}
+
+	Present_BackBuffer();
+
 }
 
 LRESULT CALLBACK WndProc(HWND hWnd,
@@ -126,7 +166,7 @@ int PASCAL WinMain(HINSTANCE hInstance,
 	UNREFERENCED_PARAMETER(hPrevInstance);
 	UNREFERENCED_PARAMETER(lpCmdLine);
 
-	g_hInstance = hInstance;
+	g_hInst = hInstance;
 
 	WNDCLASS wcl;
 	wcl.style = CS_HREDRAW | CS_VREDRAW;
@@ -139,14 +179,6 @@ int PASCAL WinMain(HINSTANCE hInstance,
 	wcl.hbrBackground = (HBRUSH)(COLOR_WINDOW+1);
 	wcl.lpszMenuName = NULL;
 	wcl.lpszClassName = "Sample";
-
-	/*
-	WNDCLASS wcl = { CS_HREDRAW|CS_VREDRAW, WndProc,
-			0, 0, hInstance, NULL, LoadCursor(NULL, IDC_ARROW),
-			(HBRUSH)(COLOR_WINDOW+1),
-			NULL, "Sample"};
-
-	*/
 
 	if(!RegisterClass(&wcl))
 		return 0;
@@ -165,7 +197,8 @@ int PASCAL WinMain(HINSTANCE hInstance,
 	ShowWindow(g_hWnd, nCmdShow);
 	UpdateWindow(g_hWnd);
 
-	Init();
+	Create_BackBuffer();
+	Create_Palette();
 
 	MSG msg;
 
@@ -185,7 +218,7 @@ int PASCAL WinMain(HINSTANCE hInstance,
 		Render_Scene();
 	}
 
-	Shutdown();
+	Delete_BackBuffer();
 
 	DestroyWindow(g_hWnd);
 	UnregisterClass(wcl.lpszClassName, wcl.hInstance);
