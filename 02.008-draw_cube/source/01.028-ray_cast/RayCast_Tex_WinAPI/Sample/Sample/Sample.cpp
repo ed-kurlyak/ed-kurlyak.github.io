@@ -156,8 +156,6 @@ double playerAngle = 0.0;
 
 void Draw_Scene()
 {
-    //HDC hDC = GetDC(g_hWnd);
-
     RECT Rc;
     GetClientRect(g_hWnd, &Rc);
 
@@ -259,19 +257,25 @@ void Draw_Scene()
 			wallX = fx;
 		}
 
+		//берем столбец текстуры
 		int texX = (int)(wallX * m_TextureWidth);
 
+		//защита от выхода за пределы массива текстуры
 		if(texX < 0) texX = 0;
 		if(texX >= m_TextureWidth) texX = m_TextureWidth-1;
 
+		//шаг текстуры по вертикали
 		double texStep = (double)m_TextureHeight / wallHeight;
+		//начальная координата текстуры
 		double texPos = (start - screenHeight/2 + wallHeight/2) * texStep;
 
+		//рисуем один вертикальный столбец
 		for(int y = start; y <= end; y++)
 		{
 			int texY = (int)texPos;
 			texPos += texStep;
 
+			//защита от выхода за границы текстуры
 			if(texY < 0) texY = 0;
 			if(texY >= m_TextureHeight) texY = m_TextureHeight-1;
 
@@ -289,8 +293,6 @@ void Draw_Scene()
 			m_Data[Index + 3] = 0;
 		}
     }
-
-    //ReleaseDC(g_hWnd, hDC);
 }
 
 void Update_Player()
