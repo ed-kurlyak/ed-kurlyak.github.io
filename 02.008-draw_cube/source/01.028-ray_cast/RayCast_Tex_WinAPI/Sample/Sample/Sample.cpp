@@ -20,8 +20,8 @@ ULONG m_ViewHeight;
 
 unsigned char * m_pLevelTile;
 
-UINT m_TextureWidth;
-UINT m_TextureHeight;
+int m_TextureWidth;
+int m_TextureHeight;
 
 bool Load_BMP(char *szFilename)
 {
@@ -460,6 +460,8 @@ int PASCAL WinMain(HINSTANCE hInstance,
 	}
 	
 	Delete_BackBuffer();
+
+	delete [] m_pLevelTile;
 
 	DestroyWindow(g_hWnd);
 	//UnregisterClass("Sample", hInstance);
