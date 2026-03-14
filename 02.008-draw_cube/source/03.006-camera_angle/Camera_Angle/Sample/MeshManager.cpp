@@ -677,7 +677,7 @@ void CMeshManager::Update_MeshManager()
 
 		//матрица вращения вокруг оси Y
 		Vec2.x = dx2 * cosf(m_CamAngle) + dz2 * sinf(m_CamAngle);
-		Vec2.z = dz2 * cosf(m_CamAngle) - dx2 * sinf(m_CamAngle);
+		Vec2.z = dx2 * -sinf(m_CamAngle) + dz2 * cosf(m_CamAngle);
 		Vec2.y = Vec2.y - m_VecCamPos.y;
 
 		//получаем вершину в видовых координатах
@@ -686,7 +686,7 @@ void CMeshManager::Update_MeshManager()
 
 		//матрица вращения вокруг оси Y
 		Vec3.x = dx3 * cosf(m_CamAngle) + dz3 * sinf(m_CamAngle);
-		Vec3.z = dz3 * cosf(m_CamAngle) - dx3 * sinf(m_CamAngle);
+		Vec3.z = dx3 * -sinf(m_CamAngle) + dz3 * cosf(m_CamAngle);
 		Vec3.y = Vec3.y - m_VecCamPos.y;
 
 		//backface culling
