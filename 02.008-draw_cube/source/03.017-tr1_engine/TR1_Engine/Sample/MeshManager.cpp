@@ -44,33 +44,6 @@ int xgen_ymax;
 
 int phd_scrwidth;
 
-//char * phd_winptr;
-
-unsigned char * texture_page_ptrs;
-
-char * MyHeapCheck()
-{
-// Check heap status
-   int heapstatus = _heapchk();
-   switch( heapstatus )
-   {
-   case _HEAPOK:
-      return(" OK - heap is fine\n" );
-      break;
-   case _HEAPEMPTY:
-      return(" OK - heap is empty\n" );
-      break;
-   case _HEAPBADBEGIN:
-      return( "ERROR - bad start of heap\n" );
-      break;
-   case _HEAPBADNODE:
-      return( "ERROR - bad node in heap\n" );
-      break;
-   }
-   return ("Unknown");
-}
-
-
 CMeshManager::CMeshManager()
 {
 }
@@ -92,58 +65,6 @@ CMeshManager::~CMeshManager()
 	m_pLevelTile = NULL;
 }
 
-float CMeshManager::Vec3_Dot(vector3 &VecIn1, vector3 &VecIn2)
-{
-	return VecIn1.x*VecIn2.x + VecIn1.y*VecIn2.y + VecIn1.z* VecIn2.z;
-}
-
-vector3 CMeshManager::Vec3_Cross(vector3 &VecIn1, vector3 &VecIn2)
-{
-	vector3 VecOut;
-
-	VecOut.x = VecIn1.y * VecIn2.z - VecIn1.z * VecIn2.y;
-	VecOut.y = VecIn1.z * VecIn2.x - VecIn1.x * VecIn2.z;
-	VecOut.z = VecIn1.x * VecIn2.y - VecIn1.y * VecIn2.x;
-
-	return VecOut;
-}
-
-vector3 CMeshManager::Vec3_Normalize(vector3 &VecIn)
-{
-	vector3 VecOut;
-
-	float Len = sqrtf(VecIn.x * VecIn.x + VecIn.y * VecIn.y + VecIn.z * VecIn.z);
-
-	VecOut.x = VecIn.x / Len;
-	VecOut.y = VecIn.y / Len;
-	VecOut.z = VecIn.z / Len;
-	
-	return VecOut;
-
-}
-
-vector3 CMeshManager::Vec3_Scale(vector3 &VecIn, float ValIn)
-{
-	vector3 VecOut;
-
-	VecOut.x = VecIn.x * ValIn;
-	VecOut.y = VecIn.y * ValIn;
-	VecOut.z = VecIn.z * ValIn;
-
-	return VecOut;
-}
-
-vector3 CMeshManager::Vec3_Add(vector3 &VecIn1, vector3 &VecIn2)
-{
-	vector3 VecOut;
-
-	VecOut.x = VecIn1.x + VecIn2.x;
-	VecOut.y = VecIn1.y + VecIn2.y;
-	VecOut.z = VecIn1.z + VecIn2.z;
-
-	return VecOut;
-}
-
 vector3 CMeshManager::Vec3_Mat4x4_Mul(vector3 &VecIn, PHD_MATRIX MatIn)
 {
 	    vector3 VecOut;
@@ -160,42 +81,6 @@ vector3 CMeshManager::Vec3_Mat4x4_Mul(vector3 &VecIn, PHD_MATRIX MatIn)
 
 	return VecOut;
 }
-
-/*
-matrix4x4 CMeshManager::Matrix_Rotation_Axis(vector3 &VecIn, float Angle)
-{
-	float x = VecIn.x;
-	float y = VecIn.y;
-	float z = VecIn.z;
-	
-	float s = sin(Angle);
-	float c = cos(Angle);
-	float omc = 1.0f - c;
-
-	float xomc = x * omc;
-	float yomc = y * omc;
-	float zomc = z * omc;
-
-	float xxomc = x * xomc;
-	float xyomc = x * yomc;
-	float xzomc = x * zomc;
-		
-	float yyomc = y * yomc;
-	float yzomc = y * zomc;
-	float zzomc = z * zomc;
-
-	float xs = x * s;
-	float ys = y * s;
-	float zs = z * s;
-
-	matrix4x4 MatRotate = matrix4x4 (xxomc + c,  xyomc + zs, xzomc - ys, 0.0f,
-		xyomc - zs, yyomc + c,  yzomc + xs, 0.0f,
-		xzomc + ys, yzomc - xs, zzomc + c, 0.0f,
-		0.0f ,0.0f, 0.0f, 1.0f);
-
-	return MatRotate;
-}
-*/
 
 int list::Is_Empty_List ()
 {
@@ -703,172 +588,9 @@ void	gtmap_persp32_fp( int ymin, int ymax, unsigned char *tptr )
 }
 
 
-void CMeshManager::Draw_Polygon_List()
-{
-
-	for (int i = 0; i < m_TransformedPoly.PolygonCount; i++)
-    {
-		vector3 Vec1 = m_TransformedPoly.PolyList[i].Vertex[0];
-		vector3 Vec2 = m_TransformedPoly.PolyList[i].Vertex[1];
-		vector3 Vec3 = m_TransformedPoly.PolyList[i].Vertex[2];
-		
-		UINT Tex = m_TransformedPoly.PolyList[i].TexID;
-		texture_page_ptrs  = (UCHAR *) m_pLevelTile[Tex];
-
-		
-		
-
-	
-
-		
-		if (Vec1.x > m_ViewWidth)
-			if (Vec1.x > 32760)
-				Vec1.x = 32760;
-
-		if (Vec1.x < 0)
-			if (Vec1.x < -32760)
-				Vec1.x = -32760;
-
-		if (Vec1.y > m_ViewHeight)
-			if (Vec1.y > 32760)
-				Vec1.y = 32760;
-
-		if (Vec1.y < 0)
-			if (Vec1.y < -32760)
-				Vec1.y = -32760;
-
-		UVGP_INFO v1 = {(short int)Vec1.x, (short int)Vec1.y, 1, Vec1.z, Vec1.tu, Vec1.tv };
-		
-
-		if (Vec2.x > m_ViewWidth)
-			if (Vec2.x > 32760)
-				Vec2.x = 32760;
-
-		if (Vec2.x < 0)
-			if (Vec2.x < -32760)
-				Vec2.x = -32760;
-
-		if (Vec2.y > m_ViewHeight)
-			if (Vec2.y > 32760)
-				Vec2.y = 32760;
-
-		if (Vec2.y < 0)
-			if (Vec2.y < -32760)
-				Vec2.y = -32760;
-
-		UVGP_INFO v2 = {(short int)Vec2.x, (short int)Vec2.y, 1, Vec2.z, Vec2.tu, Vec2.tv };
-		
-		
-		if (Vec3.x > m_ViewWidth)
-			if (Vec3.x > 32760)
-				Vec3.x = 32760;
-
-		if (Vec3.x < 0)
-			if (Vec3.x < -32760)
-				Vec3.x = -32760;
-
-		if (Vec3.y > m_ViewHeight)
-			if (Vec3.y > 32760)
-				Vec3.y = 32760;
-
-		if (Vec3.y < 0)
-			if (Vec3.y < -32760)
-				Vec3.y = -32760;
-
-		UVGP_INFO v3 = {(short int)Vec3.x, (short int)Vec3.y, 1, Vec3.z, Vec3.tu, Vec3.tv };
-	
-
-		short int *iptr = (short int *)malloc(sizeof(short int) + sizeof(UVGP_INFO) * 3);
-	
-		short int * iptr_t = iptr;
-		
-		short int num_verts = 3;
-
-		/*
-		int val = sizeof(UVGP_INFO);
-		int size = iptr_t - iptr;
-		int size2 =  (sizeof(short int) + sizeof(UVGP_INFO) * 3) / 2;
-		*/
-
-
-		*iptr_t = num_verts;
-		iptr_t++;
-
-		memcpy(iptr_t, &v1, sizeof(UVGP_INFO));
-		iptr_t += sizeof(UVGP_INFO) / 2;
-
-		memcpy(iptr_t, &v2, sizeof(UVGP_INFO));
-		iptr_t += sizeof(UVGP_INFO) / 2;
-
-		memcpy(iptr_t, &v3, sizeof(UVGP_INFO));
-		iptr_t += sizeof(UVGP_INFO) / 2;
-
-		//char *sz1 = MyHeapCheck();
-	
-		if(xgen_xguvpersp_fp(iptr))
-			gtmap_persp32_fp( xgen_ymin, xgen_ymax, (unsigned char*)texture_page_ptrs );
-
-		//char *sz2 = MyHeapCheck();
-
-		free(iptr);
-
-
-	}
-}
-
-
-/*
-void CMeshManager::Load_BMP()
-{
-//îòêðûâàåì BMP ôàéë 64x64 ïèêñåëÿ 8 áèò
-	//ãëóáèíà öâåòà äëÿ ÷òåíèÿ â áèíàðíîì ðåæèìå
-	FILE *fp = NULL;
-	fopen_s(&fp, "texture.bmp", "rb");
-	if(fp==NULL) printf("Error Open File");
-
-	//÷èòàåì çàãîëîâîê ôàéëà òåêñòóðû
-	BITMAPFILEHEADER bfh;
-	fread(&bfh, sizeof(BITMAPFILEHEADER), 1, fp);
-
-	//÷èòàåì çàãîëîâîê ôàéëà òåêñòóðû
-	BITMAPINFOHEADER bih;
-	fread(&bih, sizeof(BITMAPINFOHEADER), 1, fp);
-
-	//îäíè ýëåìåíò ïàëèòíû çàíèìàåò 4 áàéòà
-	//3 áàéòà äëÿ R,G,B è îäèí çàðåçåðâèðîâàííûé
-	//RGBQUAD RgbPal[256];
-	//fread(&RgbPal, 256 * 4,1,fp);
-	fread(&palette, 256 * 4,1,fp);
-
-	//ñäâèãàåìñÿ îò íà÷àëà BMP ôàéëà äî íà÷àëà äàííûõ
-	fseek(fp, bfh.bfOffBits, SEEK_SET);
-
-	//óêàçàòåëü íà ìàññèâ áàéò ïîëó÷åííûõ èç BMP ôàéëà
-	//unsigned char *pRes;
-	//pRes = new unsigned char[bih.biHeight * bih.biWidth];
-
-	texture_page_ptrs = new unsigned char[bih.biHeight * bih.biWidth];
-	
-	//÷èòàåì èç ôàéëà öâåòîâûå äàííûå èçîáðàæåíèÿ
-	fread(texture_page_ptrs, bih.biHeight * bih.biWidth, 1, fp);
-
-
-	m_TextureWidth = 65536;
-	m_TextureHeight = 65536;
-
-
-	//çàãðóçèëè òåêñòóðó çàêðûâàåì ôàéë
-	fclose(fp);
-
-}
-*/
 
 int CMeshManager::Get_TextureID(char * szFilename)
 {
-
-	//return 0;
-
-
 
 	if(!_strcmpi(szFilename, "texture1.bmp\n")) //floor texture
 	{
@@ -913,11 +635,6 @@ void CMeshManager::Init_MeshManager(HWND hWnd)
 	//что бы палитра загрузилась из текстуры кирпича для стены
 	Load_BMP((char*)"texture2.bmp", 1);
 
-/*
-	Load_BMP((char*)"texture.bmp", 0);
-	Load_BMP((char*)"texture.bmp", 1);
-	Load_BMP((char*)"texture.bmp", 2);
-*/
 	Create_BackBuffer();
 	//Create_Normal_Palette();
 
@@ -958,34 +675,6 @@ void CMeshManager::Init_MeshManager(HWND hWnd)
 		char szTexFName[256];
 		strcpy_s(szTexFName,256,Buffer);
 		int tId = Get_TextureID(szTexFName);
-
-		//texture width & height is 256
-		/*
-		VecPos[0].tu *= (m_TextureWidth - 1);
-		VecPos[0].tv *= (m_TextureHeight - 1);
-		
-		VecPos[1].tu *= (m_TextureWidth - 1);
-		VecPos[1].tv *= (m_TextureHeight - 1);
-
-		VecPos[2].tu *= (m_TextureWidth - 1);
-		VecPos[2].tv *= (m_TextureHeight - 1);
-
-		VecPos[3].tu *= (m_TextureWidth - 1);
-		VecPos[3].tv *= (m_TextureHeight - 1);
-		*/
-/*
-		VecPos[0].tu *= m_TextureWidth;
-		VecPos[0].tv *= m_TextureHeight;
-		
-		VecPos[1].tu *= m_TextureWidth;
-		VecPos[1].tv *= m_TextureHeight;
-
-		VecPos[2].tu *= m_TextureWidth;
-		VecPos[2].tv *= m_TextureHeight;
-
-		VecPos[3].tu *= m_TextureWidth;
-		VecPos[3].tv *= m_TextureHeight;
-		*/
 
 		VecPos[0].x *= 102.4f;
 		VecPos[0].y *= 102.4f;
@@ -1073,11 +762,6 @@ void CMeshManager::Init_MeshManager(HWND hWnd)
 
 }
 
-
-
-
-
-
 void CMeshManager::Get_View_Matrix()
 {
 	float Time = Get_Elapsed_Time();
@@ -1094,7 +778,7 @@ void CMeshManager::Get_View_Matrix()
 	
 	if (GetAsyncKeyState('Q') & 0xFF00)
 	{
-		y_rot -= (int)(5000 * Time);
+		y_rot -= (int)(7500 * Time);
 		if (y_rot < 0)
 		{
 			y_rot += 0x10000;
@@ -1103,7 +787,7 @@ void CMeshManager::Get_View_Matrix()
 
 	if (GetAsyncKeyState('E') & 0xFF00)
 	{
-		y_rot += (int)(5000 * Time);
+		y_rot += (int)(7500 * Time);
 		if (y_rot >= 0x10000)
 		{
 			y_rot -= 0x10000;
@@ -1146,101 +830,7 @@ void CMeshManager::Get_View_Matrix()
 		zsrc += (int)(-phd_sin(y_rot) * Time * RatioMove) >> W2V_SHIFT;
 	}
 
-	/*
-	if (GetAsyncKeyState('W') & 0xFF00)
-	{
-		xsrc += (-phd_sin(y_rot) >> W2V_SHIFT) * Time * RatioMove;
-		zsrc += (phd_cos(y_rot) >> W2V_SHIFT) * Time * RatioMove;
-	}
-
-	if (GetAsyncKeyState('S') & 0xFF00)
-	{
-		xsrc += (phd_sin(y_rot) >> W2V_SHIFT) * Time * RatioMove;
-		zsrc += (-phd_cos(y_rot) >> W2V_SHIFT) * Time * RatioMove;
-	}
-
-	if (GetAsyncKeyState('A') & 0xFF00)
-	{
-		xsrc += (-phd_cos(y_rot) >> W2V_SHIFT) * Time * RatioMove;
-		zsrc += (-phd_sin(y_rot) >> W2V_SHIFT) * Time * RatioMove;
-	}
-
-	if (GetAsyncKeyState('D') & 0xFF00)
-	{
-		xsrc += (phd_cos(y_rot) >> W2V_SHIFT) * Time * RatioMove;
-		zsrc += (phd_sin(y_rot) >> W2V_SHIFT) * Time * RatioMove;
-	}
-
-	*/
-
-
-
-
 	phd_LookAt(xsrc, ysrc, zsrc, xtar, ytar, ztar, 0);
-
-/*
-	static int y_rot = 0;
-
-	if(GetAsyncKeyState(VK_LEFT)& 0xFF00) 
-	{
-		y_rot -= 182;
-	}
-
-	if(GetAsyncKeyState(VK_RIGHT)& 0xFF00) 
-	{
-		y_rot += 182;
-		
-	}
-*/
-	/*
-	int xsrc = 25;
-	int ysrc = 5;
-	int zsrc = 5;
-	short int roll = 0;
-	*/
-
-	//int xtar = 25;
-	//int ytar = 5;
-	//int ztar = 5;
-
-	/*
-
-	PHD_ANGLE angles[2];
-    phd_GetVectorAngles(xtar - xsrc, ytar - ysrc, ztar - zsrc, angles);
-
-    PHD_3DPOS viewer;
-    viewer.x = xsrc;
-    viewer.y = ysrc;
-    viewer.z = zsrc;
-    viewer.x_rot = angles[1];
-    viewer.y_rot = angles[0];
-	viewer.z_rot = roll;
-	
-    matrix4x4 MatView = phd_GenerateW2V(&viewer);
-	*/
-	
-	//return MatView;
-}
-
-vector3 CMeshManager::Calc_Edge(vector3 &VecIn1, vector3 &VecIn2)
-{
-	//вершина перед передней плоскостью v1
-	//вершина за передней проскостью v2
-
-	vector3 VecOut;
-
-	float d = (m_ZNear - VecIn1.z) / (VecIn2.z - VecIn1.z);
-
-    VecOut.x = VecIn1.x + d * (VecIn2.x - VecIn1.x);
-    VecOut.y = VecIn1.y + d * (VecIn2.y - VecIn1.y);
-    VecOut.z = VecIn1.z + d * (VecIn2.z - VecIn1.z);
-
-	//VecOut.z = m_ZNear;
-
-	VecOut.tu = VecIn1.tu + d * (VecIn2.tu - VecIn1.tu);
-    VecOut.tv = VecIn1.tv + d * (VecIn2.tv - VecIn1.tv);
-
-	return VecOut;
 }
 
 int CMeshManager::Clip_Vertices_Screen(int Num, vector3 *Source)
@@ -1584,6 +1174,8 @@ void CMeshManager::Update_MeshManager()
 			Vec2 = FrontList.PolyList[i].Vertex[1];
 			Vec3 = FrontList.PolyList[i].Vertex[2];
 			
+			//field of view 80 degree, 65536 / 360 = 182
+			//1 градус равен 182 единицам
 			int fov = 80 * 182;
 
 			int c = phd_cos(fov / 2);
@@ -1613,9 +1205,6 @@ void CMeshManager::Update_MeshManager()
 				
 				Vertex[0].tu = Vec1.tu * Vertex[0].z;
 				Vertex[0].tv = Vec1.tv * Vertex[0].z;
-
-		
-
 
 
 				Vertex[1].x = Vec2.x;
@@ -1662,14 +1251,71 @@ void CMeshManager::Update_MeshManager()
 				info += 2;
 
 				int32_t indx = 0;
+/*
+
+		if (Vec1.x > m_ViewWidth)
+			if (Vec1.x > 32760)
+				Vec1.x = 32760;
+
+		if (Vec1.x < 0)
+			if (Vec1.x < -32760)
+				Vec1.x = -32760;
+
+		if (Vec1.y > m_ViewHeight)
+			if (Vec1.y > 32760)
+				Vec1.y = 32760;
+
+		if (Vec1.y < 0)
+			if (Vec1.y < -32760)
+				Vec1.y = -32760;
+
+
+		
+
+		if (Vec2.x > m_ViewWidth)
+			if (Vec2.x > 32760)
+				Vec2.x = 32760;
+
+		if (Vec2.x < 0)
+			if (Vec2.x < -32760)
+				Vec2.x = -32760;
+
+		if (Vec2.y > m_ViewHeight)
+			if (Vec2.y > 32760)
+				Vec2.y = 32760;
+
+		if (Vec2.y < 0)
+			if (Vec2.y < -32760)
+				Vec2.y = -32760;
+
+		
+		
+		
+		if (Vec3.x > m_ViewWidth)
+			if (Vec3.x > 32760)
+				Vec3.x = 32760;
+
+		if (Vec3.x < 0)
+			if (Vec3.x < -32760)
+				Vec3.x = -32760;
+
+		if (Vec3.y > m_ViewHeight)
+			if (Vec3.y > 32760)
+				Vec3.y = 32760;
+
+		if (Vec3.y < 0)
+			if (Vec3.y < -32760)
+				Vec3.y = -32760;
+
+*/
 
 
 				do
 				{
-					info[0] = (short int)Vertex[indx].x; // edx
-					info[1] = (short int)Vertex[indx].y; // edx + 4
+					info[0] = (short int)Vertex[indx].x;
+					info[1] = (short int)Vertex[indx].y;
 					//info[2] = (short int)Vertex[indx].g;
-					info[2] = (short int)1;
+					info[2] = (short int)0;
 
 					*(float *)&info[3] = Vertex[indx].z;
 					*(float *)&info[5] = Vertex[indx].tu;
@@ -1683,23 +1329,6 @@ void CMeshManager::Update_MeshManager()
 				info3dptr = info;
 
 				surfacenum++;
-
-
-
-/*
-				for ( int k = 1; k < Verts - 1; k++ )
-				{
-					polygon pt1;
-					
-					pt1.Vertex[0] = Vertex[0];
-					pt1.Vertex[1] = Vertex[k];
-					pt1.Vertex[2] = Vertex[k+1];
-
-					pt1.TexID = FrontList.PolyList[i].TexID;
-					
-					m_TransformedPoly.Add_To_List(&pt1);
-				}
-*/
 			
 		} //end for FrontList.PolygonCount
 
@@ -1711,11 +1340,8 @@ void CMeshManager::Draw_MeshManager()
 {
 	Clear_BackBuffer();
 
-	//Draw_Polygon_List();
-
 	SortPolyList(surfacenum, sort3d_buffer);
 	PrintPolyList(dibdc->surface);
-
 
 	Present_BackBuffer();
 }
@@ -1727,25 +1353,15 @@ int CMeshManager::Load_BMP(char *szFilename, int Tile)
 	fopen_s(&fp, szFilename, "rb");
 	if(fp==NULL) printf("Error Open File");
 
-	//÷èòàåì çàãîëîâîê ôàéëà òåêñòóðû
 	BITMAPFILEHEADER bfh;
 	fread(&bfh, sizeof(BITMAPFILEHEADER), 1, fp);
 
-	//÷èòàåì çàãîëîâîê ôàéëà òåêñòóðû
 	BITMAPINFOHEADER bih;
 	fread(&bih, sizeof(BITMAPINFOHEADER), 1, fp);
 
-	//îäíè ýëåìåíò ïàëèòíû çàíèìàåò 4 áàéòà
-	//3 áàéòà äëÿ R,G,B è îäèí çàðåçåðâèðîâàííûé
-	//RGBQUAD RgbPal[256];
-	//fread(&RgbPal, 256 * 4,1,fp);
 	fread(&palette, 256 * 4,1,fp);
 
-	//ñäâèãàåìñÿ îò íà÷àëà BMP ôàéëà äî íà÷àëà äàííûõ
 	fseek(fp, bfh.bfOffBits, SEEK_SET);
-
-	
-
 
 	m_pLevelTile[Tile] = new unsigned char [bih.biWidth*bih.biHeight];
 
@@ -1824,16 +1440,13 @@ void CMeshManager::do_quickysorty(int left, int right, int buffer[][2])
 		do_quickysorty(i, right, buffer);
 }
 
-/*****************************************************************************
- *			Print Polygon output list
- ****************************************************************************/
 void CMeshManager::PrintPolyList(void *ptr)
 {
 	/* Draw onto render surface */
 	int i;
 	int *sptr;
 	short int *iptr;
-	short int routine;
+	short int tex;
 
 	phd_winptr = (char *)ptr;
 
@@ -1841,12 +1454,10 @@ void CMeshManager::PrintPolyList(void *ptr)
 	for (i = surfacenum; i > 0; i--)
 	{
 		iptr = (short int *)(*sptr);
-		routine = *(iptr++);
-
-		texture_page_ptrs  = (UCHAR *) m_pLevelTile[routine];
+		tex = *(iptr++);
 
 		if(xgen_xguvpersp_fp(iptr))
-			gtmap_persp32_fp( xgen_ymin, xgen_ymax, (unsigned char*)texture_page_ptrs );
+			gtmap_persp32_fp( xgen_ymin, xgen_ymax, (unsigned char*)m_pLevelTile[tex] );
 
 		sptr += 2;
 	}

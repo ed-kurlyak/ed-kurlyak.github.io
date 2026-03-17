@@ -24,8 +24,8 @@ void Create_Normal_Palette()
 
 	//цвет для очистки экрана
 	pal[0].red = 0;
-	pal[0].green = 255 * 0.125f;
-	pal[0].blue = 255 * 0.3f;
+	pal[0].green = (unsigned char)(255 * 0.125f);
+	pal[0].blue = (unsigned char)(255 * 0.3f);
 
 	MGL_setPalette(dibdc, pal, 256, 0);
 	MGL_realizePalette(dibdc, 256, 0, false);
