@@ -168,6 +168,8 @@ struct matrix4x4
 
 //#define ABS(x) (((x)<0) ? (-(x)):(x))
 
+#define MAX_POLYGONS 4000 // maximum number of polygons
+
 class CMeshManager
 {
 public:
@@ -202,9 +204,20 @@ private:
 	int Clip_Vertices_Screen(int Num, vector3 *Source);
 	int Visible_ZClip(vector3 &vn1, vector3 &vn2, vector3 &vn3);
 
-	
 	void Timer_Start();
 	float Get_Elapsed_Time();
+
+	void SortPolyList(int number, int buffer[][2]);
+	void do_quickysorty(int left, int right, int buffer[][2]);
+	void PrintPolyList(void *ptr);
+
+	int32_t surfacenum;
+
+	int16_t *info3dptr; // current pointer to info section
+	int32_t *sort3dptr; // current pointer to Sort section
+
+	int32_t sort3d_buffer[MAX_POLYGONS][2];   // buffer for sort info
+	int16_t info3d_buffer[MAX_POLYGONS * 30]; // buffer for print info
 
 	unsigned char **m_pLevelTile;
 	UCHAR * m_Res;

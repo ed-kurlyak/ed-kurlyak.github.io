@@ -1503,6 +1503,12 @@ int CMeshManager::Clip_Vertices_ZNear(int Num, vector3 *Source)
 
 void CMeshManager::Update_MeshManager()
 {
+
+	sort3dptr = (int32_t *)sort3d_buffer;
+	info3dptr = (int16_t *)info3d_buffer;
+
+	surfacenum = 0;
+
 	Get_View_Matrix();
 
 	m_ZNear = (20 << W2V_SHIFT);
@@ -1524,6 +1530,10 @@ void CMeshManager::Update_MeshManager()
 		Vec3 = Vec3_Mat4x4_Mul(Vec3, *g_PhdMatrixPtr);
 
 		phd_PopMatrix();
+
+		float z1 = Vec1.z;
+		float z2 = Vec2.z;
+		float z3 = Vec3.z;
 
 		//backface culling
 		
@@ -1626,6 +1636,57 @@ void CMeshManager::Update_MeshManager()
 
 				int Verts = Clip_Vertices_Screen(3, &Vertex[0]);
 
+				float depth = z1;
+
+				if (depth < z2)
+				{
+					depth = z2;
+				}
+
+				if (depth < z3)
+				{
+					depth = z3;
+				}
+
+				int32_t *sort = sort3dptr;
+				int16_t *info = info3dptr;
+
+				sort[0] = (int32_t)info;
+				sort[1] = (int32_t)depth;
+
+				sort3dptr += 2;
+
+				info[0] = FrontList.PolyList[i].TexID;
+				info[1] = Verts;
+
+				info += 2;
+
+				int32_t indx = 0;
+
+
+				do
+				{
+					info[0] = (short int)Vertex[indx].x; // edx
+					info[1] = (short int)Vertex[indx].y; // edx + 4
+					//info[2] = (short int)Vertex[indx].g;
+					info[2] = (short int)1;
+
+					*(float *)&info[3] = Vertex[indx].z;
+					*(float *)&info[5] = Vertex[indx].tu;
+					*(float *)&info[7] = Vertex[indx].tv;
+
+					info += 9;
+					indx++;
+
+				} while (indx < Verts);
+
+				info3dptr = info;
+
+				surfacenum++;
+
+
+
+/*
 				for ( int k = 1; k < Verts - 1; k++ )
 				{
 					polygon pt1;
@@ -1638,7 +1699,7 @@ void CMeshManager::Update_MeshManager()
 					
 					m_TransformedPoly.Add_To_List(&pt1);
 				}
-
+*/
 			
 		} //end for FrontList.PolygonCount
 
@@ -1650,7 +1711,11 @@ void CMeshManager::Draw_MeshManager()
 {
 	Clear_BackBuffer();
 
-	Draw_Polygon_List();
+	//Draw_Polygon_List();
+
+	SortPolyList(surfacenum, sort3d_buffer);
+	PrintPolyList(dibdc->surface);
+
 
 	Present_BackBuffer();
 }
@@ -1711,3 +1776,78 @@ float CMeshManager::Get_Elapsed_Time()
 	return m_ElapsedTime;
 }
 
+void CMeshManager::SortPolyList(int number, int buffer[][2])
+{
+	int i;
+	if (number)
+	{
+		for (i = 0; i < number; i++) // eliminate polygon flicker
+			buffer[i][1] += i;
+
+		do_quickysorty(0, number - 1, buffer);
+	}
+}
+
+void CMeshManager::do_quickysorty(int left, int right, int buffer[][2])
+{
+	int i, j;
+	int compare, swap;
+
+	i = left;
+	j = right;
+	compare = buffer[(left + right) / 2][1]; /* get middle value*/
+
+	do
+	{
+		while (buffer[i][1] > compare && i < right)
+			++i; /* was <x*/
+		while (compare > buffer[j][1] && j > left)
+			--j;	/* was x<*/
+		if (i <= j) /* was ( i<=j )*/
+		{
+			swap = buffer[i][1];
+			buffer[i][1] = buffer[j][1]; /* swap elements*/
+			buffer[j][1] = swap;
+
+			swap = buffer[i][0];
+			buffer[i][0] = buffer[j][0];
+			buffer[j][0] = swap;
+
+			i++;
+			j--;
+		}
+	} while (i <= j);
+
+	if (left < j)
+		do_quickysorty(left, j, buffer);
+	if (i < right)
+		do_quickysorty(i, right, buffer);
+}
+
+/*****************************************************************************
+ *			Print Polygon output list
+ ****************************************************************************/
+void CMeshManager::PrintPolyList(void *ptr)
+{
+	/* Draw onto render surface */
+	int i;
+	int *sptr;
+	short int *iptr;
+	short int routine;
+
+	phd_winptr = (char *)ptr;
+
+	sptr = (int *)sort3d_buffer;
+	for (i = surfacenum; i > 0; i--)
+	{
+		iptr = (short int *)(*sptr);
+		routine = *(iptr++);
+
+		texture_page_ptrs  = (UCHAR *) m_pLevelTile[routine];
+
+		if(xgen_xguvpersp_fp(iptr))
+			gtmap_persp32_fp( xgen_ymin, xgen_ymax, (unsigned char*)texture_page_ptrs );
+
+		sptr += 2;
+	}
+}
