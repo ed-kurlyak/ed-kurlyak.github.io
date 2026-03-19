@@ -629,11 +629,11 @@ void CMeshManager::Init_MeshManager(HWND hWnd)
 	//всего на сцене у нас 3 текстуры
 	m_pLevelTile = new unsigned char *[3];
 
-
+	//три изображения глубина цвета 8 бит
+	//с одинаковой палитрой
 	Load_BMP((char*)"texture1.bmp", 0);
-	Load_BMP((char*)"texture3.bmp", 2);
-	//что бы палитра загрузилась из текстуры кирпича для стены
 	Load_BMP((char*)"texture2.bmp", 1);
+	Load_BMP((char*)"texture3.bmp", 2);
 
 	Create_BackBuffer();
 	//Create_Normal_Palette();
