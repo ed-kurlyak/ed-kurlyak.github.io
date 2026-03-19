@@ -630,7 +630,7 @@ void CMeshManager::Init_MeshManager(HWND hWnd)
 	m_pLevelTile = new unsigned char *[3];
 
 	//три изображения глубина цвета 8 бит
-	//с одинаковой палитрой
+	//с одинаковой палитрой 256 цветов
 	Load_BMP((char*)"texture1.bmp", 0);
 	Load_BMP((char*)"texture2.bmp", 1);
 	Load_BMP((char*)"texture3.bmp", 2);
