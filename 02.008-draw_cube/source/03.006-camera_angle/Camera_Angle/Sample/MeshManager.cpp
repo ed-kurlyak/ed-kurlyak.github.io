@@ -328,14 +328,15 @@ void CMeshManager::Get_View_Matrix()
 	float Time = Get_Elapsed_Time();
 
 	//увеличиваем/уменьшаем угол поворота камеры
+	//углы в математике ростут против часовой стрелки
 	if(GetAsyncKeyState('E')& 0xFF00) 
 	{
-		m_CamAngle -=  PI / 100.0f;
+		m_CamAngle +=  PI / 100.0f;
 	}
 
 	if(GetAsyncKeyState('Q')& 0xFF00) 
 	{
-		m_CamAngle +=  PI / 100.0f;
+		m_CamAngle -=  PI / 100.0f;
 	}
 
 	//реакция на клавиши W,S,A,D
@@ -666,27 +667,27 @@ void CMeshManager::Update_MeshManager()
 		float dx1 = Vec1.x - m_VecCamPos.x;
 		float dz1 = Vec1.z - m_VecCamPos.z;
 
-		//матрица вращения вокруг оси Y
-		Vec1.x = dx1 * cosf(m_CamAngle) + dz1 * sinf(m_CamAngle);
-		Vec1.z = dx1 * -sinf(m_CamAngle) + dz1 * cosf(m_CamAngle);
+		//матрица вращения вокруг оси Y (транспонированная)
+		Vec1.x = dx1 * cosf(m_CamAngle) + dz1 * -sinf(m_CamAngle);
+		Vec1.z = dx1 * sinf(m_CamAngle) + dz1 * cosf(m_CamAngle);
 		Vec1.y = Vec1.y - m_VecCamPos.y;
 		
 		//получаем вершину в видовых координатах
 		float dx2 = Vec2.x - m_VecCamPos.x;
 		float dz2 = Vec2.z - m_VecCamPos.z;
 
-		//матрица вращения вокруг оси Y
-		Vec2.x = dx2 * cosf(m_CamAngle) + dz2 * sinf(m_CamAngle);
-		Vec2.z = dx2 * -sinf(m_CamAngle) + dz2 * cosf(m_CamAngle);
+		//матрица вращения вокруг оси Y (транспонированная)
+		Vec2.x = dx2 * cosf(m_CamAngle) + dz2 * -sinf(m_CamAngle);
+		Vec2.z = dx2 * sinf(m_CamAngle) + dz2 * cosf(m_CamAngle);
 		Vec2.y = Vec2.y - m_VecCamPos.y;
 
 		//получаем вершину в видовых координатах
 		float dx3 = Vec3.x - m_VecCamPos.x;
 		float dz3 = Vec3.z - m_VecCamPos.z;
 
-		//матрица вращения вокруг оси Y
-		Vec3.x = dx3 * cosf(m_CamAngle) + dz3 * sinf(m_CamAngle);
-		Vec3.z = dx3 * -sinf(m_CamAngle) + dz3 * cosf(m_CamAngle);
+		//матрица вращения вокруг оси Y (транспонированная)
+		Vec3.x = dx3 * cosf(m_CamAngle) + dz3 * -sinf(m_CamAngle);
+		Vec3.z = dx3 * sinf(m_CamAngle) + dz3 * cosf(m_CamAngle);
 		Vec3.y = Vec3.y - m_VecCamPos.y;
 
 		//backface culling
