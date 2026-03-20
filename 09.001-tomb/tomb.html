@@ -503,7 +503,7 @@ void AnimateItem(ITEM_INFO *item)
 </pre>
 
 <p>
-Что такое item->required_anim_state. Например лев идет LION_WALK, тут сработало случайное число что лев должен сделать "рык" и потом идти дальше.
+Что такое item->required_anim_state. Например (функция LionControl()) лев идет LION_WALK, тут сработало случайное число что лев должен сделать "рык" и потом идти дальше.
 </p>
 
 <pre>
@@ -570,7 +570,7 @@ switch (item->current_anim_state)
 
 
 <p>
-То есть фактически item->required_anim_state прерывает текующуу анимацию LION_STOP, потом происходит "рык" LION_WARNING и после того как закончилась анимация "рыка" опять идет анимация LION_STOP, потом лев продолжает ходьбу.
+То есть фактически item->required_anim_state прерывает текующую анимацию LION_STOP, потом происходит "рык" LION_WARNING и после того как закончилась анимация "рыка" опять идет анимация LION_STOP, потом лев продолжает ходьбу.
 </p>
 
 <p>
@@ -621,7 +621,7 @@ case LION_ATTACK1:
 </pre>
 
 <p>
-Здесь если не поменять на item->required_anim_state = LION_STOP то в каждом кадре с Лары будет сниматься LION_POUNCE_DAMAGE и она практически сразу "умрет". item->required_anim_state = LION_STOP здесь это блокировка что бы повторно не заходить в условие. Блокировка сбрасывается в функции AnimateItem():
+Здесь если не поменять на item->required_anim_state = LION_STOP то в каждом кадре с Лары будет сниматься LION_POUNCE_DAMAGE и она практически сразу "умрет" на глазах. item->required_anim_state = LION_STOP здесь это блокировка что бы повторно не заходить в условие. Блокировка сбрасывается в функции AnimateItem():
 </p> 
 
 
