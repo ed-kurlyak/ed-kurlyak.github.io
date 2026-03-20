@@ -602,6 +602,42 @@ if (item->frame_number > anim->frame_end)
 
 </pre>	
 
+<p>
+Еще одно назначение item->required_anim_state не переключать анимацию, а блокировать выполнение кода многократно в каждом кадре (функция LionControl()):
+</p>
+
+<pre>
+
+case LION_ATTACK1:
+			if (item->required_anim_state == LION_EMPTY &&
+				(item->touch_bits & LION_TOUCH))
+			{
+				g_LaraItem->hit_points -= LION_POUNCE_DAMAGE;
+				g_LaraItem->hit_status = 1;
+				item->required_anim_state = LION_STOP;
+			}
+			break;
+
+</pre>
+
+<p>
+Здесь если не поменять на item->required_anim_state = LION_STOP то в каждом кадре с Лары будет сниматься LION_POUNCE_DAMAGE и она практически сразу "умрет". item->required_anim_state = LION_STOP здесь это блокировка что бы повторно не заходить в условие. Блокировка сбрасывается в функции AnimateItem():
+</p> 
+
+
+<pre>
+
+if (item->required_anim_state == item->current_anim_state)
+		{
+			item->required_anim_state = 0;
+		}
+
+</pre>
+
+
+<p>
+Если состояние item->current_anim_state поменялось на LION_STOP значит в условие выше уже не зайдет, и можно сбросить на ноль item->required_anim_state = 0.
+</p>
 
 </body>
 </html>
