@@ -452,5 +452,156 @@ void InitialiseWarrior2(int16_t item_num)
 Сектор Б для комнаты 1 помечен как дверь в комнату 2, но сектор Б для комнаты 2 (когда движок уже поменял room num) это обычный сектор - не помечен как дверь в другую комнату. И наоборот. То есть мы пересекли границу комнат - дверь - и поменялся номер комнаты. Об этом говорит сектор за дверью (не перед дверью). Мы из комнаты 1 идем в дверь, и следующий сектор за дверью уже говорит - ты в комнате 2. Движок меняет номер комнаты. Теперь этот сектор за дверью - уже обычный сектор для комнаты 2. Но мы из комнаты 2 идем в комнату 1 (наоборот) пересекаем дверь, и сектор за дверью из комнаты 2 в комнату 1 говорит - ты уже в комнате 1. И меняется номер комнаты в движке. Именно смена комнат происходит в секторе за дверью, мы двигаемся из комнаты 1 пересекаем дверь, и за дверью следующий сектор говорит - ты уже в комнате 2. Меняюется номер комнаты. И для комнаты 2 это уже обычный сектор, он не гооврит что ты попал в комнату 2 (как в случае когда мы пересекли дверь по пути из комнаты 1 в комнату 2).
 </p>
 
+<p>
+На примере лва из файла lion.cpp (так же управляет лвицей и пумой) стоит объяснить что такое:
+</p>
+
+<pre>
+
+	item->current_anim_state
+	item->goal_anim_state
+	item->required_anim_state
+
+</pre>
+
+
+<p>
+К примеру у льва item->current_anim_state = LION_STOP и item->goal_anim_state =  LION_STOP то есть лев стоит на месте. И в этот момент происходит смена item->goal_anim_state = LION_WALK тогда лев с остановки переходит к ходьбе. То есть item->goal_anim_state указывает на что сменить anim state и анимацию дальше - сменить с ходьбы на бег. За эту смену отвечает код в функции void AnimateItem(ITEM_INFO *item):
+</p>
+
+<pre>
+
+//функция для существ, не для Лары, у Лары есть отдельная функция анимации AnimateLara()
+void AnimateItem(ITEM_INFO *item)
+{
+	item->touch_bits = 0;
+	item->hit_status = 0;
+
+	ANIM_STRUCT *anim = &g_Anims[item->anim_number];
+
+	item->frame_number++;
+
+	if (anim->number_changes > 0)
+	{
+		//в функции GetChange происходит смена анимаций
+		//функция GetChange ищет если в статусе LION_STOP есть статус LION_WALK
+		//то переключить на LION_WALK
+		if (GetChange(item, anim))
+		{
+			anim = &g_Anims[item->anim_number];
+
+			item->current_anim_state = anim->current_anim_state;
+
+			if (item->required_anim_state == item->current_anim_state)
+			{
+				item->required_anim_state = 0;
+			}
+		}
+	}
+
+
+</pre>
+
+<p>
+Что такое item->required_anim_state. Например лев идет LION_WALK, тут сработало случайное число что лев должен сделать "рык" и потом идти дальше.
+</p>
+
+<pre>
+
+case LION_WALK:
+	............
+	else if (Random_GetControl() &lt LION_ROAR_CHANCE)
+	{
+		item->required_anim_state = LION_WARNING;
+		item->goal_anim_state = LION_STOP;
+	}
+
+
+</pre>
+
+<p>
+Здесь следующая анимация (переключение на) происходит на стоп item->goal_anim_state = LION_STOP; то есть в статусе LION_WALK есть статус LION_STOP (работает функция GetChange()). И смотрим выше:
+</p>
+
+<pre>
+
+switch (item->current_anim_state)
+{
+	case LION_STOP:
+		if (item->required_anim_state)
+		{
+			item->goal_anim_state = item->required_anim_state;
+		}
+
+</pre>
+
+<p>
+Если LION_STOP и if (item->required_anim_state) (что у нас уже установлено LION_WARNING это "рык") то установить item->goal_anim_state = item->required_anim_state; то есть после стоп идет "рык" смена анимации.
+</p>
+
+<p>
+Далее в функции AnimateItem() идет сброс item->required_anim_state = 0:
+</p>
+
+<pre>
+
+if (item->required_anim_state == item->current_anim_state)
+	{
+		item->required_anim_state = 0;
+	}
+
+</pre>
+
+<p>
+И "рыка" не происходит в следующем заходе в код так как item->required_anim_state = 0 (сброшено в функции AnimateItem:
+</p>
+
+<pre>
+
+switch (item->current_anim_state)
+{
+	case LION_STOP:
+		if (item->required_anim_state)
+		{
+			item->goal_anim_state = item->required_anim_state;
+		}
+
+</pre>
+
+
+<p>
+То есть фактически item->required_anim_state прерывает текующуу анимацию LION_STOP, потом происходит "рык" LION_WARNING и после того как закончилась анимация "рыка" опять идет анимация LION_STOP, потом лев продолжает ходьбу.
+</p>
+
+<p>
+Причем когда закончилась анимация "рык" (функция AnimateItem()):
+</p>
+
+<pre>
+
+
+
+if (item->frame_number > anim->frame_end)
+	{
+	
+</pre>
+
+<p>
+то выполняется код возврата к анимации стоп LION_STOP:
+</p>
+
+<pre>
+
+		item->anim_number = anim->jump_anim_num;
+		item->frame_number = anim->jump_frame_num;
+
+		anim = &g_Anims[item->anim_number];
+
+		item->current_anim_state = anim->current_anim_state; //здесь будет LION_STOP после LION_WARNING
+		item->goal_anim_state = item->current_anim_state; //здесь будет LION_STOP после LION_WARNING
+
+</pre>	
+
+
 </body>
 </html>
