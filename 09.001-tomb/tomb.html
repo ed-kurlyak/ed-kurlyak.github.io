@@ -639,5 +639,182 @@ if (item->required_anim_state == item->current_anim_state)
 Если состояние item->current_anim_state поменялось на LION_STOP значит в условие выше уже не зайдет, и можно сбросить на ноль item->required_anim_state = 0.
 </p>
 
+<p>
+Что такое object->pivot_length? Например есть такой код, файл box.cpp функция CreatureAIInfo():
+</p>
+
+<pre>
+
+OBJECT_INFO *object = &g_Objects[item->object_number];
+
+int32_t z =	g_LaraItem->pos.z -
+		((phd_cos(item->pos.y_rot) * object->pivot_length) >> W2V_SHIFT) -
+		item->pos.z;
+	int32_t x =	g_LaraItem->pos.x -
+		((phd_sin(item->pos.y_rot) * object->pivot_length) >> W2V_SHIFT) -
+		item->pos.x;
+
+</pre>
+
+<p>
+Здесь мы считаем расстояние от (например) льва до Лары, что бы потом знать когда льву нападать на Лару. Это не просто "Лара минус враг". Это: Лара минус позиция "точки атаки" врага.
+</p>
+
+<p>
+Шаг 1. Базовая идея (без pivot)
+</p>
+
+<p>
+Если бы было просто:
+</p>
+
+<pre>
+x = g_LaraItem->pos.x - item->pos.x;
+z = g_LaraItem->pos.z - item->pos.z;
+</pre>
+
+<p>
+Тогда:
+</p>
+
+<p>
+расстояние считалось бы от центра модели, угол — тоже от центра
+</p>
+
+
+<p>
+Проблема: центр модели — это обычно живот/ось вращения, а не пасть
+</p>
+
+<p>
+Шаг 2. Что такое pivot_length
+</p>
+
+<p>
+object->pivot_length
+</p>
+
+<p>
+Это расстояние: от центра модели вперёд, вдоль направления взгляда
+</p>
+
+<p>
+Пример:
+</p>
+<p>
+лев смотрит вперёд
+</p>
+<p>
+pivot_length ≈ расстояние до головы/пасти
+</p>
+
+<p>
+Шаг 3. Куда направлен pivot
+</p>
+<p>
+item->pos.y_rot
+</p>
+
+<p>
+это угол поворота существа (куда оно смотрит)
+</p>
+
+<p>
+Шаг 4. Перевод pivot в мировые координаты
+</p>
+
+<p>
+Вот эта часть:
+</p>
+
+<pre>
+phd_sin(item->pos.y_rot)
+phd_cos(item->pos.y_rot)
+</pre>
+
+<p>
+даёт направление вперёд
+</p>
+
+<p>
+Теперь умножаем на длину:
+</p>
+
+<pre>
+phd_sin(...) * pivot_length
+phd_cos(...) * pivot_length
+</pre>
+
+<p>
+получаем смещение вперёд от центра
+</p>
+
+<p>
+И делим:
+</p>
+
+<p>
+>> W2V_SHIFT
+</p>
+
+<p>
+перевод из fixed-point (стандарт TR)
+</p>
+
+<p>
+Шаг 5. Получаем точку атаки
+</p>
+
+<p>
+Фактически считается:
+</p>
+
+<pre>
+pivot_x = item->pos.x + sin(rot) * pivot_length
+pivot_z = item->pos.z + cos(rot) * pivot_length
+</pre>
+
+<p>
+Это координата: перед существом (например пасть)
+</p>
+
+<p>
+Шаг 6. Теперь считаем вектор до Лары
+</p>
+
+<pre>
+x = lara.x - pivot_x;
+z = lara.z - pivot_z;
+</pre>
+
+<p>
+Вот это и есть финальный результат
+</p>
+
+<p>
+В более понятном виде
+</p>
+
+<p>
+Если переписать:
+</p>
+
+<pre>
+
+int32_t pivot_x = item->pos.x +
+    ((phd_sin(item->pos.y_rot) * object->pivot_length) >> W2V_SHIFT);
+
+int32_t pivot_z = item->pos.z +
+    ((phd_cos(item->pos.y_rot) * object->pivot_length) >> W2V_SHIFT);
+
+int32_t x = g_LaraItem->pos.x - pivot_x;
+int32_t z = g_LaraItem->pos.z - pivot_z;
+
+</pre>
+
+<p>
+Так гораздо легче понять
+</p>
+
 </body>
 </html>
