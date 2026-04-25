@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+
+  <url><loc>https://ed-kurlyak.github.io/</loc><priority>1.0</priority></url>
+
+  <url><loc>https://ed-kurlyak.github.io/00.005-portfolio_web/portfolio_web.html</loc><priority>0.9</priority></url>
+  <url><loc>https://ed-kurlyak.github.io/00.002-patches/widescreen_tomb_raider_2345/widescreen_tomb_radier_manual/widescreen.html</loc><priority>0.8</priority></url>
+
+  <url><loc>https://ed-kurlyak.github.io/09.001-tomb/tomb.html</loc><priority>0.8</priority></url>
+
+  <url><loc>https://ed-kurlyak.github.io/03.001-reverse_engineering/03.001-start/start.html</loc><priority>0.7</priority></url>
+  <url><loc>https://ed-kurlyak.github.io/03.001-reverse_engineering/03.002-fcomp/fcomp.html</loc><priority>0.7</priority></url>
+  <url><loc>https://ed-kurlyak.github.io/03.001-reverse_engineering/03.003-asm_negat/asm_negat.html</loc><priority>0.7</priority></url>
+  <url><loc>https://ed-kurlyak.github.io/03.001-reverse_engineering/03.004-virt_f_diss/virt_f_diss.html</loc><priority>0.7</priority></url>
+  <url><loc>https://ed-kurlyak.github.io/03.001-reverse_engineering/03.005-ida_tricks/ida_tricks.html</loc><priority>0.7</priority></url>
+  <url><loc>https://ed-kurlyak.github.io/03.001-reverse_engineering/03.006-patch/patch.html</loc><priority>0.7</priority></url>
+  <url><loc>https://ed-kurlyak.github.io/03.001-reverse_engineering/03.007-sublime/sublime.html</loc><priority>0.7</priority></url>
+  <url><loc>https://ed-kurlyak.github.io/03.001-reverse_engineering/03.008-stack/stack.html</loc><priority>0.7</priority></url>
+
+  <url><loc>https://ed-kurlyak.github.io/02.009-os_dev/01.001-16bit_boot/16bit_boot.html</loc><priority>0.7</priority></url>
+  <url><loc>https://ed-kurlyak.github.io/02.009-os_dev/01.002-32bit_boot/32bit_boot.html</loc><priority>0.7</priority></url>
+
+  <url><loc>https://ed-kurlyak.github.io/01.006-dx12/01.001-directx12_init/directx12_init.html</loc><priority>0.7</priority></url>
+  <url><loc>https://ed-kurlyak.github.io/01.006-dx12/01.002-directx12_ads/directx12_ads.html</loc><priority>0.7</priority></url>
+  <url><loc>https://ed-kurlyak.github.io/01.006-dx12/01.003-directx12_rend_tex/directx12_rend_tex.html</loc><priority>0.7</priority></url>
+  <url><loc>https://ed-kurlyak.github.io/01.006-dx12/01.004-directx12_print_text/directx12_print_text.html</loc><priority>0.7</priority></url>
+  <url><loc>https://ed-kurlyak.github.io/01.006-dx12/01.005-directx12_rend_depth/directx12_rend_depth.html</loc><priority>0.7</priority></url>
+
+  <url><loc>https://ed-kurlyak.github.io/07.001-analytical_geometry/analytical_geometry.html</loc><priority>0.6</priority></url>
+  <url><loc>https://ed-kurlyak.github.io/07.002-linear_algebra/linear_algebra.html</loc><priority>0.6</priority></url>
+  <url><loc>https://ed-kurlyak.github.io/07.003-trigonometry/trigonometry.html</loc><priority>0.6</priority></url>
+  <url><loc>https://ed-kurlyak.github.io/07.004-rot_rodriga/rot_rodriga.html</loc><priority>0.6</priority></url>
+  <url><loc>https://ed-kurlyak.github.io/07.005-rot_quaternion/rot_quaternion.html</loc><priority>0.6</priority></url>
+  <url><loc>https://ed-kurlyak.github.io/07.006-sphere_ray/sphere_ray.html</loc><priority>0.6</priority></url>
+  <url><loc>https://ed-kurlyak.github.io/07.007-plane_equation/plane_equation.html</loc><priority>0.6</priority></url>
+  <url><loc>https://ed-kurlyak.github.io/07.008-vec_reflect/vec_reflect.html</loc><priority>0.6</priority></url>
+
+  <url><loc>https://ed-kurlyak.github.io/01.001-tetris/tetris.html</loc><priority>0.6</priority></url>
+  <url><loc>https://ed-kurlyak.github.io/01.002-snake/snake.html</loc><priority>0.6</priority></url>
+  <url><loc>https://ed-kurlyak.github.io/01.003-mario/mario.html</loc><priority>0.6</priority></url>
+  <url><loc>https://ed-kurlyak.github.io/01.004-arkanoid/arkanoid.html</loc><priority>0.6</priority></url>
+  <url><loc>https://ed-kurlyak.github.io/01.005-warlock/warlock.html</loc><priority>0.6</priority></url>
+
+  <url><loc>https://ed-kurlyak.github.io/06.001-encryption/encryption.html</loc><priority>0.6</priority></url>
+  <url><loc>https://ed-kurlyak.github.io/06.002-caesar/caesar.html</loc><priority>0.6</priority></url>
+  <url><loc>https://ed-kurlyak.github.io/06.003-vernam/vernam.html</loc><priority>0.6</priority></url>
+  <url><loc>https://ed-kurlyak.github.io/06.004-tor/tor.html</loc><priority>0.6</priority></url>
+
+  <url><loc>https://ed-kurlyak.github.io/04.001-typing/st.html</loc><priority>0.5</priority></url>
+
+  <url><loc>https://ed-kurlyak.github.io/02.006-md5/md5.html</loc><priority>0.5</priority></url>
+  <url><loc>https://ed-kurlyak.github.io/02.007-fog_bulb_tr4/fog_bulb_tr4.html</loc><priority>0.5</priority></url>
+  <url><loc>https://ed-kurlyak.github.io/02.010-node_bsp_tree/node_bsp_tree.html</loc><priority>0.5</priority></url>
+  <url><loc>https://ed-kurlyak.github.io/02.011-jpg_viewer/jpg_viewer.html</loc><priority>0.5</priority></url>
+  <url><loc>https://ed-kurlyak.github.io/02.012-directx6/directx6.html</loc><priority>0.5</priority></url>
+  <url><loc>https://ed-kurlyak.github.io/02.013-msdos_3d/msdos_3d.html</loc><priority>0.5</priority></url>
+  <url><loc>https://ed-kurlyak.github.io/02.014-ddraw_windower/ddraw_windower.html</loc><priority>0.5</priority></url>
+  <url><loc>https://ed-kurlyak.github.io/02.015-num_sys/num_sys.html</loc><priority>0.5</priority></url>
+  <url><loc>https://ed-kurlyak.github.io/02.016-wav/wav.html</loc><priority>0.5</priority></url>
+  <url><loc>https://ed-kurlyak.github.io/02.017-wave_path/wave_path.html</loc><priority>0.5</priority></url>
+  <url><loc>https://ed-kurlyak.github.io/02.018-tbn_normal_mapping/tbn_normal_mapping.html</loc><priority>0.5</priority></url>
+  <url><loc>https://ed-kurlyak.github.io/02.019-a_star_path/a_star_path.html</loc><priority>0.5</priority></url>
+  <url><loc>https://ed-kurlyak.github.io/02.020-zinc/zinc.html</loc><priority>0.5</priority></url>
+
+  <url><loc>https://ed-kurlyak.github.io/05.001-http_server/http_server.html</loc><priority>0.5</priority></url>
+  <url><loc>https://ed-kurlyak.github.io/05.002-net_client_server/net_client_server.html</loc><priority>0.5</priority></url>
+
+  <url><loc>https://ed-kurlyak.github.io/08.001-pen-test-wifi1/pen-test-wifi1.html</loc><priority>0.5</priority></url>
+
+  <url><loc>https://ed-kurlyak.github.io/010.001-bmp_show/bmp_show.html</loc><priority>0.5</priority></url>
+  <url><loc>https://ed-kurlyak.github.io/010.002-pcx_show/pcx_show.html</loc><priority>0.5</priority></url>
+  <url><loc>https://ed-kurlyak.github.io/010.003-jpg_show/jpg_show.html</loc><priority>0.5</priority></url>
+
+</urlset>
