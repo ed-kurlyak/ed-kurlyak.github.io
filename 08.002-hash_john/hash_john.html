@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Взлом хешей паролей с помощью John the Ripper - Windowns/Kali Linux</title>
+
+	<meta name="DESCRIPTION" content="Взлом хешей паролей с помощью John the Ripper - Windowns/Kali Linux">
+	<meta name="KEYWORDS" content="Взлом хешей паролей с помощью John the Ripper - Windowns/Kali Linux">
+
+	<meta property="og:url"                content="https://kurlyak.ho.ua/08.002-hash_john/hash_john.html" />
+	<meta property="og:type"               content="article" />
+	<meta property="og:title"              content="Ed Kurlyak - Взлом хешей паролей" />
+	<meta property="og:description"        content="Взлом хешей паролей с помощью John the Ripper" />
+	<meta property="og:image"              content="https://kurlyak.ho.ua/08.002-hash_john/hash_john.png" />
+
+
+<style type="text/css">
+body {
+	font-size: 24px;
+	font-family: "Consolas";
+	background-color: #000;
+	color: #ffffff;
+}
+
+pre {
+	font-size: 24px;
+	font-family: "Consolas";
+	background-color: #ffffaa;
+	color: #000;
+	width: max-content;
+	min-width: 100%;
+
+}
+
+div.my_selected {
+	width: 100%;
+	background-color: #ffff55;
+	position: relative;
+}
+
+a:link, a:visited { color: #aaaaaa; text-decoration: none; font-weight: normal;} 
+a:active, a:hover { color: #aaaaaa; text-decoration: underline;}
+
+p {
+	text-align: justify;
+	margin-right: 20px;
+}
+
+</style>	
+</head>
+<body>
+
+<h3>
+Взлом хешей паролей с помощью John the Ripper - Windowns/Kali Linux
+</h3>
+
+<p>
+Для начала работы нам потребуется программа John The Ripper для расшифровки хешей. В дистрибутиве Kali Linux она, как правило, уже входит в стандартный набор инструментов, поэтому дополнительно скачивать и устанавливать её не требуется. В ОС Windows lля загрузки данной программы зайдем на сайт: <a href="https://www.openwall.com/">https://www.openwall.com/</a>. Теперь в браузере, находясь на этом сайте, нажимаем сочетание клавишь Ctrl + F для поиска текста по странице, и в окне поиска вводим первые буквы названия программы John - и вас перекинет на то место страницы где можно загрузить данную программу. У меня ссылка на странице John The Ripper обозначена текстом:
+</p>
+
+<pre>
+
+	John the Ripper password cracker for Linux, Mac, Windows, ...
+	(and wordlists for use with it and with other tools)
+
+</pre>
+
+<p>
+Нажимаем на ссылку мышей, загружаем программу.
+</p>
+
+<p>
+У меня загрузился вот такой архив в папку Downloads:
+</p>
+
+<pre>
+
+	john-1.9.0-jumbo-1-win64.zip
+
+</pre>
+
+<p>
+Из названия архива можно заметить версия программы для win64. Вы можете загрузить win32 версию если вы работаете с 32-х разрядной ОС Windows, поскольку я работаю в 64-х разрядной ОС Windows я загрузил версию программы win64.
+</p>
+
+<p>
+После загрузки john-1.9.0-jumbo-1-win64.zip распаковываем архив в отдельную папку. К примеру вы разрархивировали архив и папку положили на диск C:
+</p>
+
+<pre>
+
+	C:\john-1.9.0-jumbo-1-win64
+
+</pre>
+
+<p>
+Заходим в проводик по данному адресу C:\john-1.9.0-jumbo-1-win64 и открываем внутри папку run:
+</p>
+
+<pre>
+
+	C:\john-1.9.0-jumbo-1-win64\run
+
+</pre>
+
+<p>
+В папке run находиться наша программа john.exe и все что может потребоваться для ее работы.
+</p>
+
+
+<p>
+Теперь начинается самое интересное - нам нужно сделать хеш, который мы будем расшифровывать при помощи John The Ripper.
+</p>
+
+<p>
+В поиске Google ищем строку "md5 Hash Generator". Когда Google выдал результаты поиска, переходим по ссылке (здесь у меня на странице, или из поиска Google переходим) <a href="https://www.miraclesalad.com/webtools/md5.php">https://www.miraclesalad.com/webtools/md5.php</a>, после перехода по ссылке видим что то вроде такого:
+</p>
+
+<img src="./pic/pic1.jpg" alt="md5 Hash Generator web page screenshot">
+
+<p>
+Как вы можете заметить я уже ввел строку, которую мы хешируем, это слово:
+</p>
+
+<pre>
+
+	hello1
+
+</pre>
+
+<p>
+И хеш MD5 этой строки будет 32 символьное значение:
+</p>
+
+<pre>
+
+	203ad5ffa1d7c650ad681fdff3965cd2
+
+</pre>
+
+<p>
+Далее в проводнике заходим в папку:
+</p>
+
+<pre>
+
+	C:\john-1.9.0-jumbo-1-win64\run
+
+</pre>
+
+<p>
+И внутри создаем пустой текстовый файл my.txt и первая строка этого файла- наш хеш. У вас должно быть что то вроде такого:
+</p>
+
+<img src="./pic/pic2.jpg" alt="md5 Hash stored in windows notepad file">
+
+<p>
+Сохраняем наш текстовый файл my.txt и выходим из Блокнота. Теперь у нас есть текстовый файл с хешем который мы будем взламывать:
+</p>
+
+
+<pre>
+
+	C:\john-1.9.0-jumbo-1-win64\run\my.txt
+
+</pre>
+
+<p>
+Теперь открываем Проводник в папке нашей программы, то есть в адресной строке проводника должно быть:
+</p>
+
+<pre>
+
+	C:\john-1.9.0-jumbo-1-win64\run
+
+</pre>
+
+<p>
+Теперь из адресной строки удаляем эту строку пути, тут же в адресной строке пишем cmd и нажимаем Enter - и по этому расположению откроетья командная строка консоли Windows.
+</p>
+
+<p>
+Итак в папке с программой (и тут же у нас файл с хешем my.txt) открылось окно консоли. Мы знаем, наш расшифровываемый хеш MD5 поэтому в опциях следюущей команды это указываем, команда ниже указывает что наш расшифровываемый хеш это MD5, запускает john.exe программу расшифровщик для нашего файла с хешем my.txt:
+</p>
+
+<pre>
+
+	john --format=raw-md5 my.txt
+
+</pre>
+
+
+<p>
+Команда выше расшифровывает наш хеш.
+</p>
+
+<p>
+Команда ниже выводит расшифрованных хеш на экран:
+</p>
+
+<pre>
+
+	john --show --format=raw-md5 my.txt
+
+</pre>
+
+<p>
+Скриншот сессии расшифровки нашего хеша ниже:
+</p>
+
+<img src="./pic/pic3.jpg" width=1200 alt="md5 Hash decripted using john the ripper">
+
+<p>
+Как видим вывод работы программы на скриншоте- мы расшифровали наш хеш и вывод hello1.
+</p>
+
+<p>
+Немножечко углубимся в теорию почему так произошло.
+</p>
+
+<p>
+В этой же папке с программой john.exe есть файл с паролями:
+</p>
+
+<pre>
+
+	C:\john-1.9.0-jumbo-1-win64\run\password.lst
+
+</pre>
+
+<p>
+Давайте этот файл password.lst откроем в Блокнот, и поищем, оказывается наше слово hello1 есть в списке в этом файле: 
+</p>
+
+
+<img src="./pic/pic4.jpg" width=700 alt="password.lst contains our hashed word screenshot">
+
+<p>
+Таким образом, программа John The Ripper ищет сначала по словарю, если нет в словаре- программа начинает генерировать пароли самостоятельно, преобразовывать их в хеши, и сравнивать с нашим, то есть фактически включается режим перебора, режим brute force (брут форса).
+</p>
+
+<p>
+Что бы это продемонстрировать, давайте для хеша возьмем слово, которого нет в словаре программы, например это слово:
+</p>
+
+<pre>
+
+	helloworld
+
+</pre>
+
+<p>
+Я проверил, это слово helloworld не содержиться в словаре password.lst. На сайте md5 Hash Generator (см.выше) для этого слова будет такой хеш (так же фиксированный размер 32 символа):
+</p>
+
+
+<pre>
+
+	fc5e038d38a57032085441e7fe7010b0
+
+</pre>
+
+<p>
+Сохраним этот хеш в файле my.txt, дадим команды на расшифровку и видим следующий скриншот:
+</p>
+
+<img src="./pic/pic5.jpg" width=1200 alt="Proceeding with incremental:ASCII - John The Ripper message screen">
+
+<p>
+Сообщение
+
+
+<p>
+Proceeding with incremental:ASCII
+</p>
+
+<p>
+означает, что John the Ripper начал перебор паролей в режиме Incremental с набором символов ASCII то есть используется набор символов ASCII (буквы, цифры, знаки пунктуации и т.д.). Следующая команда автоматически  после запуска сразу начинает перебор паролей для хешей из файла my.txt.:
+</p>
+
+<pre>
+
+	john --incremental=ASCII --format=raw-md5 my.txt
+
+</pre>
+
+<p>
+Команда выше определяет хеши формата raw-md5 (так как указан --format=raw-md5). Переходит в режим --incremental=ASCII. Начинает генерировать кандидаты на пароль из набора символов ASCII и сравнивать их хеши с имеющимися. Если находит совпадение, выводит найденный пароль и продолжает работу (если не задан режим остановки после первого результата). 
+</p>
+
+<p>
+Во время работы можно:
+</p>
+
+<p>
+нажать любую клавишу (кроме q) — John покажет текущий статус; нажать q или Ctrl+C — остановить процесс. Прогресс при этом обычно сохраняется в файле сессии, и позже можно продолжить работу командой john --restore.
+</p>
+
+
+</body>
+</html>
