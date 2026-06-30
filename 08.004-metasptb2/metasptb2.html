@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Взламываем metasploitable-linux-2.0.0 на примере Kali Linux</title>
+
+	<meta name="DESCRIPTION" content="Взламываем metasploitable-linux-2.0.0 на примере Kali Linux">
+	<meta name="KEYWORDS" content="Взламываем metasploitable-linux-2.0.0 на примере Kali Linux">
+
+	<meta property="og:url"                content="https://ed-kurlyak.github.io/08.004-metasp/metasp.html" />
+	<meta property="og:type"               content="article" />
+	<meta property="og:title"              content="Ed Kurlyak - Взламываем metasploitable-linux-2.0.0 на примере Kali Linux" />
+	<meta property="og:description"        content="Изучаем способ хранения паролей на серверах и ПК" />
+	<meta property="og:image"              content="https://ed-kurlyak.github.io/08.004-metasp/metasp.html" />
+
+
+<style type="text/css">
+body {
+	font-size: 24px;
+	font-family: "Consolas";
+	background-color: #000;
+	color: #ffffff;
+}
+
+pre {
+	font-size: 24px;
+	font-family: "Consolas";
+	background-color: #ffffaa;
+	color: #000;
+	width: max-content;
+	min-width: 100%;
+
+}
+
+div.my_selected {
+	width: 100%;
+	background-color: #ffff55;
+	position: relative;
+}
+
+a:link, a:visited { color: #aaaaaa; text-decoration: none; font-weight: normal;} 
+a:active, a:hover { color: #aaaaaa; text-decoration: underline;}
+
+p {
+	text-align: justify;
+	margin-right: 20px;
+}
+
+</style>	
+</head>
+<body>
+
+<h3>
+Взламываем metasploitable-linux-2.0.0 на примере Kali Linux
+</h3>
+
+<p>
+Порядок работы такой:
+</p>
+
+<p>
+Для взлома нам необходимо две виртуальные машины: первая Metasploitable 2 и вторая виртуальная машина это Kali Linux.
+</p>
+
+<ol>
+<li>Хост машина с VirtualBox у нас будет ОС Windows</li>
+<li>Загружаем из интернета и устанавливаем VirtualBox</li>
+<li>Загружаем из интернета Metasploitable 2 и подключаем к VirtualBox</li>
+<li>Загружаем из интернета Kali Linux образ для VirtualBox и подключаем к VirtualBox</li>
+<li>В глобальных настройках VirtualBox (общие настроки для всех машин) создаем сеть что бы связать наши две виртуальные машины</li>
+<li>Запускаем эти две виртуальные машины и начинаем тестировать взлом виртуальной машины Metasploitable 2 из виртуальной машины Kali Linux используя созданную нами сеть в VirtualBox</li>
+</ol>
+
+<hr>
+
+<p>
+По адресу <a href="https://download.virtualbox.org/virtualbox/7.2.10/">https://download.virtualbox.org/virtualbox/7.2.10/</a> загружаем файл VirtualBox-7.2.10-174163-Win.exe - это установочный файл VirtualBox для машины с ОС Windows. Загрузили, устанавливаем на свою ОС Windows. Для данной статьи я взял версию VirtualBox 7.2.10 но я рекомендую загружать самую последнюю версию VirtualBox по ссылке <a href="https://download.virtualbox.org/virtualbox/">https://download.virtualbox.org/virtualbox/</a> - это нужно для того, что далее мы будем загружать из интернета виртуальную машину Kali Linux - то есть файлы с ОС Kali Linux предназначенные для запуска в среде VirtualBox - и что бы последняя версия Kali Linux которую вы возьмете с интернета без ошибок работала на последней версии VirtualBox. К примеру, я взял последнюю версию на текущий момент kali-linux-2026.1-virtualbox-amd64.7z - архив с ВМ Kali Linux и ВМ с ошибками работала на версии VirtualBox 7.1.10 и уже есть VirtualBox 7.2.10, но я решил воспользоваться версией VirtualBox 7.1.10. Ошибки в работе проявлялись в том что гостевые дополнения не работали - наблюдалось неправильное разрешение рабочего стола Kali 2026.1 в VirtualBox 7.1.10, так же не работало копирование из виртуальной машины на хост, и из хоста в виртуальную машину - "копи-пасте" текста не работало. После замены VirtualBox 7.1.10 на последнюю версию VirtualBox 7.2.10 ВМ Kali 2026.1 начала работать без ошибок - гостевые дополнения работали без ошибок. Таким образом вывод, и я рекомендую - если вы загружаете последнюю версию ВМ Kali Linux - обязательно загрузите последнюю версию VirtualBox, иначе возможны аномалии в работе виртуальной машины.
+</p>
+
+
+<p>
+
+</p>
+
+<hr>
+
+<p>
+Загрузим себе на локальный компьютер Metasploitable 2 и подключим в VirtualBox. Для этого зайдите на сайт: <a href="https://www.vulnhub.com/entry/metasploitable-2,29/">https://www.vulnhub.com/entry/metasploitable-2,29/</a> и найдите ссылку в разделе страницы Download, ссылка выглядит так:
+</p>
+
+<pre>
+
+	https://download.vulnhub.com/metasploitable/metasploitable-linux-2.0.0.zip
+
+</pre>
+
+<img src="./pic/pic1.jpg" width=1100 alt="metasploitable 2 download">
+
+<p>
+То есть мы должны загрузить этот файл ахрива с сайта. После загрузки распакуем архив в удобное место.
+</p>
+
+<p>
+Предположим, после распаковки архива у нас есть путь к файлам:
+</p>
+
+<pre>
+
+	C:\PENTEST_ISO\metasploitable-linux-2.0.0\Metasploitable2-Linux\
+
+</pre>
+
+<p>
+И, соответственно, сама папка с распакованными файлами в проводнике выглядит так:
+</p>
+
+<img src="./pic/pic2.jpg" width=1100 alt="metasploitable 2 files folder in windows explorer">
+
+<p>
+Metasploitable.vmdk — это виртуальный диск машины Metasploitable, то есть готовая уязвимая CTF/учебная система для практики пентеста. Именно этот файл мы будем подключать в VirtualBox для создания виртуальной машины.
+</p>
+
+<p>
+Следующий шаг- запускаем VirtualBox и для начала создания виртуальной машины нажимаем кнопку "Создать".
+</p>
+
+<p>
+Далее появиться окошно с названием "Создание виртуальной машины" и в этом окошке заполните информацию как на следующих трех скриншотах - а именно:
+</p>
+
+<ul>
+<li>Имя ВМ: Metasploitable2-Linux</li>
+<li>Дистрибутив ОС: Ubuntu</li>
+<li>Версия ОС: Ubuntu (64-bit)</li>
+<li>Оперативная память 1024 MБ</li>
+<li>Использовать существующий виртуальный жесткий диск - и выберите здесь файл Metasploitable.vmdk из папки где распакован архив</li>
+</ul>
+
+
+<img src="./pic/pic3.jpg" width=900 alt="create metasploitable 2 virtual machine using virtualbox">
+
+<br>
+<br>
+
+<img src="./pic/pic4.jpg" width=900 alt="create metasploitable 2 virtual machine using virtualbox">
+
+<br>
+<br>
+
+<img src="./pic/pic5.jpg" width=900 alt="create metasploitable 2 virtual machine using virtualbox">
+
+<p>
+Далее в этом же окне после указания всех настроек нажимаем кнопку "Готово". В результате у нас будет созданная виртуальная машина как на скриншоте ниже:
+</p>
+
+<img src="./pic/pic6.jpg" width=900 alt="create metasploitable 2 virtual machine using virtualbox">
+
+</body>
+</html>

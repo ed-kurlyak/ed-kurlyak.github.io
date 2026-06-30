@@ -291,17 +291,30 @@ bcrypt ($2y$). Далее сам хеш - j9T$t40mB0E41xt4E1lNwEGix1$uxI/W4.NhSv
 <br>
 <br>
 
+<p>
+Вывод на экран команды john --format=crypt my_hash.txt.
+</p>
+
 
 <img src="./pic/pic6.jpg" width=900 alt="kali linux terminal screen shot">
 
 <br>
 <br>
 
+<p>
+Выполняем команду john --show my_hash.txt.
+</p>
+
 
 <img src="./pic/pic7.jpg" width=900 alt="kali linux terminal screen shot">
 
 <br>
 <br>
+
+
+<p>
+Вывод команды john --show my_hash.txt - команда выводит на экрна взломаный пароль.
+</p>
 
 
 <img src="./pic/pic8.jpg" width=900 alt="kali linux terminal screen shot">
@@ -311,7 +324,7 @@ bcrypt ($2y$). Далее сам хеш - j9T$t40mB0E41xt4E1lNwEGix1$uxI/W4.NhSv
 </p>
 
 <p>
-Но хочу заметить, данный пароль был подобран по словарю, не методом перебора.
+Но хочу заметить, программа John The Ripper данный пароль подобрала по словарю, не методом перебора.
 </p>
 
 
