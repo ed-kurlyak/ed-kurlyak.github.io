@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Способ 2 - Взламываем через SSH тестовую ОС metasploitable-linux-2.0.0 на примере Kali Linux</title>
+
+	<meta name="DESCRIPTION" content="Взламываем через SSH тестовую ОС metasploitable-linux-2.0.0 на примере Kali Linux">
+	<meta name="KEYWORDS" content="Взламываем через SSH тестовую ОС metasploitable-linux-2.0.0 на примере Kali Linux">
+
+  <meta property="og:url"                content="https://ed-kurlyak.github.io/08.004-metasp/metasp2с.html" />
+  <meta property="og:type"               content="article" />
+  <meta property="og:title"              content="Ed Kurlyak - Способ 2 - Взламываем через SSH тестовую ОС metasploitable-linux-2.0.0" />
+  <meta property="og:description"        content="Взламываем через SSH тестовую ОС metasploitable-linux-2.0.0 на примере Kali Linux" />
+  <meta property="og:image"              content="https://ed-kurlyak.github.io/08.004-metasp/metasp2.png" />
+
+<style type="text/css">
+body {
+	font-size: 24px;
+	font-family: "Consolas";
+	background-color: #000;
+	color: #ffffff;
+}
+
+pre {
+	font-size: 24px;
+	font-family: "Consolas";
+	background-color: #ffffaa;
+	color: #000;
+	width: max-content;
+	min-width: 100%;
+
+}
+
+div.my_selected {
+	width: 100%;
+	background-color: #ffff55;
+	position: relative;
+}
+
+a:link, a:visited { color: #aaaaaa; text-decoration: none; font-weight: normal;} 
+a:active, a:hover { color: #aaaaaa; text-decoration: underline;}
+
+p {
+	text-align: justify;
+	margin-right: 20px;
+}
+
+</style>	
+</head>
+<body>
+
+<h3>
+Часть 2. Способ 2 - Взламываем через SSH тестовую ОС metasploitable-linux-2.0.0 на примере Kali Linux
+</h3>
+
+
+
+1)ifconfig
+
+2)sudo netdiscover -r 10.0.2.0/24
+
+3)ping 10.0.2.!!!!!!!!! + открыть в браузере
+
+4)nmap -sC -sV 
+
+вывод nmap
+
+22/tcp   open  ssh         OpenSSH 4.7p1 Debian 8ubuntu1 (protocol 2.0)
+
+
+Разберём строку по частям:
+
+Часть Что означает
+
+22/tcp  Открыт порт 22, использующий протокол TCP. Это стандартный порт для SSH.
+
+open  Порт открыт и принимает подключения.
+
+ssh На этом порту работает служба SSH (Secure Shell).
+
+OpenSSH 4.7p1 Определена программа OpenSSH версии 4.7p1. Здесь p1 означает Patch 1 (первый патч к версии 4.7).
+
+Debian 8ubuntu1 Это версия пакета, собранного для Ubuntu на основе Debian. Не означает версию операционной системы. Это номер упаковки (package revision): 8ubuntu1 — восьмая ревизия пакета Debian с одним изменением от Ubuntu.
+(protocol 2.0)  Сервер поддерживает SSH-протокол версии 2.0. Сейчас практически все современные SSH-серверы используют именно его.
+
+
+Почему nmap смог определить версию
+
+Когда Nmap подключается к SSH-серверу, тот сразу отправляет приветственную строку (banner), например:
+
+SSH-2.0-OpenSSH_4.7p1 Debian-8ubuntu1
+
+Именно её Nmap анализирует и отображает в более удобном виде:
+
+22/tcp open ssh OpenSSH 4.7p1 Debian 8ubuntu1 (protocol 2.0)
+
+То есть эта информация обычно не подбирается, а сообщается самим SSH-сервером при установлении соединения.
+
+5)если использовать поиск Google, то узнаем что эта эта версия ssh использует ssl версии 0.9.8g
+
+<img src="./pic/pic56.jpg" width=1100 alt="google search result for query OpenSSH 4.7p1-8ubuntu1 версия ssl">
+
+
+Например, Nmap показывает:
+
+22/tcp open  ssh  OpenSSH 4.7p1 Debian 8ubuntu1
+
+Из этой строки можно сделать вывод:
+
+OpenSSH 4.7p1 — версия SSH.
+Debian 8ubuntu1 — это не версия ОС, а номер пакета Debian/Ubuntu (4.7p1-8ubuntu1).
+
+По этому номеру пакета можно определить, для какого релиза Ubuntu он был собран.
+
+Например:
+
+OpenSSH           Пакет                 Типичная OpenSSL
+4.7p1-8ubuntu1    Ubuntu 8.04 LTS       OpenSSL 0.9.8g
+
+Это не является доказательством.
+
+Администратор мог:
+
+обновить OpenSSL отдельно;
+пересобрать OpenSSH с другой версией OpenSSL;
+установить пакет из другого репозитория.
+
+Поэтому по одному только баннеру SSH нельзя утверждать:
+
+«На машине точно OpenSSL 0.9.8g.»
+
+Можно лишь сказать:
+
+«Наиболее вероятно используется OpenSSL 0.9.8g, поскольку пакет OpenSSH 4.7p1-8ubuntu1 обычно поставлялся именно с этой версией OpenSSL.»
+
+Именно поэтому в Metasploitable 2 после обнаружения баннера OpenSSH 4.7p1 Debian 8ubuntu1 проверяют эксплойт CVE-2008-0166 — это обоснованное предположение, которое затем подтверждается успешной эксплуатацией.
+
+<img src="./pic/pic57.jpg" width=1100 alt="google search result for query openssl 4.7p1 версия ubuntu">
+
+
+6) даем команду в терминале
+
+searchsploit openssl
+
+<img src="./pic/pic58.jpg" width=1100 alt="терминал kali linux вывод команды searchsploit openssl">
+
+
+!!!!!!!!!!!!!! далее обяснить что такое searchsploit !!!!!!!!!!!!!!!!!!!!!!!
+
+</body>
+</html>
