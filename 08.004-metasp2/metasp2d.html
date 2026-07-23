@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Используем TELNET для входа в metasploitable-linux-2.0.0 на примере Kali Linux</title>
+
+	<meta name="DESCRIPTION" content="Используем TELNET для входа в metasploitable-linux-2.0.0 на примере Kali Linux">
+	<meta name="KEYWORDS" content="Используем TELNET для входа в metasploitable-linux-2.0.0 на примере Kali Linux">
+
+  <meta property="og:url"                content="https://ed-kurlyak.github.io/08.004-metasp2/metasp2d.html" />
+  <meta property="og:type"               content="article" />
+  <meta property="og:title"              content="Используем TELNET для входа в metasploitable-linux-2.0.0 на примере Kali Linux" />
+  <meta property="og:description"        content="Вход в тестовую ОС metasploitable-linux-2.0.0 при помощи TELNET" />
+  <meta property="og:image"              content="https://ed-kurlyak.github.io/08.004-metasp2/metasp2.png" />
+
+<style type="text/css">
+body {
+	font-size: 24px;
+	font-family: "Consolas";
+	background-color: #000;
+	color: #ffffff;
+}
+
+pre {
+	font-size: 24px;
+	font-family: "Consolas";
+	background-color: #ffffaa;
+	color: #000;
+	width: max-content;
+	min-width: 100%;
+
+}
+
+div.my_selected {
+	width: 100%;
+	background-color: #ffff55;
+	position: relative;
+}
+
+a:link, a:visited { color: #aaaaaa; text-decoration: none; font-weight: normal;} 
+a:active, a:hover { color: #aaaaaa; text-decoration: underline;}
+
+p {
+	text-align: justify;
+	margin-right: 20px;
+}
+
+</style>	
+</head>
+<body>
+
+<h3>
+Часть 5. Используем TELNET для входа в metasploitable-linux-2.0.0 на примере Kali Linux
+</h3>
+
+<p>
+Здесь мы рассмотрим использование Telnet для получения информации о сервере и входа в систему, если известны учетные данные.
+</p>
+
+<p>
+Определяем IP нашей удаленной машины Metasploitable 2. Для этого даем команду:
+</p>
+
+<p>
+ifconfig
+</p>
+
+<p>
+Эта команда выдаст нам наш IP адрес, например 10.0.2.4, зная наш IP мы можем определить диапазон IP нашей сети 10.0.2.0/24 и теперь даем команду обнаружения других машин в нашей сети:
+</p>
+
+<p>
+sudo netdiscover -r 10.0.2.0/24
+</p>
+
+<p>
+Видим netdiscover выдало нам IP 10.0.2.3 - это IP нашей удаленной машины Metasploitable 2.
+</p>
+
+<p>
+Теперь можем перейти к части где мы входим в удаленную Metasploitable 2 при помощи TELNET.
+</p>
+
+<p>
+Запускам msfconsole командой терминала Kali Linux:
+</p>
+
+<p>
+msfconsole
+</p>
+
+<p>
+Когда msfconsole выдаст приглашение для ввода команд, вводим поиск модуля в msfconsole:
+</p>
+
+<p>
+search telnet
+</p>
+
+<p>
+Когда мы выполняем:
+</p>
+
+<p>
+msf > search telnet
+</p>
+
+<p>
+Metasploit ищет все модули, в названии или описании которых встречается слово telnet.
+</p>
+
+<p>
+Если мы знаем наперед какой модуль будем искать можно в поиске задать несколько слов, например:
+</p>
+
+<p>
+msf > search telnet scanner telnet_version
+</p>
+
+<p>
+В таком случае будет показано меньше результатов, будет сразу показано то что нас интересует.
+</p>
+
+<p>
+Итак, наша команда search telnet.
+</p>
+
+<p>
+Результат поиска на скриншоте, нужный модуль 78 выделен:
+</p>
+
+<img src="./pic/pic71.jpg" width=1300 alt="msfconsole команда search telnet из kali linux">
+
+<p>
+Возможно у  вас другая версия msfconsole, у меня в результатах выдало 85 модулей. Нам нужен 78 модуль:
+</p>
+
+<p>
+78  auxiliary/scanner/telnet/telnet_version                                .                normal     No     Telnet Service Banner Detection
+</p>
+
+<pre>
+
+Столбец           Значение                                  Что означает
+#                 78                                        Номер результата поиска.
+Name              auxiliary/scanner/telnet/telnet_version   Полное имя модуля.
+Disclosure Date   .                                         Дата публикации уязвимости.
+Rank              normal                                    Рейтинг надежности модуля.
+Check             No                                        Есть ли команда check.
+Description       Telnet Service Banner Detection           Краткое описание.
+
+</pre>
+
+<p>
+Строка означает следующее.
+</p>
+
+<p>
+78
+</p>
+
+<p>
+Это просто номер результата поиска.
+</p>
+
+<p>
+Для использования модуля можно написать:
+</p>
+
+<p>
+use 78
+</p>
+
+<p>
+вместо
+</p>
+
+<p>
+use auxiliary/scanner/telnet/telnet_version
+</p>
+
+<p>
+auxiliary/scanner/telnet/telnet_version
+</p>
+
+<p>
+Это полный путь к модулю.
+</p>
+
+<p>
+Разберем по частям:
+</p>
+
+<p>
+auxiliary — вспомогательный модуль. Он не получает shell и не эксплуатирует уязвимости.
+<br>
+scanner — предназначен для сканирования.
+<br>
+telnet — работает с сервисом Telnet.
+<br>
+telnet_version — определяет сервис по баннеру и пытается узнать его версию.
+</p>
+
+<p>
+.
+</p>
+
+<p>
+Это дата публичного раскрытия уязвимости (CVE). День, когда уязвимость стала публично известна. Почему у telnet_version стоит точка .? Потому что: telnet_version не является эксплойтом; он не использует никакую уязвимость; следовательно, даты раскрытия уязвимости у него нет.
+</p>
+
+<p>
+normal
+</p>
+
+<p>
+Это Rank (рейтинг надежности модуля).
+</p>
+
+<p>
+Для exploit-модулей он показывает, насколько надежно работает эксплойт:
+</p>
+
+<p>
+excellent
+<br>
+great
+<br>
+good
+<br>
+normal
+<br>
+average
+<br>
+low
+<br>
+manual
+</p>
+
+<p>
+У вспомогательных модулей (auxiliary) этот рейтинг обычно не имеет большого практического значения.
+</p>
+
+<p>
+No
+</p>
+
+<p>
+Это колонка Check.
+</p>
+
+<p>
+Она показывает, поддерживает ли модуль команду:
+</p>
+
+<p>
+check
+</p>
+
+<p>
+Эксплойты часто умеют проверить, уязвима ли цель, не выполняя атаку.
+</p>
+
+<p>
+У этого модуля:
+</p>
+
+<p>
+No
+</p>
+
+<p>
+потому что он не эксплуатирует ничего — он просто подключается и читает баннер.
+</p>
+
+<p>
+Telnet Service Banner Detection
+</p>
+
+<p>
+Это краткое описание модуля.
+</p>
+
+<p>
+Буквально:
+</p>
+
+<p>
+Определение Telnet-сервиса по баннеру.
+</p>
+
+<p>
+То есть модуль:
+</p>
+
+<p>
+открывает TCP-соединение на порт 23;
+<br>
+читает приветственное сообщение (banner);
+<br>
+выводит информацию о Telnet-сервисе.
+</p>
+
+<p>
+Итого
+</p>
+
+<p>
+Команда
+</p>
+
+<p>
+search telnet
+</p>
+
+<p>
+не ищет эксплойты специально. Она показывает все модули, связанные с Telnet:
+</p>
+
+<p>
+auxiliary/scanner/... — сканеры (определение сервиса, подбор паролей и т. п.);
+<br>
+exploit/... — эксплойты для известных уязвимостей в конкретных реализациях Telnet;
+<br>
+post/... — модули, которые работают уже после получения доступа;
+<br>
+иногда payload/... или encoder/..., если они относятся к Telnet.
+</p>
+
+<p>
+В статье выбран именно auxiliary/scanner/telnet/telnet_version, потому что это самый простой модуль: он лишь подтверждает, что на указанном IP работает Telnet, и показывает его баннер. Затем мы уже используем обычный клиент telnet для входа в систему с известными учетными данными которые показаны на баннере (так как Metasploitable 2 это учебная ОС учетные данные есть на баннере ftp).
+</p>
+
+
+<p>
+Итак мы нашли модуль номер 78, выбираем его командой:
+</p>
+
+<p>
+use 78
+</p>
+
+<img src="./pic/pic72.jpg" width=1100 alt="kali linux команда msfconsole use">
+
+<p>
+Далее необходимо посмотреть какие опции модуля необходимо установить, даем команду:
+</p>
+
+<p>
+show options
+</p>
+
+<p>
+Нужная строка на скриншоте ниже выделена:
+</p>
+
+<img src="./pic/pic73.jpg" width=1100 alt="kali linux команда msfconsole show options">
+
+<p>
+RHOSTS                     yes       The target host(s)
+</p>
+
+<p>
+Для строки RHOSTS в столбце Requierd стоит yes - это значит обязательно необохдимо для работы модуля. Установим RHOSTS командой, где 10.0.2.3 это IP адрес удаленной Metasploitable 2 который мы определили ранее:
+</p>
+
+<p>
+set RHOSTS 10.0.2.3
+</p>
+
+<img src="./pic/pic74.jpg" width=1100 alt="команда msfconsole set RHOSTS в kali linux">
+
+<p>
+Теперь еще раз дадим команду show options что бы проверить, что значение IP установилось:
+</p>
+
+<img src="./pic/pic75.jpg" width=1100 alt="kali linux команда msfconsole show options">
+
+<p>
+Как видим значение RHOSTS установлено правильно. Далее выполняем команду для запуска сканера:
+</p>
+
+<p>
+exploit
+</p>
+
+<p>
+или
+</p>
+
+<p>
+run
+</p>
+
+<p>
+Как видим ниже на скриншоте (выделено) из баннера мы можем получить логин/пароль это msfadmin/msfadmin.
+</p>
+
+<p>
+Это относится именно к учебной машине Metasploitable 2.
+</p>
+
+<p>
+У нее специально оставлены учебные учетные данные.
+</p>
+
+<p>
+Например:
+</p>
+
+<p>
+login: msfadmin
+<br>
+password: msfadmin
+</p>
+
+<p>
+В реальных системах пароль почти никогда не отображается в баннере. На Metasploitable это сделано специально для обучения.
+</p>
+
+
+<img src="./pic/pic76.jpg" width=1100 alt="kali linux команда msfconsole show options">
+
+<p>
+Даем команду:
+</p>
+
+<p>
+exit
+</p>
+
+<p>
+что бы выйти из msfconsole. Теперь у нас есть логин/пароль от ftp Metasploitable 2 и мы можем просто использовать telnet что бы войти. Вводим логин/пароль (скриншот ниже):
+</p>
+
+<img src="./pic/pic77.jpg" width=1100 alt="kali linux команда терминала telnet">
+
+<p>
+И после ввода логина/пароля видим приглашение Metasploitable 2 (на скриншоте ниже):
+</p>
+
+<p>
+msfadmin@metasploitable:~$ 
+</p>
+
+<img src="./pic/pic78.jpg" width=1100 alt="kali linux команда терминала telnet вход">
+
+<p>
+Для проверки что мы на Metasploitable 2 дадим команду ifconfig, на скриншоте ниже выделен IP 10.0.2.3 Metasploitable 2 который мы определили ранее:
+</p>
+
+<img src="./pic/pic79.jpg" width=1100 alt="kali linux команда терминала ifconfig внутри metasploitable 2">
+
+<p>
+Теперь дадим команду:
+</p>
+
+<p>
+whoami
+</p>
+
+<p>
+На скриншоте ниже видим вывод msfconsole - это наш логин ftp, вывод совпадает с логином.
+</p>
+
+<img src="./pic/pic80.jpg" width=1100 alt="kali linux команда терминала whoami внутри metasploitable 2">
+
+<p>
+Теперь можно еще и зайти как root дав команду (sudo super user):
+</p>
+
+<p>
+sudo su
+</p>
+
+<p>
+и далее ввести пароль msfadmin (скриншот ниже). Видим приглашение от root:
+</p>
+
+<p>
+root@metasploitable:/home/msfadmin# 
+</p>
+
+<p>
+То есть мы стали root, но остались в той же папке, в которой находились раньше - в домашней папке предыдущего пользователя msfadmin. При смене пользоваетля на root домашняя папка автоматически не показывается что изменилась. При смене пользователя sudo su меняется пользователь, но не меняется текущая рабочая директория. Домашняя папка root — это /root, но мы в нее автоматически не переходим после sudo su.
+</p>
+
+<img src="./pic/pic81.jpg" width=1100 alt="kali linux команда терминала sudo su внутри metasploitable 2">
+
+<p>
+Далее для проверки что мы root дадим команду whoami (скриншот ниже):
+</p>
+
+<img src="./pic/pic82.jpg" width=1100 alt="kali linux команда терминала whoami внутри metasploitable 2">
+
+<p>
+Подключаться можно по telnet вобще без Metasploit.
+</p>
+
+<p>
+telnet 10.0.2.3
+</p>
+
+<p>
+То есть Metasploit даже не нужен.
+</p>
+
+<p>
+Можно использовать обычный клиент Telnet.
+</p>
+
+<p>
+Он подключится к серверу:
+</p>
+
+<p>
+telnet 10.0.2.3
+</p>
+
+<p>
+После подключения увидим тот же баннер на котором указано логин/пароль.
+</p>
+
+
+<p>
+Для выхода из сеанса Metasploitable 2 ftp в терминале дадим команду exit.
+</p>
+
+<p>
+Так же есть возможность зайти по telnet еще и такой командой:
+</p>
+
+<p>
+telnet 10.0.2.3 -l msfadmin 
+</p>
+
+<p>
+где параметр -l говорит сразу какой мы будем использовать логин.
+</p>
+
+<p>
+Это показано на скриншоте ниже, ввод пароля:
+</p>
+
+<img src="./pic/pic83.jpg" width=1100 alt="kali linux команда telnet -l">
+
+<p>
+И после ввода пароля вход в Metasploitable 2:
+</p>
+
+
+<img src="./pic/pic84.jpg" width=1100 alt="kali linux команда telnet -l">
+
+<p>
+В строке подключения telnet что такое:
+</p>
+
+<p>
+Escape character is '^]'.
+</p>
+
+<p>
+Она означает:
+</p>
+
+<p>
+Если мы нажмем сочетание клавиш Ctrl + ], то перейдем в командный режим клиента Telnet.
+</p>
+
+<p>
+Это специальная комбинация клавиш для управления самим клиентом Telnet, а не удаленным сервером.
+</p>
+
+<p>
+Например:
+</p>
+
+<p>
+Подключился:
+</p>
+
+<pre>
+
+Connected to 192.168.79.179.
+Escape character is '^]'.
+
+</pre>
+
+<p>
+Нажал Ctrl + ].
+</p>
+
+<p>
+Появится приглашение Telnet:
+</p>
+
+<p>
+telnet>
+</p>
+
+<p>
+Теперь можно вводить команды самого клиента, например:
+</p>
+
+<p>
+telnet> close
+</p>
+
+<p>
+— закрыть текущее соединение.
+</p>
+
+<p>
+Или:
+</p>
+
+<p>
+telnet> quit
+</p>
+
+<p>
+— выйти из программы Telnet.
+</p>
+
+<p>
+Что означает ^]?
+</p>
+
+<p>
+Запись:
+</p>
+
+<p>
+^]
+</p>
+
+<p>
+означает:
+</p>
+
+<p>
+^ — клавиша Ctrl;
+<br>
+] — клавиша с символом ].
+</p>
+
+<p>
+То есть нужно нажать Ctrl + ].
+</p>
+
+<p>
+У протокола FTP понятия Escape character нет. Сообщение Escape character is '^]' — это особенность клиента Telnet, а не протокола FTP.
+</p>
+
+
+</body>
+</html>
