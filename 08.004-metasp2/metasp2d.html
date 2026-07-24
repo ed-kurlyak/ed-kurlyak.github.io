@@ -8,7 +8,7 @@
 
   <meta property="og:url"                content="https://ed-kurlyak.github.io/08.004-metasp2/metasp2d.html" />
   <meta property="og:type"               content="article" />
-  <meta property="og:title"              content="Используем TELNET для FTP входа в metasploitable-linux-2.0.0 на примере Kali Linux" />
+  <meta property="og:title"              content="Ed Kurlyak - Используем TELNET для FTP входа в metasploitable-linux-2.0.0 на примере Kali Linux" />
   <meta property="og:description"        content="Вход по FTP в тестовую ОС metasploitable-linux-2.0.0 при помощи TELNET" />
   <meta property="og:image"              content="https://ed-kurlyak.github.io/08.004-metasp2/metasp2.png" />
 
@@ -193,7 +193,7 @@ msf > search telnet scanner telnet_version
 Результат поиска на скриншоте, нужный модуль 78 выделен:
 </p>
 
-<img src="./pic/pic71.jpg" width=1300 alt="msfconsole команда search telnet из kali linux">
+<img src="./picd/pic71.jpg" width=1400 alt="msfconsole команда search telnet из kali linux">
 
 <p>
 Возможно у  вас другая версия msfconsole, у меня в результатах выдало 85 модулей. Нам нужен 78 модуль:
@@ -404,7 +404,7 @@ post/... — модули, которые работают уже после п�
 use 78
 </p>
 
-<img src="./pic/pic72.jpg" width=1100 alt="kali linux команда msfconsole use">
+<img src="./picd/pic72.jpg" width=1400 alt="kali linux команда msfconsole use">
 
 <p>
 Далее необходимо посмотреть какие опции модуля необходимо установить, даем команду:
@@ -418,7 +418,7 @@ show options
 Нужная строка на скриншоте ниже выделена:
 </p>
 
-<img src="./pic/pic73.jpg" width=1100 alt="kali linux команда msfconsole show options">
+<img src="./picd/pic73.jpg" width=1400 alt="kali linux команда msfconsole show options">
 
 <p>
 RHOSTS                     yes       The target host(s)
@@ -432,13 +432,13 @@ RHOSTS                     yes       The target host(s)
 set RHOSTS 10.0.2.3
 </p>
 
-<img src="./pic/pic74.jpg" width=1100 alt="команда msfconsole set RHOSTS в kali linux">
+<img src="./picd/pic74.jpg" width=1400 alt="команда msfconsole set RHOSTS в kali linux">
 
 <p>
 Теперь еще раз дадим команду show options что бы проверить, что значение IP установилось:
 </p>
 
-<img src="./pic/pic75.jpg" width=1100 alt="kali linux команда msfconsole show options">
+<img src="./picd/pic75.jpg" width=1400 alt="kali linux команда msfconsole show options">
 
 <p>
 Как видим значение RHOSTS установлено правильно. Далее выполняем команду для запуска сканера:
@@ -483,7 +483,7 @@ password: msfadmin
 </p>
 
 
-<img src="./pic/pic76.jpg" width=1100 alt="kali linux команда msfconsole show options">
+<img src="./picd/pic76.jpg" width=1400 alt="kali linux команда msfconsole show options">
 
 <p>
 Даем команду:
@@ -497,7 +497,7 @@ exit
 что бы выйти из msfconsole. Теперь у нас есть логин/пароль от ftp Metasploitable 2 и мы можем просто использовать telnet что бы войти. Вводим логин/пароль (скриншот ниже):
 </p>
 
-<img src="./pic/pic77.jpg" width=1100 alt="kali linux команда терминала telnet">
+<img src="./picd/pic77.jpg" width=1400 alt="kali linux команда терминала telnet">
 
 <p>
 И после ввода логина/пароля видим приглашение Metasploitable 2 (на скриншоте ниже):
@@ -507,13 +507,13 @@ exit
 msfadmin@metasploitable:~$ 
 </p>
 
-<img src="./pic/pic78.jpg" width=1100 alt="kali linux команда терминала telnet вход">
+<img src="./picd/pic78.jpg" width=1400 alt="kali linux команда терминала telnet вход">
 
 <p>
 Для проверки что мы на Metasploitable 2 дадим команду ifconfig, на скриншоте ниже выделен IP 10.0.2.3 Metasploitable 2 который мы определили ранее:
 </p>
 
-<img src="./pic/pic79.jpg" width=1100 alt="kali linux команда терминала ifconfig внутри metasploitable 2">
+<img src="./picd/pic79.jpg" width=1400 alt="kali linux команда терминала ifconfig внутри metasploitable 2">
 
 <p>
 Теперь дадим команду:
@@ -527,7 +527,7 @@ whoami
 На скриншоте ниже видим вывод msfconsole - это наш логин ftp, вывод совпадает с логином.
 </p>
 
-<img src="./pic/pic80.jpg" width=1100 alt="kali linux команда терминала whoami внутри metasploitable 2">
+<img src="./picd/pic80.jpg" width=1400 alt="kali linux команда терминала whoami внутри metasploitable 2">
 
 <p>
 Теперь можно еще и зайти как root дав команду (sudo super user):
@@ -549,13 +549,13 @@ root@metasploitable:/home/msfadmin#
 То есть мы стали root, но остались в той же папке, в которой находились раньше - в домашней папке предыдущего пользователя msfadmin. При смене пользоваетля на root домашняя папка автоматически не показывается что изменилась. При смене пользователя sudo su меняется пользователь, но не меняется текущая рабочая директория. Домашняя папка root — это /root, но мы в нее автоматически не переходим после sudo su.
 </p>
 
-<img src="./pic/pic81.jpg" width=1100 alt="kali linux команда терминала sudo su внутри metasploitable 2">
+<img src="./picd/pic81.jpg" width=1400 alt="kali linux команда терминала sudo su внутри metasploitable 2">
 
 <p>
 Далее для проверки что мы root дадим команду whoami (скриншот ниже):
 </p>
 
-<img src="./pic/pic82.jpg" width=1100 alt="kali linux команда терминала whoami внутри metasploitable 2">
+<img src="./picd/pic82.jpg" width=1400 alt="kali linux команда терминала whoami внутри metasploitable 2">
 
 <p>
 Подключаться можно по telnet вобще без Metasploit.
@@ -606,14 +606,14 @@ telnet 10.0.2.3 -l msfadmin
 Это показано на скриншоте ниже, ввод пароля:
 </p>
 
-<img src="./pic/pic83.jpg" width=1100 alt="kali linux команда telnet -l">
+<img src="./picd/pic83.jpg" width=1400 alt="kali linux команда telnet -l">
 
 <p>
 И после ввода пароля вход в Metasploitable 2:
 </p>
 
 
-<img src="./pic/pic84.jpg" width=1100 alt="kali linux команда telnet -l">
+<img src="./picd/pic84.jpg" width=1400 alt="kali linux команда telnet -l">
 
 <p>
 В строке подключения telnet что такое:

@@ -65,7 +65,7 @@ p {
 команда ifconfig выдала наш IP 10.0.2.3 (выделено на скриншоте ниже).
 </p>
 
-<img src="./pic/pic48.jpg" width=1100 alt="команда ifconfig вывод терминал kali linux">
+<img src="./picb/pic48.jpg" width=1400 alt="команда ifconfig вывод терминал kali linux">
 
 <p>
 Из вывода команды видим маска подсети netmask 255.255.255.0.
@@ -143,12 +143,12 @@ Broadcast: 10.0.2.255
 
 </pre>
 
-<img src="./pic/pic49.jpg" width=1100 alt="команда netdiscover терминал kali linux">
+<img src="./picb/pic49.jpg" width=1400 alt="команда netdiscover терминал kali linux">
 
 <br>
 <br>
 
-<img src="./pic/pic50.jpg" width=1100 alt="команда netdiscover вывод терминал kali linux">
+<img src="./picb/pic50.jpg" width=1400 alt="команда netdiscover вывод терминал kali linux">
 
 <p>
 5)теперь у нас есть IP целевой машины с Metasploitable 2 для формальности сделаем ping 10.0.2.6 и видим машина отвечает на запросы.
@@ -160,7 +160,7 @@ Broadcast: 10.0.2.255
 
 </pre>
 
-<img src="./pic/pic51.jpg" width=1100 alt="команда ping вывод терминал kali linux">
+<img src="./picb/pic51.jpg" width=1400 alt="команда ping вывод терминал kali linux">
 
 <p>
 6)теперь у нас есть IP целевой машины с Metasploitable 2, при помощи nmap сканируем порты на этом IP для обнаружения сервисов, и версии сервисов:
@@ -338,14 +338,14 @@ os.system("ssh -o HostKeyAlgorithms=+ssh-rsa -o PubkeyAcceptedAlgorithms=+ssh-rs
 и видим такой вывод
 </p>
 
-<img src="./pic/pic51.jpg" width=1100 alt="команда showmount вывод терминал kali linux">
+<img src="./picb/pic52.jpg" width=1400 alt="команда showmount вывод терминал kali linux">
 
 <p>
 еще может быть такой вывод
 </p>
 
 <pre>
-Export list for 10.0.2.5:
+Export list for 10.0.2.6:
 /home *(rw)
 / *(rw)
 </pre>
@@ -444,13 +444,13 @@ mount -t nfs -o vers=3 10.0.2.5:/ /tmp/bob1bob2/
     sudo mount -t nfs 10.0.2.6:/ /mnt
 </p>
 
-<img src="./pic/pic53.jpg" width=1100 alt="команда mount вывод терминал kali linux">
+<img src="./picb/pic53.jpg" width=1400 alt="команда mount вывод терминал kali linux">
 
 <p>
 видим смонтировалась удаленная файловая система (как делает скрипт на Python), далее можно дать команду ls - для проверки что смонтировалась:
 </p>
 
-<img src="./pic/pic54.jpg" width=1100 alt="команда mount вывод терминал kali linux">
+<img src="./picb/pic54.jpg" width=1400 alt="команда mount вывод терминал kali linux">
 
 <p>
 поскольку далее мы будем запускать скрипт, мы должны сейчас дать команду umount для размонтирования файловой системы:
@@ -460,7 +460,7 @@ mount -t nfs -o vers=3 10.0.2.5:/ /tmp/bob1bob2/
 sudo umount /mnt
 </p>
 
-<img src="./pic/pic55.jpg" width=1100 alt="команда mount вывод терминал kali linux">
+<img src="./picb/pic55.jpg" width=1400 alt="команда mount вывод терминал kali linux">
 
 <p>
 Вернемся к нашей основной теме.
@@ -585,6 +585,10 @@ Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
 
 <p>
 нужно ответить yes
+</p>
+
+<p>
+После этого мы уже зашли на удаленную машину Metasploitable 2.
 </p>
 
 <p>

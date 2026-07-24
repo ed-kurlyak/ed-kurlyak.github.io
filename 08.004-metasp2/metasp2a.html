@@ -84,7 +84,7 @@ p {
 
 </pre>
 
-<img src="./pic/pic26.jpg" width=1100 alt="ifconfig команда терминала Kali Linux">
+<img src="./pica/pic26.jpg" width=1400 alt="ifconfig команда терминала Kali Linux">
 
 <p>
 Видим что для eth0 IP 10.0.2.3 это совпадает со значением из предыдущего запуска ВМ. Но такое может случаться не всегда.
@@ -166,7 +166,7 @@ Broadcast: 10.0.2.255
 Причем такой момент - в выводе команды netdiscover не пишется IP нашей машины, наша машина в поиске не учитывается. В выводе команды на сриншоте видим, что в нашей сети обнаружило машину 10.0.2.4. Как уже сообщалось адрес 10.0.2.2 это IP для виртуального роутера в нашей сети.
 </p>
 
-<img src="./pic/pic27.jpg" width=1100 alt="вывод команды netdiscover в терминале Kali Linux">
+<img src="./pica/pic27.jpg" width=1400 alt="вывод команды netdiscover в терминале Kali Linux">
 
 <p>
 Теперь дадим команду ping что бы проверить "жива/не жива" эта машина:
@@ -178,7 +178,7 @@ Broadcast: 10.0.2.255
 
 </pre>
 
-<img src="./pic/pic28.jpg" width=1100 alt="вывод команды ping в терминале Kali Linux">
+<img src="./pica/pic28.jpg" width=1400 alt="вывод команды ping в терминале Kali Linux">
 
 <p>
 Видим пинг есть пакеты приходят от Metasploitable 2 ее IP 10.0.2.4.
@@ -188,7 +188,7 @@ Broadcast: 10.0.2.255
 Теперь проерим может быть у этого IP 10.0.2.4 есть свой веб-сайт. В Kali ВМ запустим браузер Mozilla Firefox и в строке адреса введем 10.0.2.4 (скриншот ниже) и видим открылся web-сайт:
 </p>
 
-<img src="./pic/pic29.jpg" width=1100 alt="веб страница metasploitable 2 в браузере в Kali Linux">
+<img src="./pica/pic29.jpg" width=1400 alt="веб страница metasploitable 2 в браузере в Kali Linux">
 
 <p>
 Что это может значить? Это значит на нашей ВМ Metasploitable 2 установлен веб-сервер и есть эта веб-страница.
@@ -207,19 +207,19 @@ Broadcast: 10.0.2.255
 </pre>
 
 
-<img src="./pic/pic30.jpg" width=1100 alt="в терминале Kali Linux набрана команда nmap">
+<img src="./pica/pic30.jpg" width=1400 alt="в терминале Kali Linux набрана команда nmap">
 
 <p>
 Видим сканирование закончилось, мы вернулись в командную строку терминала:
 </p>
 
-<img src="./pic/pic31.jpg" width=1100 alt="в терминале Kali Linux вывод команды nmap">
+<img src="./pica/pic31.jpg" width=1400 alt="в терминале Kali Linux вывод команды nmap">
 
 <p>
 Теперь окно вывода прокрутим вверх и видим что на 21 порту, у нас сервис ftp и его версия vsftpd 2.3.4 (выделено на скриншоте). Эту версию vsftpd 2.3.4 мы будем использовать в метасплоит для поиска и эксплуатации уязвимости.
 </p>
 
-<img src="./pic/pic32.jpg" width=1100 alt="в терминале Kali Linux вывод команды nmap">
+<img src="./pica/pic32.jpg" width=1400 alt="в терминале Kali Linux вывод команды nmap">
 
 
 <p>
@@ -276,7 +276,7 @@ Meta + exploit → Metasploit
 </p>
 
 
-<img src="./pic/pic33.jpg" width=1100 alt="в терминале Kali Linux набрана команда msfconsole">
+<img src="./pica/pic33.jpg" width=1400 alt="в терминале Kali Linux набрана команда msfconsole">
 
 <p>
 Как видим после запуска метасплоит появился баннер, а потом ниже командная строка метасплоит. Разработчики сделали так что баннер можно менять (просто для развлечения). Что бы появился другой баннер, просто дайте команду (см.скриншот ниже):
@@ -288,7 +288,7 @@ Meta + exploit → Metasploit
 
 </pre>
 
-<img src="./pic/pic34.jpg" width=1100 alt="смена баннера в msfconsole команда banner, терминал kali linux">
+<img src="./pica/pic34.jpg" width=1400 alt="смена баннера в msfconsole команда banner, терминал kali linux">
 
 <p>
 В командной строке msfconsole я несколько раз ввел команду banner, и поменялось изображение. В данный момент баннер показывает слова из фильма Матрица с Киану Ривз "knock, knock, Neo" и нарисовано изображение зайчика - в том моменте в фильме Матрица шла речь о белом зайце, "следуй за белым зайцем" сообщили Нео.
@@ -333,7 +333,7 @@ Meta + exploit → Metasploit
 
 </pre>
 
-<img src="./pic/pic35.jpg" width=1100 alt="путь метасплоит в kali linux, терминал kali linux">
+<img src="./pica/pic35.jpg" width=1400 alt="путь метасплоит в kali linux, терминал kali linux">
 
 <p>
 Metasploit в основном написан на языке Ruby. На Ruby вы можете писать свои модули для метасплоит, ложить в папку метасплоит, и это будет работать.
@@ -354,13 +354,13 @@ Metasploit в основном написан на языке Ruby. На Ruby в
 </pre>
 
 
-<img src="./pic/pic36.jpg" width=1100 alt="терминал kali linux команда метасплоит search">
+<img src="./pica/pic36.jpg" width=1400 alt="терминал kali linux команда метасплоит search">
 
 <p>
 В результате работы команды получаем следующий вывод (выделено на скришноше):
 </p>
 
-<img src="./pic/pic37.jpg" width=1100 alt="терминал kali linux вывод команды метасплоит search">
+<img src="./pica/pic37.jpg" width=1400 alt="терминал kali linux вывод команды метасплоит search">
 
 <p>
 Аналогично для поиска уязвимости мы можем дать команду:
@@ -410,7 +410,7 @@ Metasploit в основном написан на языке Ruby. На Ruby в
 
 </pre>
 
-<img src="./pic/pic38.jpg" width=1100 alt="терминал kali linux команда метасплоит use">
+<img src="./pica/pic38.jpg" width=1400 alt="терминал kali linux команда метасплоит use">
 
 <p>
 Мы получили такое приглашение от модуля:
@@ -422,7 +422,7 @@ Metasploit в основном написан на языке Ruby. На Ruby в
 
 </pre>
 
-<img src="./pic/pic39.jpg" width=1100 alt="терминал kali linux приглашение модуля метасплоит">
+<img src="./pica/pic39.jpg" width=1400 alt="терминал kali linux приглашение модуля метасплоит">
 
 <p>
 Фактически этот модуль - это обратная оболочка (reverse shell) при помощи которой мы получим доступ к нашей машине Metasploitable 2 и будем ею управлять так, как если бы мы находились прямо на этой машине, а не удаленно. Этот доступ мы получим при помощи уязвимости в протоколе ftp версии vsftpd 2.3.4.
@@ -439,20 +439,20 @@ Metasploit в основном написан на языке Ruby. На Ruby в
 
 </pre>
 
-<img src="./pic/pic40.jpg" width=1100 alt="терминал kali linux запущен msfconsole для модуля дается команда show options">
+<img src="./pica/pic40.jpg" width=1400 alt="терминал kali linux запущен msfconsole для модуля дается команда show options">
 
 
 <p>
 Команда show options даст такой вывод и вернется в командную стоку - важное я выделил на скриншоте - это строка LHOST yes:
 </p>
 
-<img src="./pic/pic41.jpg" width=1100 alt="терминал kali linux запущен msfconsole вывод команды show options">
+<img src="./pica/pic41.jpg" width=1400 alt="терминал kali linux запущен msfconsole вывод команды show options">
 
 <p>
 И прокрутим окно консоли вверх видим строку RHOSTS yes - выделено на скриншоте:
 </p>
 
-<img src="./pic/pic42.jpg" width=1100 alt="терминал kali linux запущен msfconsole вывод команды show options">
+<img src="./pica/pic42.jpg" width=1400 alt="терминал kali linux запущен msfconsole вывод команды show options">
 
 <p>
 Команда show options показывет настройки модуля - если в поле Required стоит yes - это поле обязательно должно быть заполнено для корректной работы модуля, заполнено при помощи команды set.
@@ -484,7 +484,7 @@ Metasploit в основном написан на языке Ruby. На Ruby в
 Есть небольшое отличие - в предыдущих версия фреймворка метасплоит в настройках модуля надо было установить RHOST не RHOSTS, но это просто примечание. Так же заметте на скриншотах - важно для установки соединения - в параметрах LPORT 4444 yes уже установлено (локальный порт), и RPORT 21 yes тоже установлено (удаленный fpt порт).
 </p>
 
-<img src="./pic/pic43.jpg" width=1100 alt="терминал kali linux запущен msfconsole вывод команды set">
+<img src="./pica/pic43.jpg" width=1400 alt="терминал kali linux запущен msfconsole вывод команды set">
 
 <p>
 После выполнения команд set RHOST и set LHOST вы можете снова дать комадну show options и увидите что значения установились.
@@ -507,7 +507,7 @@ Metasploit в основном написан на языке Ruby. На Ruby в
 
 </pre>
 
-<img src="./pic/pic44.jpg" width=1100 alt="терминал kali linux запущен msfconsole и meterpreter установили удаленное соединение">
+<img src="./pica/pic44.jpg" width=1400 alt="терминал kali linux запущен msfconsole и meterpreter установили удаленное соединение">
 
 <p>
 Теперь мы увидели приглашение типа:
@@ -590,7 +590,7 @@ meterpreter > help
 К примеру посмотрим информацию о сети команда ipconfig, на скриншоте я выделил IP адрес в сети для удаленной машины, видим, что IP 10.0.2.4 что совпадает с тем IP который нам определила команда netdiscover. Это подтвержает что мы находимся на машине Metasploitable 2.
 </p>
 
-<img src="./pic/pic45.jpg" width=1100 alt="терминал kali linux запущен msfconsole и meterpreter команда ipconfig">
+<img src="./pica/pic45.jpg" width=1400 alt="терминал kali linux запущен msfconsole и meterpreter команда ipconfig">
 
 <p>
 В Metasploit есть два основных понятия: модуль (Module) и payload. Они работают вместе, но выполняют разные задачи.
@@ -763,7 +763,7 @@ exploit
 Здесь мы вибирали эксплоит. Теперь вернемся немножечко вверх, на скриншоте выделено важное:
 </p>
 
-<img src="./pic/pic46.jpg" width=1100 alt="терминал kali linux запущен msfconsole команда use">
+<img src="./pica/pic46.jpg" width=1400 alt="терминал kali linux запущен msfconsole команда use">
 
 <p>
 На скриншоте выделено "Using configured payload cmd/linux/http/x86/meterpreter_reverse_tcp" - что это значит? Почему после команды use (мы выбрали эксплоит, модуль) мы не дали команду set payload?
@@ -957,7 +957,7 @@ exit
 Делает выход из msfconsole, то есть завершает работу метасплоит фреймворка.
 </p>
 
-<img src="./pic/pic47.jpg" width=1100 alt="терминал kali linux запущен msfconsole команда quit">
+<img src="./pica/pic47.jpg" width=1400 alt="терминал kali linux запущен msfconsole команда quit">
 
 
 <p>

