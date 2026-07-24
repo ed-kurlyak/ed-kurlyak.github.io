@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Взлом TWiki в metasploitable-linux-2.0.0 на примере Kali Linux</title>
+
+	<meta name="DESCRIPTION" content="Взлом TWiki в metasploitable-linux-2.0.0 на примере Kali Linux">
+	<meta name="KEYWORDS" content="Взлом TWiki в metasploitable-linux-2.0.0 на примере Kali Linux">
+
+  <meta property="og:url"                content="https://ed-kurlyak.github.io/08.004-metasp2/metasp2e.html" />
+  <meta property="og:type"               content="article" />
+  <meta property="og:title"              content="Ed Kurlyak - Взлом TWiki в metasploitable-linux-2.0.0 на примере Kali Linux" />
+  <meta property="og:description"        content="Взлом TWiki в metasploitable-linux-2.0.0 на примере Kali Linux" />
+  <meta property="og:image"              content="https://ed-kurlyak.github.io/08.004-metasp2/metasp2.png" />
+
+<style type="text/css">
+body {
+	font-size: 24px;
+	font-family: "Consolas";
+	background-color: #000;
+	color: #ffffff;
+}
+
+pre {
+	font-size: 24px;
+	font-family: "Consolas";
+	background-color: #ffffaa;
+	color: #000;
+	width: max-content;
+	min-width: 100%;
+
+}
+
+div.my_selected {
+	width: 100%;
+	background-color: #ffff55;
+	position: relative;
+}
+
+a:link, a:visited { color: #aaaaaa; text-decoration: none; font-weight: normal;} 
+a:active, a:hover { color: #aaaaaa; text-decoration: underline;}
+
+p {
+	text-align: justify;
+	margin-right: 20px;
+}
+
+</style>	
+</head>
+<body>
+
+<h3>
+Часть 6. Взлом TWiki в metasploitable-linux-2.0.0 на примере Kali Linux
+</h3>
+
+<p>
+Предполагается что все действия выполняются на виртуальных машинах VirtualBox.
+</p>
+
+<p>
+Сначала необходимо обновить metasploit, так как необходимый payload не стабильно работает на текущей версии. Что бы обновить metasploit в терминале Kali Linux необходимо дать команду:
+</p>
+
+<pre>
+
+sudo apt update
+sudo apt install metasploit-framework
+
+</pre>
+
+<p>
+Необходимо определить IP с машиной Metasploitable 2. Для этого сначала определим наш IP и маску подсети, для этого дадим команду в терминале Kali:
+</p>
+
+<p>
+ifconfig
+</p>
+
+<p>
+В результатах вывода команды выше, можно увидеть такую строку:
+</p>
+
+<p>
+inet 10.0.2.4  netmask 255.255.255.0 
+</p>
+
+<p>
+То есть наш IP 10.0.2.4 а диапазон IP адресов нашей сети 10.0.2.0/24 (это обяснялось ранее в предыдущих статьях).
+</p>
+
+<p>
+Для обнаружения других компьютеров в сети и в том числе нашей удаленной машины Metasploitable 2, дадим команду в терминале Kali:
+</p>
+
+<p>
+sudo netdiscover -r 10.0.2.0/24
+</p>
+
+<p>
+В выводе команды:
+</p>
+
+<p>
+10.0.2.2        08:00:27:3a:17:ed      1      60  PCS Systemtechnik GmbH
+10.0.2.3        08:00:27:f1:18:5a      1      60  PCS Systemtechnik GmbH
+</p>
+
+<p>
+10.0.2.2 - это виртуальный роутер, который управляет нашей сетью.
+</p>
+
+<p>
+10.0.2.3 - это наша машина (по логике) с Metasploitable 2.
+</p>
+
+<p>
+Проверим связь между нашей Kali и удаленной ВМ Metasploitable 2, дадим команду:
+</p>
+
+<p>
+ping 10.0.2.3
+</p>
+
+<p>
+Если сеть в VirtualBox настроена правильно, видим пинг идет, связь есть.
+</p>
+
+<p>
+Далее, в Kali открываем браузер, в адресной строке вводим IP 10.0.2.3. Как видим открылась веб- страница (скриншот ниже):
+</p>
+
+<img src="./picf/pic85.jpg" width=1400 alt="запущенный браузер в kali linux">
+
+<p>
+На 80-м порту работает веб-сервер. Это можно увидеть так же если в терминале дать команду nmap, вывод nmap будет приблизительно такой:
+</p>
+
+<pre>
+
+PORT   STATE SERVICE
+80/tcp open  http
+
+</pre>
+
+<p>
+То есть последовательность такая:
+</p>
+
+<p>
+Nmap
+</p>
+
+<p>
+80/tcp open http
+</p>
+
+<p>
+→ узнаем, что работает веб-сервер.
+</p>
+
+<p>
+Браузер
+</p>
+
+<p>
+http://10.0.2.3
+</p>
+
+<p>
+→ смотрим, какое именно веб-приложение там запущено.
+</p>
+
+<p>
+Но здесь мы пропустили шаг с nmap - после обнаружения удаленной машины netdiscover сразу запустили веб- браузер и в адресной строке браузера ввели IP удаленной машины и зашли на веб- страницу.
+</p>
+
+<p>
+После открытия страницы и перехода по ссылке TWiki в браузере мы видим, что сайт работает на TWiki.
+</p>
+
+<p>
+TWiki — это wiki-движок (что-то похожее на MediaWiki, на котором работает Википедия), только предназначенный в основном для внутренней документации компаний. Пользователи могут создавать и редактировать страницы через браузер.
+</p>
+
+<p>
+На главной странице в браузере выбираем ссылку TWiki и браузер переходит в каталог:
+</p>
+
+<p>
+http://10.0.2.3/twiki/
+</p>
+
+<p>
+В случае Metasploitable 2 это выглядит следующим образом.
+</p>
+
+<p>
+Мы открываем в браузере:
+</p>
+
+<p>
+http://10.0.2.3/
+</p>
+
+<p>
+Это главная страница веб-сервера Metasploitable 2, а не TWiki.
+</p>
+
+<p>
+На этом же веб-сервере находятся несколько веб-приложений, каждое в своем каталоге:
+</p>
+
+<p>
+http://10.0.2.3/twiki/
+<br>
+http://10.0.2.3/dav/
+<br>
+http://10.0.2.3/phpMyAdmin/
+<br>
+...
+</p>
+
+<p>
+Когда мы переходим по адресу:
+</p>
+
+<p>
+http://10.0.2.3/twiki/
+</p>
+
+<p>
+мы попадаем уже в TWiki.
+</p>
+
+<p>
+Важно понимать, что не обязательно заходить в TWiki через главную страницу. Если мы уже знаем адрес /twiki/ (например, его нашел Gobuster), можно сразу открыть:
+</p>
+
+<p>
+http://10.0.2.3/twiki/
+</p>
+
+<p>
+Главная страница может:
+</p>
+
+<p>
+содержать ссылку на TWiki;
+<br>
+не содержать такой ссылки вообще.
+</p>
+
+<p>
+Есть другой способ обнаружить TWiki если ссылки на главной странице нет. Для этого используем gobuster, в терминале Kali дать команду обнаружения каталогов:
+</p>
+
+<p>
+gobuster dir -u http://10.0.2.3 -w /usr/share/wordlists/dirb/common.txt
+</p>
+
+
+<p>
+Программа gobuster из словаря берет слова (имена каталогов) и проверяет- есть каталог с таким именем на 10.0.2.3 или нет. Вывод gobuster показан ниже на скриншоте:
+</p>
+
+<img src="./picf/pic86.jpg" width=1400 alt="терминал kali linux вывод gobuster">
+
+<p>
+Из вывода программы видим gobuster нашел путь на сервере:
+</p>
+
+<p>
+http://10.0.2.3/twiki/
+</p>
+
+<p>
+Таким образом мы еще одним способом обнаружили папку twiki на сервере при помощи gobuster.
+</p>
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+далее metasploit search twiki
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+</body>
+</html>
