@@ -159,7 +159,6 @@ msfconsole
 
 
 <p>
-
 msf > search postgres
 <br>
 msf > use exploit/linux/postgres/postgres_payload
@@ -176,6 +175,30 @@ msf exploit(postgres_payload) > exploit
 </p>
 
 <img src="./pich/pic97.jpg" width=1400 alt="kali linux терминал msfconsole exploit">
+
+<p>
+Так же для поиска модулей можно дать команду искать только эксплоиты:
+</p>
+
+<p>
+msf > search type:exploit postgres
+</p>
+
+<p>
+И после вывода search следующая команда посмотреть информацию по эксплоиту по номеру в списке, не вводя полное имя и путь к эксплоиту:
+</p>
+
+<p>
+msf > info 21
+</p>
+
+<p>
+Или команда тткроет более подробную документацию в браузере:
+</p>
+
+<p>
+msf > info -d 21
+</p>
 
 
 <p>
