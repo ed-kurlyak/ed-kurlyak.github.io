@@ -1,15 +1,15 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>Hydra - подбираем пароль к MySQL в metasploitable-linux-2.0.0</title>
+	<title>Получаем remote shell в metasploitable-linux-2.0.0</title>
 
-	<meta name="DESCRIPTION" content="Hydra - подбираем пароль к MySQL в metasploitable-linux-2.0.0">
-	<meta name="KEYWORDS" content="Hydra - подбираем пароль к MySQL в metasploitable-linux-2.0.0">
+	<meta name="DESCRIPTION" content="Получаем remote shell в metasploitable-linux-2.0.0">
+	<meta name="KEYWORDS" content="Получаем remote shell в metasploitable-linux-2.0.0">
 
   <meta property="og:url"                content="https://ed-kurlyak.github.io/08.004-metasp2/metasp2n.html" />
   <meta property="og:type"               content="article" />
-  <meta property="og:title"              content="Ed Kurlyak - Hydra - подбираем пароль к MySQL в metasploitable-linux-2.0.0" />
-  <meta property="og:description"        content="Hydra - подбираем пароль к MySQL в metasploitable-linux-2.0.0" />
+  <meta property="og:title"              content="Ed Kurlyak - Получаем remote shell в metasploitable-linux-2.0.0" />
+  <meta property="og:description"        content="Получаем remote shell в metasploitable-linux-2.0.0" />
   <meta property="og:image"              content="https://ed-kurlyak.github.io/08.004-metasp2/metasp2.png" />
 
 <style type="text/css">
@@ -49,7 +49,7 @@ p {
 <body>
 
 <h3>
-Часть 14. Hydra - подбираем пароль к MySQL в metasploitable-linux-2.0.0
+Часть 14. Получаем remote shell в metasploitable-linux-2.0.0
 </h3>
 
 <p>
@@ -132,129 +132,120 @@ nmap -sC -sV 10.0.2.3
 </p>
 
 <p>
-3306/tcp open  mysql       MySQL 5.0.51a-3ubuntu5
-</p>
-
-<p>
-Открыт 3306 порт и на нем служба MySQL.
+1524/tcp open  bindshell   Metasploitable root shell
 </p>
 
 <br>
 
-<img src="./picn/pic114.jpg" width=1400 alt="kali linux терминал команда nmap">
+<img src="./picn/pic112.jpg" width=1400 alt="kali linux терминал команда nmap">
 
 <p>
-Еще один способ определить версию MySQL.
+Даем команду (скриншот ниже):
 </p>
 
 <p>
-Запускаем метсплоит:
+nc 10.0.2.3 1524
 </p>
 
 <p>
-msfconsole
+И для нас открывается командрая оболочка Shell Metasploitable 2 (скриншот ниже):
+</p>
+
+<img src="./picn/pic113.jpg" width=1400 alt="kali linux терминал команда nc">
+
+<p>
+Выход из командной оболочки Shell комнда в терминале exit.
+</p>
+
+
+<p>
+Разберем по частям.
 </p>
 
 <p>
-msf > use auxiliary/scanner/mysql/mysql_version
+1524 — номер TCP-порта.
 <br>
-msf auxiliary(scanner/mysql/mysql_version) > set RHOSTS 10.0.2.3
+tcp — используется протокол TCP.
 <br>
-msf auxiliary(scanner/mysql/mysql_version) > run
-</p>
-
-<img src="./picn/pic115.jpg" width=1400 alt="kali linux терминал msfconsole run">
-
-<p>
-Вывод на скриншоте выше так же определил версию MySQL:
-</p>
-
-<p>
-10.0.2.3:3306 is running MySQL 5.0.51a-3ubuntu5
-</p>
-
-<p>
-Далее будем подбирать пароль к MySQL для пользователя root.
-</p>
-
-<p>
-Дадим команду в терминале Kali распаковать словарь их архива:
-</p>
-
-<p>
-gunzip /usr/share/wordlists/rockyou.txt.gz
-</p>
-
-<p>
-Если использовать брутфорс из метасплоит, то новая версия метасплоит плохо работает со старой версией MySQL на удаленной машине, но кто хочет может попробывать такие команды (можно так же установить старую версию Kali и метасплоит):
-</p>
-
-<p>
-msf > use auxiliary/scanner/mysql/mysql_login
+open — порт открыт.
 <br>
-msf auxiliary(mysql_login) > set RHOSTS 10.0.2.3
+bindshell — на этом порту работает bind shell.
 <br>
-msf auxiliary(mysql_login) > set USER_FILE /usr/share/wordlists/rockyou.txt
+Metasploitable root shell — Nmap распознал, что это специальная уязвимость Metasploitable: оболочка (shell), запущенная с правами root.
+</p>
+
+<p>
+Что такое bind shell?
+</p>
+
+<p>
+Bind shell — это программа, которая слушает определенный порт и при подключении предоставляет командную оболочку (shell).
+</p>
+
+<p>
+Схема работы:
+</p>
+
+<pre>
+
+Компьютер с Metasploitable
+        |
+   слушает порт 1524
+        |
+-----------------------------
+        |
+Ваш компьютер -----> подключается к 1524
+        |
+получает командную строку root
+
+</pre>
+
+<p>
+В Metasploitable 2 этот сервис установлен специально для обучения.
+</p>
+
+<p>
+Что означает команда
+</p>
+
+<p>
+nc 10.0.2.3 1524
+</p>
+
+<p>
+nc — это Netcat.
+</p>
+
+<p>
+Команда означает:
+</p>
+
+<p>
+"Подключиться к IP-адресу 10.0.2.3 на TCP-порт 1524."
+</p>
+
+<p>
+То есть буквально:
+</p>
+
+<p>
+nc — запустить Netcat;
 <br>
-msf auxiliary(mysql_login) > set PASS_FILE /usr/share/wordlists/rockyou.txt
+10.0.2.3 — IP удаленного компьютера;
 <br>
-msf auxiliary(mysql_login) > run
+1524 — номер порта.
 </p>
 
 <p>
-После запуска run у меня вылетает ошибка, как на скриншоте ниже:
-</p>
-
-<img src="./picn/pic116.jpg" width=1400 alt="kali linux терминал msfconsole run">
-
-<p>
-Завершаем работу с метасплоит командой exit.
+После подключения Netcat открывает TCP-соединение.
 </p>
 
 <p>
-Поэтому для подбора пароля к MySQL используем программу Hydra.
+Если на том конце действительно работает bind shell, вы сразу получите приглашение оболочки, например:
 </p>
 
 <p>
-Ниже две команды- эти команды аналогичны, разница в том что для подбора пароля используют разные словари.
-<p>	
-
-<p>
-hydra -l root -e n -P /usr/share/wordlists/rockyou.txt -t 32 mysql://10.0.2.3:3306 -V
-</p>
-
-<p>
-hydra -l root -P /usr/share/wordlists/fasttrack.txt -t 32 mysql://10.0.2.3:3306 -V
-</p>
-
-<p>
-Для примера возьмем первую команду и введем в терминал Kali (скриншот ниже):
-</p>
-
-<img src="./picn/pic117.jpg" width=1400 alt="kali linux терминал hydra">
-
-<p>
-Если пароль пустой (empty password), то Hydra часто выводит только найденный логин, без текста пароля, например:
-</p>
-
-<p>
-[3306][mysql] host: 10.0.2.3   login: root
-</p>
-
-<p>
-Это означает, что пароль — пустая строка ("").
-</p>
-
-<p>
-Почему Hydra так делает
-</p>
-
-<p>
-Hydra считает пустой пароль отдельным случаем и не печатает что-то вроде
-</p>
-
-<p>
-password:
+root@metasploitable:/#
 </p>
 
 <p>
@@ -262,123 +253,162 @@ password:
 </p>
 
 <p>
-password: ""
+#
 </p>
 
 <p>
-потому что выводить нечего.
-</p>
-
-
-<p>
-В нашем выводе видим- пароль пустая строка.
+После этого можно выполнять команды Linux:
 </p>
 
 <p>
-Мы узнали пароль, теперь заходим в MySQL.
+whoami
 </p>
 
 <p>
-Ниже две команды заходы в MySQL, можно взять любую:
+получить
 </p>
 
 <p>
-mysql --skip-ssl -h 10.0.2.3 -u root
-</p>
-
-
-<p>
-mysql --skip-ssl -h 10.0.2.3 -u root -p
+root
 </p>
 
 <p>
-В случае с ключем -p при запросе пароля нажать клавишу Enter и MySQL продолжит работу.
+или
 </p>
 
-<img src="./picn/pic118.jpg" width=1400 alt="kali linux терминал mysql">
-
+<p>
+pwd
 <br>
+ls
 <br>
-
-<img src="./picn/pic119.jpg" width=1400 alt="kali linux терминал mysql">
-
-<p>
-Hydra — это инструмент для подбора учетных данных (логина и пароля) к различным сетевым сервисам.
+cat /etc/passwd
 </p>
 
 <p>
-Она может работать двумя основными способами:
+Почему именно Netcat?
 </p>
 
 <p>
-1)Перебор по словарю (dictionary attack) — берет пароли из файла и проверяет их один за другим.
+Netcat — очень простая программа.
 </p>
+
+<p>
+Она умеет:
+</p>
+
+<p>
+открывать TCP-соединения;
+<br>
+принимать TCP-соединения;
+<br>
+передавать любые данные через сеть.
+</p>
+
+<p>
+Для нее нет разницы, что находится на другом конце:
+</p>
+
+<p>
+веб-сервер;
+<br>
+SMTP-сервер;
+<br>
+SSH;
+<br>
+Telnet;
+<br>
+bind shell;
+<br>
+собственная программа;
+<br>
+любой другой TCP-сервис.
+</p>
+
+<p>
+Она просто соединяет ваш ввод с удаленным сокетом.
+</p>
+
+<p>
+Почему это опасно?
+</p>
+
+<p>
+В обычной системе такого быть не должно.
+</p>
+
+<p>
+Если открыт bind shell с правами root, любой, кто может подключиться к этому порту, получает полный контроль над машиной.
+</p>
+
+<p>
+Именно поэтому в Metasploitable этот сервис оставлен специально как учебная уязвимость.
+</p>
+
+<p>
+То есть nc в данном случае работает как очень простой клиент: он устанавливает TCP-соединение с портом 1524 и позволяет напрямую взаимодействовать с командной оболочкой, которая уже запущена на удаленной машине.
+</p>
+
+<p>
+Разница SSH и Netcat. Хотя и SSH, и Netcat (nc) могут подключаться к удаленному компьютеру по TCP, это совершенно разные инструменты.
+</p>
+
+<pre>
+
+SSH                                                         Netcat (nc)
+Специализированный протокол удаленного доступа              Универсальная утилита для работы с TCP/UDP
+Все данные шифруются                                        По умолчанию ничего не шифруется
+Требует SSH-сервер (sshd)                                   Подключается к любому TCP/UDP-сервису
+Выполняет аутентификацию (логин, пароль, ключи)             Не проверяет пользователя сам по себе
+Предназначен для безопасной работы с удаленной оболочкой    Предназначен для передачи любых данных
+
+</pre>
 
 <p>
 Например:
 </p>
 
 <p>
-hydra -l root -P /usr/share/wordlists/fasttrack.txt mysql://10.0.2.3
+nc example.com 80
 </p>
 
 <p>
-Здесь:
+После подключения можно вручную отправить HTTP-запрос:
 </p>
 
 <p>
--l root — логин root;
+GET / HTTP/1.1
 <br>
--P fasttrack.txt — список возможных паролей;
-<br>
-mysql://10.0.2.3 — сервер MySQL.
+Host: example.com
 </p>
 
 <p>
-2)Проверка специальных вариантов паролей с помощью -e:
+и сервер вернет HTML-страницу.
 </p>
 
 <p>
-n — пустой пароль;
-<br>
-s — пароль совпадает с логином;
-<br>
-r — пароль равен логину, записанному наоборот.
+Почему через Netcat можно получить shell?
 </p>
 
 <p>
-Например:
+Потому что не Netcat предоставляет оболочку, а сервис на удаленной машине.
 </p>
 
 <p>
-hydra -l root -e ns mysql://10.0.2.3
+В нашем примере:
 </p>
 
 <p>
-сначала попробует пустой пароль, затем пароль root.
+nc 10.0.2.3 1524
 </p>
 
 <p>
-Что происходит внутри
+на порту 1524 уже запущен bind shell, который после подключения начинает читать ваши команды и выполнять их. Netcat лишь передает данные между вашей клавиатурой и этим сервисом.
 </p>
 
 <p>
-Hydra не "угадывает" пароль математически. Она:
+Именно поэтому SSH используют для безопасного администрирования серверов, а Netcat — как универсальный инструмент для тестирования сетевых соединений, диагностики сервисов и, в учебных лабораториях вроде Metasploitable, для подключения к специально оставленным уязвимым сервисам.
 </p>
 
-<p>
-подключается к серверу;
-<br>
-отправляет логин и очередной пароль;
-<br>
-если сервер отвечает «неверный пароль» — пробует следующий;
-<br>
-если сервер принимает пароль — сообщает об успехе и (по умолчанию) прекращает подбор для этого логина.
-</p>
-
-<p>
-Такой метод называется брутфорс (brute force) или, если используется словарь, словарная атака (dictionary attack). Словарная атака обычно значительно быстрее полного перебора всех возможных комбинаций символов.
-</p>
 
 </body>
 </html>

