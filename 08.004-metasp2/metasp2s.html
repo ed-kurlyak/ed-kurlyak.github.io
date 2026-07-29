@@ -1,15 +1,15 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>Эксплуатация уязвимости Apache Tomcat на metasploitable-linux-2.0.0</title>
+	<title>Использование Apache Tomcat на metasploitable-linux-2.0.0</title>
 
-	<meta name="DESCRIPTION" content="Эксплуатация уязвимости Apache Tomcat на metasploitable-linux-2.0.0">
-	<meta name="KEYWORDS" content="Эксплуатация уязвимости Apache Tomcat на metasploitable-linux-2.0.0">
+	<meta name="DESCRIPTION" content="Использование Apache Tomcat на metasploitable-linux-2.0.0">
+	<meta name="KEYWORDS" content="Использование Apache Tomcat на metasploitable-linux-2.0.0">
 
   <meta property="og:url"                content="https://ed-kurlyak.github.io/08.004-metasp2/metasp2s.html" />
   <meta property="og:type"               content="article" />
-  <meta property="og:title"              content="Ed Kurlyak - Эксплуатация уязвимости Apache Tomcat на metasploitable-linux-2.0.0" />
-  <meta property="og:description"        content="Эксплуатация уязвимости Apache Tomcat на metasploitable-linux-2.0.0" />
+  <meta property="og:title"              content="Ed Kurlyak - Использование Apache Tomcat на metasploitable-linux-2.0.0" />
+  <meta property="og:description"        content="Использование Apache Tomcat на metasploitable-linux-2.0.0" />
   <meta property="og:image"              content="https://ed-kurlyak.github.io/08.004-metasp2/metasp2.png" />
 
 <style type="text/css">
@@ -49,7 +49,7 @@ p {
 <body>
 
 <h3>
-Часть 19. Эксплуатация уязвимости Apache Tomcat на в metasploitable-linux-2.0.0
+Часть 19. Использование Apache Tomcat на в metasploitable-linux-2.0.0
 </h3>
 
 <p>
@@ -188,6 +188,99 @@ set LHOST 10.0.2.4
 
 <p>
 При помощи команды exit выходим из meterpreter и msfconsole.
+</p>
+
+<p>
+Что делает модуль tomcat_mgr_upload
+</p>
+
+<p>
+Идея его работы следующая:
+</p>
+
+<p>
+Подключается к Tomcat Manager.
+<br>
+Пытается пройти аутентификацию с указанными учётными данными.
+<br>
+Если вход успешен и у пользователя есть права на развёртывание приложений, использует штатную функцию Deploy для загрузки WAR-файла.
+<br>
+После успешного развёртывания обращается к загруженному приложению для проверки его доступности.
+</p>
+
+<p>
+Важно понимать, что модуль не использует уязвимость Tomcat. Он автоматизирует работу с легитимной функцией менеджера приложений и рассчитан на ситуацию, когда доступны действительные учётные данные администратора (как в учебной машине Metasploitable 2).
+</p>
+
+<p>
+Почему Metasploitable 2 уязвима
+</p>
+
+<p>
+Авторы Metasploitable 2 намеренно оставили множество небезопасных настроек, в том числе:
+</p>
+
+<p>
+стандартные логин и пароль (tomcat:tomcat);
+<br>
+доступный извне интерфейс Tomcat Manager;
+<br>
+права на развёртывание приложений у этой учётной записи.
+</p>
+
+<p>
+Эти настройки сделаны специально для обучения и не должны встречаться в правильно настроенной производственной системе.
+</p>
+
+
+<p>
+Apache Tomcat — это веб-сервер приложений Java.
+</p>
+
+<p>
+Apache Tomcat и Java RMI — это совершенно разные технологии, хотя обе относятся к Java и могут работать на одном сервере.
+</p>
+
+<p>
+Apache Tomcat нужен для запуска веб-приложений.
+</p>
+
+<p>
+Java RMI
+</p>
+
+<p>
+RMI (Remote Method Invocation) позволяет одной Java-программе вызывать методы объекта, находящегося на другом компьютере, почти так же, как если бы этот объект был локальным.
+</p>
+
+<p>
+Главное отличие
+</p>
+
+<p>
+Apache Tomcat — это сервер для веб-приложений Java. Он принимает HTTP-запросы от браузеров и запускает JSP/Servlet.
+</p>
+
+<p>
+Java RMI — это механизм связи между Java-приложениями. Он не предназначен для обслуживания веб-страниц и используется для удаленного вызова методов Java-объектов.
+</p>
+
+<p>
+То есть они решают разные задачи:
+</p>
+
+<p>
+Tomcat — взаимодействие с пользователем через веб.
+<br>
+RMI — взаимодействие между Java-программами.
+</p>
+
+<p>
+То есть когда на веб странице есть сервлет Java то его на сервере обрабатывает Apache Tomcat.
+</p>
+
+<p>
+Если веб-приложение написано на JSP и Servlet, то именно Apache Tomcat на сервере обрабатывает этот Java-код и возвращает браузеру готовый ответ.
 </p>
 
 </body>
