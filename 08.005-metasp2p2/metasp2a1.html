@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Взлом Damn Vulnerable Web Application (DVWA) в metasploitable-linux-2.0.0 - подготовка среды</title>
+
+	<meta name="DESCRIPTION" content="Взлом Damn Vulnerable Web Application (DVWA) в metasploitable-linux-2.0.0 - подготовка среды">
+	<meta name="KEYWORDS" content="Взлом Damn Vulnerable Web Application (DVWA) в metasploitable-linux-2.0.0 - подготовка среды">
+
+  <meta property="og:url"                content="https://ed-kurlyak.github.io/08.005-metasp2p1/metasp2a1.html" />
+  <meta property="og:type"               content="article" />
+  <meta property="og:title"              content="Ed Kurlyak - Взлом Damn Vulnerable Web Application (DVWA) в metasploitable-linux-2.0.0 - подготовка среды" />
+  <meta property="og:description"        content="Взлом Damn Vulnerable Web Application (DVWA) в metasploitable-linux-2.0.0 - подготовка среды" />
+  <meta property="og:image"              content="https://ed-kurlyak.github.io/08.004-metasp2/metasp2.png" />
+
+<style type="text/css">
+body {
+	font-size: 24px;
+	font-family: "Consolas";
+	background-color: #000;
+	color: #ffffff;
+}
+
+pre {
+	font-size: 24px;
+	font-family: "Consolas";
+	background-color: #ffffaa;
+	color: #000;
+	width: max-content;
+	min-width: 100%;
+
+}
+
+div.my_selected {
+	width: 100%;
+	background-color: #ffff55;
+	position: relative;
+}
+
+a:link, a:visited { color: #aaaaaa; text-decoration: none; font-weight: normal;} 
+a:active, a:hover { color: #aaaaaa; text-decoration: underline;}
+
+p {
+	text-align: justify;
+	margin-right: 20px;
+}
+
+</style>	
+</head>
+<body>
+
+<h3>
+Часть 1. Взлом Damn Vulnerable Web Application (DVWA) в metasploitable-linux-2.0.0 - подготовка среды
+</h3>
+
+<p>
+Предполагается что все действия выполняются на виртуальных машинах VirtualBox.
+</p>
+
+
+<p>
+Необходимо определить IP с машиной Metasploitable 2. Для этого сначала определим наш IP и маску подсети, для этого дадим команду в терминале Kali:
+</p>
+
+<p>
+ifconfig
+</p>
+
+<p>
+В результатах вывода команды выше, можно увидеть такую строку:
+</p>
+
+<p>
+inet 10.0.2.4  netmask 255.255.255.0 
+</p>
+
+<p>
+То есть наш IP 10.0.2.4 а диапазон IP адресов нашей сети 10.0.2.0/24 (это обяснялось ранее в предыдущих статьях).
+</p>
+
+<p>
+Для обнаружения других компьютеров в сети и в том числе нашей удаленной машины Metasploitable 2, дадим команду в терминале Kali:
+</p>
+
+<p>
+sudo netdiscover -r 10.0.2.0/24
+</p>
+
+<p>
+В выводе команды:
+</p>
+
+<p>
+10.0.2.2        08:00:27:3a:17:ed      1      60  PCS Systemtechnik GmbH
+10.0.2.3        08:00:27:f1:18:5a      1      60  PCS Systemtechnik GmbH
+</p>
+
+<p>
+10.0.2.2 - это виртуальный роутер, который управляет нашей сетью.
+</p>
+
+<p>
+10.0.2.3 - это наша машина (по логике) с Metasploitable 2.
+</p>
+
+<p>
+Проверим связь между нашей Kali и удаленной ВМ Metasploitable 2, дадим команду:
+</p>
+
+<p>
+ping 10.0.2.3
+</p>
+
+<p>
+Если сеть в VirtualBox настроена правильно, видим пинг идет, связь есть.
+</p>
+
+<p>
+На Kali открываем веб- браузер Mozilla Firefox и в строку адреса вводим IP удаленной Metasploitable 2. После открытия страницы, нажимаем ссылку на странице DVWA.
+</p>
+
+<img src="./pica1/pic1.jpg" width=1400 alt="kali linux веб браузер mozilla firefox">
+
+<img src="./pica1/pic2.jpg" width=1400 alt="kali linux веб браузер mozilla firefox">
+
+<p>
+В адресной строке браузера появился адрес (после нажатия ссылки DVWA):
+</p>
+
+<p>
+http://10.0.2.3/dvwa/login.php
+</p>
+
+<p>
+То есть после открытия веб- браузера на эту страницу DVWA можно было бы перейти сразу по ссылке:
+</p>
+
+<p>
+http://10.0.2.3/dvwa/
+</p>
+
+<p>
+И откроется та же страница DVWA входа.
+</p>
+
+<p>
+На форме входа в DVWA логин/пароль следующие: admin/password.
+</p>
+
+<p>
+После ввода логина/пароля в форму входа DVWA видим следующую страницу:
+</p>
+
+<img src="./pica1/pic3.jpg" width=1400 alt="kali linux веб браузер mozilla firefox dvwa">
+
+<p>
+Это и есть наше веб- приложение DVWA которое мы будем взламывать для теста.
+</p>
+
+<p>
+Кроме того, DVWA можно отдельно загрузить из интернета в виде файла DVWA-1.0.7.iso со страницы <a href="https://www.vulnhub.com/entry/damn-vulnerable-web-application-dvwa-107,43/">https://www.vulnhub.com/entry/damn-vulnerable-web-application-dvwa-107,43/</a>. Далее этот ISO можно подключить к VirtualBox и работать с ним.
+</p>
+
+<p>
+Но так же как видим DVWA (Damn Vulnerable Web Application) уже встроен в Metasploitable 2. Это одна из причин, почему Metasploitable 2 так популярен для обучения пентесту: в нем уже установлено несколько специально уязвимых приложений.
+</p>
+
+<p>
+Таким образом у вас есть выбор- либо пользоваться DVWA установленным на Metasploitable 2, либо ISO образ DVWA загрузить из интернет.
+</p>
+
+<p>
+Мы будем использовать DVWA установленным на Metasploitable 2.
+</p>
+
+
+</body>
+</html>
