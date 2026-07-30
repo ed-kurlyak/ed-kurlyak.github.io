@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Раздел Brute Force - BurpSuite готовимся к brute force Damn Vulnerable Web Application (DVWA) в metasploitable-linux-2.0.0</title>
+
+	<meta name="DESCRIPTION" content="Раздел Brute Force - BurpSuite готовимся к brute force Damn Vulnerable Web Application (DVWA) в metasploitable-linux-2.0.0">
+	<meta name="KEYWORDS" content="Раздел Brute Force - BurpSuite готовимся к brute force Damn Vulnerable Web Application (DVWA) в metasploitable-linux-2.0.0">
+
+  <meta property="og:url"                content="https://ed-kurlyak.github.io/08.005-metasp2p1/metasp2a3.html" />
+  <meta property="og:type"               content="article" />
+  <meta property="og:title"              content="Ed Kurlyak - Раздел Brute Force - BurpSuite готовимся к brute force Damn Vulnerable Web Application (DVWA) в metasploitable-linux-2.0.0" />
+  <meta property="og:description"        content="Раздел Brute Force - BurpSuite готовимся к brute force Damn Vulnerable Web Application (DVWA) в metasploitable-linux-2.0.0" />
+  <meta property="og:image"              content="https://ed-kurlyak.github.io/08.004-metasp2/metasp2.png" />
+
+<style type="text/css">
+body {
+	font-size: 24px;
+	font-family: "Consolas";
+	background-color: #000;
+	color: #ffffff;
+}
+
+pre {
+	font-size: 24px;
+	font-family: "Consolas";
+	background-color: #ffffaa;
+	color: #000;
+	width: max-content;
+	min-width: 100%;
+
+}
+
+div.my_selected {
+	width: 100%;
+	background-color: #ffff55;
+	position: relative;
+}
+
+a:link, a:visited { color: #aaaaaa; text-decoration: none; font-weight: normal;} 
+a:active, a:hover { color: #aaaaaa; text-decoration: underline;}
+
+p {
+	text-align: justify;
+	margin-right: 20px;
+}
+
+</style>	
+</head>
+<body>
+
+<h3>
+Часть 3. Раздел Brute Force - BurpSuite готовимся к brute force Damn Vulnerable Web Application (DVWA) в metasploitable-linux-2.0.0
+</h3>
+
+<p>
+Предполагается что все действия выполняются на виртуальных машинах VirtualBox.
+</p>
+
+
+<p>
+Необходимо определить IP с машиной Metasploitable 2. Для этого сначала определим наш IP и маску подсети, для этого дадим команду в терминале Kali:
+</p>
+
+<p>
+ifconfig
+</p>
+
+<p>
+В результатах вывода команды выше, можно увидеть такую строку:
+</p>
+
+<p>
+inet 10.0.2.4  netmask 255.255.255.0 
+</p>
+
+<p>
+То есть наш IP 10.0.2.4 а диапазон IP адресов нашей сети 10.0.2.0/24 (это обяснялось ранее в предыдущих статьях).
+</p>
+
+<p>
+Для обнаружения других компьютеров в сети и в том числе нашей удаленной машины Metasploitable 2, дадим команду в терминале Kali:
+</p>
+
+<p>
+sudo netdiscover -r 10.0.2.0/24
+</p>
+
+<p>
+В выводе команды:
+</p>
+
+<p>
+10.0.2.2        08:00:27:3a:17:ed      1      60  PCS Systemtechnik GmbH
+10.0.2.3        08:00:27:f1:18:5a      1      60  PCS Systemtechnik GmbH
+</p>
+
+<p>
+10.0.2.2 - это виртуальный роутер, который управляет нашей сетью.
+</p>
+
+<p>
+10.0.2.3 - это наша машина (по логике) с Metasploitable 2.
+</p>
+
+<p>
+Проверим связь между нашей Kali и удаленной ВМ Metasploitable 2, дадим команду:
+</p>
+
+<p>
+ping 10.0.2.3
+</p>
+
+<p>
+Если сеть в VirtualBox настроена правильно, видим пинг идет, связь есть.
+</p>
+
+<p>
+На Kali открываем веб- браузер Mozilla Firefox и в строку адреса вводим IP удаленной Metasploitable 2. После открытия страницы, нажимаем ссылку на странице DVWA.
+</p>
+
+<img src="./pic003/pic1.jpg" width=1400 alt="kali linux веб браузер mozilla firefox">
+
+<img src="./pic003/pic2.jpg" width=1400 alt="kali linux веб браузер mozilla firefox">
+
+<p>
+В адресной строке браузера появился адрес (после нажатия ссылки DVWA):
+</p>
+
+<p>
+http://10.0.2.3/dvwa/login.php
+</p>
+
+<p>
+То есть после открытия веб- браузера на эту страницу DVWA можно было бы перейти сразу по ссылке:
+</p>
+
+<p>
+http://10.0.2.3/dvwa/
+</p>
+
+<p>
+И откроется та же страница DVWA входа.
+</p>
+
+<p>
+На форме входа в DVWA логин/пароль следующие: admin/password.
+</p>
+
+<p>
+После ввода логина/пароля в форму входа DVWA видим следующую страницу:
+</p>
+
+<img src="./pic003/pic3.jpg" width=1400 alt="kali linux веб браузер mozilla firefox dvwa">
+
+<p>
+Это и есть наше веб- приложение DVWA которое мы будем взламывать для теста.
+</p>
+
+
+<p>
+Нажимаем на ссылку DVWA Security:
+</p>
+
+<img src="./pic003/pic4.jpg" width=1400 alt="kali linux веб браузер mozilla firefox dvwa">
+
+<p>
+На странице DVWA Security выбираем уровень сложности задания low и нажимаем кнопку Submit (скриншот ниже):
+</p>
+
+<img src="./pic003/pic5.jpg" width=1400 alt="kali linux веб браузер mozilla firefox dvwa">
+
+<p>
+Как видим на скриншоте ниже установлен уровень сложности задания low:
+</p>
+
+<img src="./pic003/pic6.jpg" width=1400 alt="kali linux веб браузер mozilla firefox dvwa">
+
+
+<p>
+Продолжаем выполнять первое задание по Brute Force.
+</p>
+
+
+<p>
+Нажимаем на ссылку Brute Force (выделено на скриншоте ниже):
+</p>
+
+<img src="./pic003/pic7.jpg" width=1400 alt="kali linux веб браузер mozilla firefox dvwa">
+
+<p>
+Видим такую страницу с уязвимостью:
+</p>
+
+<img src="./pic003/pic8.jpg" width=1400 alt="kali linux веб браузер mozilla firefox dvwa">
+
+<p>
+На этой странице следующие учетные данные логин/пароль admin/password. Давайте их введем что бы увидеть какой будет результат нашего взлома - эти логин/пароль мы будем в дальнейшем подбирать самостоятельно (скриншот ниже):
+</p>
+
+<img src="./pic003/pic9.jpg" width=1400 alt="kali linux веб браузер mozilla firefox dvwa">
+
+<p>
+После ввода логин/пароль появилась строка:
+</p>
+
+<p>
+Welcome to the password protected area admin
+</p>
+
+<p>
+И внизу должен был бы отображаться логотип, но какой то баг.
+</p>
+
+<p>
+Значит, мы ввели верный логин/пароль и после входа получили надпись:
+</p>
+
+<p>
+Welcome to the password protected area admin
+</p>
+
+<p>
+которая обозначает что мы успешно вошли.
+</p>
+
+
+<p>
+В случае если неправильно ввести логин/пароль появляется сообщение (скриншот ниже):
+</p>
+
+<p>
+Username and/or password incorrect.
+</p>
+
+<img src="./pic003/pic10.jpg" width=1400 alt="kali linux веб браузер mozilla firefox dvwa">
+
+<p>
+Исходный код скрипта PHP который отвечает за вход можно посмотреть, если пролистать страницу вниз - мы увидим кнопку View Source:
+</p>
+
+<img src="./pic003/pic11.jpg" width=1400 alt="kali linux веб браузер mozilla firefox dvwa">
+
+<p>
+Мы нажали кнопку View Source и появился исходный код PHP этой страницы логина/пароля:
+</p>
+
+<img src="./pic003/pic12.jpg" width=1400 alt="kali linux веб браузер mozilla firefox dvwa">
+
+
+
+</body>
+</html>

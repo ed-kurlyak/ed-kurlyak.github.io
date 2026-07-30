@@ -118,9 +118,9 @@ ping 10.0.2.3
 На Kali открываем веб- браузер Mozilla Firefox и в строку адреса вводим IP удаленной Metasploitable 2. После открытия страницы, нажимаем ссылку на странице DVWA.
 </p>
 
-<img src="./pica2/pic1.jpg" width=1400 alt="kali linux веб браузер mozilla firefox">
+<img src="./pic002/pic1.jpg" width=1400 alt="kali linux веб браузер mozilla firefox">
 
-<img src="./pica2/pic2.jpg" width=1400 alt="kali linux веб браузер mozilla firefox">
+<img src="./pic002/pic2.jpg" width=1400 alt="kali linux веб браузер mozilla firefox">
 
 <p>
 В адресной строке браузера появился адрес (после нажатия ссылки DVWA):
@@ -150,7 +150,7 @@ http://10.0.2.3/dvwa/
 После ввода логина/пароля в форму входа DVWA видим следующую страницу:
 </p>
 
-<img src="./pica2/pic3.jpg" width=1400 alt="kali linux веб браузер mozilla firefox dvwa">
+<img src="./pic002/pic3.jpg" width=1400 alt="kali linux веб браузер mozilla firefox dvwa">
 
 <p>
 Это и есть наше веб- приложение DVWA которое мы будем взламывать для теста.
@@ -161,19 +161,19 @@ http://10.0.2.3/dvwa/
 Нажимаем на ссылку DVWA Security:
 </p>
 
-<img src="./pica2/pic4.jpg" width=1400 alt="kali linux веб браузер mozilla firefox dvwa">
+<img src="./pic002/pic4.jpg" width=1400 alt="kali linux веб браузер mozilla firefox dvwa">
 
 <p>
 На странице DVWA Security выбираем уровень сложности задания low и нажимаем кнопку Submit (скриншот ниже):
 </p>
 
-<img src="./pica2/pic5.jpg" width=1400 alt="kali linux веб браузер mozilla firefox dvwa">
+<img src="./pic002/pic5.jpg" width=1400 alt="kali linux веб браузер mozilla firefox dvwa">
 
 <p>
 Как видим на скриншоте ниже установлен уровень сложности задания low:
 </p>
 
-<img src="./pica2/pic6.jpg" width=1400 alt="kali linux веб браузер mozilla firefox dvwa">
+<img src="./pic002/pic6.jpg" width=1400 alt="kali linux веб браузер mozilla firefox dvwa">
 
 
 <p>
@@ -185,19 +185,19 @@ http://10.0.2.3/dvwa/
 Нажимаем на ссылку Brute Force (выделено на скриншоте ниже):
 </p>
 
-<img src="./pica2/pic7.jpg" width=1400 alt="kali linux веб браузер mozilla firefox dvwa">
+<img src="./pic002/pic7.jpg" width=1400 alt="kali linux веб браузер mozilla firefox dvwa">
 
 <p>
 Видим такую страницу с уязвимостью:
 </p>
 
-<img src="./pica2/pic8.jpg" width=1400 alt="kali linux веб браузер mozilla firefox dvwa">
+<img src="./pic002/pic8.jpg" width=1400 alt="kali linux веб браузер mozilla firefox dvwa">
 
 <p>
 На этой странице следующие учетные данные логин/пароль admin/password. Давайте их введем что бы увидеть какой будет результат нашего взлома - эти логин/пароль мы будем в дальнейшем подбирать самостоятельно (скриншот ниже):
 </p>
 
-<img src="./pica2/pic9.jpg" width=1400 alt="kali linux веб браузер mozilla firefox dvwa">
+<img src="./pic002/pic9.jpg" width=1400 alt="kali linux веб браузер mozilla firefox dvwa">
 
 <p>
 После ввода логин/пароль появилась строка:
@@ -232,19 +232,19 @@ Welcome to the password protected area admin
 Username and/or password incorrect.
 </p>
 
-<img src="./pica2/pic10.jpg" width=1400 alt="kali linux веб браузер mozilla firefox dvwa">
+<img src="./pic002/pic10.jpg" width=1400 alt="kali linux веб браузер mozilla firefox dvwa">
 
 <p>
 Исходный код скрипта PHP который отвечает за вход можно посмотреть, если пролистать страницу вниз - мы увидим кнопку View Source:
 </p>
 
-<img src="./pica2/pic11.jpg" width=1400 alt="kali linux веб браузер mozilla firefox dvwa">
+<img src="./pic002/pic11.jpg" width=1400 alt="kali linux веб браузер mozilla firefox dvwa">
 
 <p>
 Мы нажали кнопку View Source и появился исходный код PHP этой страницы логина/пароля:
 </p>
 
-<img src="./pica2/pic12.jpg" width=1400 alt="kali linux веб браузер mozilla firefox dvwa">
+<img src="./pic002/pic12.jpg" width=1400 alt="kali linux веб браузер mozilla firefox dvwa">
 
 <p>
 Теперь давайте сделаем SQL инъекцию для этой страницы.
@@ -266,7 +266,7 @@ admin'#
 Поле password необходимо заполнить любыми символами (скриншот ниже):
 </p>
 
-<img src="./pica2/pic13.jpg" width=1400 alt="kali linux веб браузер mozilla firefox dvwa">
+<img src="./pic002/pic13.jpg" width=1400 alt="kali linux веб браузер mozilla firefox dvwa">
 
 <p>
 Заполнили, жмем кнопку Login (скриншот ниже) и как видим страница нам сообщила что мы осуществили вход:
@@ -276,7 +276,7 @@ admin'#
 Welcome to the password protected area admin'#
 </p>
 
-<img src="./pica2/pic14.jpg" width=1400 alt="kali linux веб браузер mozilla firefox dvwa">
+<img src="./pic002/pic14.jpg" width=1400 alt="kali linux веб браузер mozilla firefox dvwa">
 
 
 <p>
