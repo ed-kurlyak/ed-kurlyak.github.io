@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Раздел Brute Force - SQL инъекция Damn Vulnerable Web Application (DVWA) в metasploitable-linux-2.0.0</title>
+
+	<meta name="DESCRIPTION" content="Раздел Brute Force - SQL инъекция Damn Vulnerable Web Application (DVWA) в metasploitable-linux-2.0.0">
+	<meta name="KEYWORDS" content="Раздел Brute Force - SQL инъекция Damn Vulnerable Web Application (DVWA) в metasploitable-linux-2.0.0">
+
+  <meta property="og:url"                content="https://ed-kurlyak.github.io/08.005-metasp2p1/metasp2a2.html" />
+  <meta property="og:type"               content="article" />
+  <meta property="og:title"              content="Ed Kurlyak - Раздел Brute Force - SQL инъекция Damn Vulnerable Web Application (DVWA) в metasploitable-linux-2.0.0" />
+  <meta property="og:description"        content="Раздел Brute Force - SQL инъекция Damn Vulnerable Web Application (DVWA) в metasploitable-linux-2.0.0" />
+  <meta property="og:image"              content="https://ed-kurlyak.github.io/08.004-metasp2/metasp2.png" />
+
+<style type="text/css">
+body {
+	font-size: 24px;
+	font-family: "Consolas";
+	background-color: #000;
+	color: #ffffff;
+}
+
+pre {
+	font-size: 24px;
+	font-family: "Consolas";
+	background-color: #ffffaa;
+	color: #000;
+	width: max-content;
+	min-width: 100%;
+
+}
+
+div.my_selected {
+	width: 100%;
+	background-color: #ffff55;
+	position: relative;
+}
+
+a:link, a:visited { color: #aaaaaa; text-decoration: none; font-weight: normal;} 
+a:active, a:hover { color: #aaaaaa; text-decoration: underline;}
+
+p {
+	text-align: justify;
+	margin-right: 20px;
+}
+
+</style>	
+</head>
+<body>
+
+<h3>
+Часть 2. Раздел Brute Force - SQL инъекция Damn Vulnerable Web Application (DVWA) в metasploitable-linux-2.0.0
+</h3>
+
+<p>
+Предполагается что все действия выполняются на виртуальных машинах VirtualBox.
+</p>
+
+
+<p>
+Необходимо определить IP с машиной Metasploitable 2. Для этого сначала определим наш IP и маску подсети, для этого дадим команду в терминале Kali:
+</p>
+
+<p>
+ifconfig
+</p>
+
+<p>
+В результатах вывода команды выше, можно увидеть такую строку:
+</p>
+
+<p>
+inet 10.0.2.4  netmask 255.255.255.0 
+</p>
+
+<p>
+То есть наш IP 10.0.2.4 а диапазон IP адресов нашей сети 10.0.2.0/24 (это обяснялось ранее в предыдущих статьях).
+</p>
+
+<p>
+Для обнаружения других компьютеров в сети и в том числе нашей удаленной машины Metasploitable 2, дадим команду в терминале Kali:
+</p>
+
+<p>
+sudo netdiscover -r 10.0.2.0/24
+</p>
+
+<p>
+В выводе команды:
+</p>
+
+<p>
+10.0.2.2        08:00:27:3a:17:ed      1      60  PCS Systemtechnik GmbH
+10.0.2.3        08:00:27:f1:18:5a      1      60  PCS Systemtechnik GmbH
+</p>
+
+<p>
+10.0.2.2 - это виртуальный роутер, который управляет нашей сетью.
+</p>
+
+<p>
+10.0.2.3 - это наша машина (по логике) с Metasploitable 2.
+</p>
+
+<p>
+Проверим связь между нашей Kali и удаленной ВМ Metasploitable 2, дадим команду:
+</p>
+
+<p>
+ping 10.0.2.3
+</p>
+
+<p>
+Если сеть в VirtualBox настроена правильно, видим пинг идет, связь есть.
+</p>
+
+<p>
+На Kali открываем веб- браузер Mozilla Firefox и в строку адреса вводим IP удаленной Metasploitable 2. После открытия страницы, нажимаем ссылку на странице DVWA.
+</p>
+
+<img src="./pica2/pic1.jpg" width=1400 alt="kali linux веб браузер mozilla firefox">
+
+<img src="./pica2/pic2.jpg" width=1400 alt="kali linux веб браузер mozilla firefox">
+
+<p>
+В адресной строке браузера появился адрес (после нажатия ссылки DVWA):
+</p>
+
+<p>
+http://10.0.2.3/dvwa/login.php
+</p>
+
+<p>
+То есть после открытия веб- браузера на эту страницу DVWA можно было бы перейти сразу по ссылке:
+</p>
+
+<p>
+http://10.0.2.3/dvwa/
+</p>
+
+<p>
+И откроется та же страница DVWA входа.
+</p>
+
+<p>
+На форме входа в DVWA логин/пароль следующие: admin/password.
+</p>
+
+<p>
+После ввода логина/пароля в форму входа DVWA видим следующую страницу:
+</p>
+
+<img src="./pica2/pic3.jpg" width=1400 alt="kali linux веб браузер mozilla firefox dvwa">
+
+<p>
+Это и есть наше веб- приложение DVWA которое мы будем взламывать для теста.
+</p>
+
+
+<p>
+Нажимаем на ссылку DVWA Security:
+</p>
+
+<img src="./pica2/pic4.jpg" width=1400 alt="kali linux веб браузер mozilla firefox dvwa">
+
+<p>
+На странице DVWA Security выбираем уровень сложности задания low и нажимаем кнопку Submit (скриншот ниже):
+</p>
+
+<img src="./pica2/pic5.jpg" width=1400 alt="kali linux веб браузер mozilla firefox dvwa">
+
+<p>
+Как видим на скриншоте ниже установлен уровень сложности задания low:
+</p>
+
+<img src="./pica2/pic6.jpg" width=1400 alt="kali linux веб браузер mozilla firefox dvwa">
+
+
+<p>
+Начинаем выполнять первое задание по Brute Force.
+</p>
+
+
+<p>
+Нажимаем на ссылку Brute Force (выделено на скриншоте ниже):
+</p>
+
+<img src="./pica2/pic7.jpg" width=1400 alt="kali linux веб браузер mozilla firefox dvwa">
+
+<p>
+Видим такую страницу с уязвимостью:
+</p>
+
+<img src="./pica2/pic8.jpg" width=1400 alt="kali linux веб браузер mozilla firefox dvwa">
+
+<p>
+На этой странице следующие учетные данные логин/пароль admin/password. Давайте их введем что бы увидеть какой будет результат нашего взлома - эти логин/пароль мы будем в дальнейшем подбирать самостоятельно (скриншот ниже):
+</p>
+
+<img src="./pica2/pic9.jpg" width=1400 alt="kali linux веб браузер mozilla firefox dvwa">
+
+<p>
+После ввода логин/пароль появилась строка:
+</p>
+
+<p>
+Welcome to the password protected area admin
+</p>
+
+<p>
+И внизу должен был бы отображаться логотип, но какой то баг.
+</p>
+
+<p>
+Значит, мы ввели верный логин/пароль и после входа получили надпись:
+</p>
+
+<p>
+Welcome to the password protected area admin
+</p>
+
+<p>
+которая обозначает что мы успешно вошли.
+</p>
+
+
+<p>
+В случае если неправильно ввести логин/пароль появляется сообщение (скриншот ниже):
+</p>
+
+<p>
+Username and/or password incorrect.
+</p>
+
+<img src="./pica2/pic10.jpg" width=1400 alt="kali linux веб браузер mozilla firefox dvwa">
+
+<p>
+Исходный код скрипта PHP который отвечает за вход можно посмотреть, если пролистать страницу вниз - мы увидим кнопку View Source:
+</p>
+
+<img src="./pica2/pic11.jpg" width=1400 alt="kali linux веб браузер mozilla firefox dvwa">
+
+<p>
+Мы нажали кнопку View Source и появился исходный код PHP этой страницы логина/пароля:
+</p>
+
+<img src="./pica2/pic12.jpg" width=1400 alt="kali linux веб браузер mozilla firefox dvwa">
+
+<p>
+Теперь давайте сделаем SQL инъекцию для этой страницы.
+</p>
+
+<p>
+Для этого в поле username вводим следующее:
+</p>
+
+<p>
+admin'#
+</p>
+
+<p>
+Причем в этом выражении одинарная кавычка на клавиатуре находится срава - рядом с клавишей Enter.
+</p>
+
+<p>
+Поле password необходимо заполнить любыми символами (скриншот ниже):
+</p>
+
+<img src="./pica2/pic13.jpg" width=1400 alt="kali linux веб браузер mozilla firefox dvwa">
+
+<p>
+Заполнили, жмем кнопку Login (скриншот ниже) и как видим страница нам сообщила что мы осуществили вход:
+</p>
+
+<p>
+Welcome to the password protected area admin'#
+</p>
+
+<img src="./pica2/pic14.jpg" width=1400 alt="kali linux веб браузер mozilla firefox dvwa">
+
+
+<p>
+Давайте разберем буквально по шагам, как будто мы никогда раньше не видели SQL Injection.
+</p>
+
+<p>
+Шаг 1. Пользователь открывает страницу
+</p>
+
+<p>
+В браузере есть форма:
+</p>
+
+<pre>
+
+Username: [____________]
+
+Password: [____________]
+
+[Login]
+
+</pre>
+
+<p>
+Мы вводим
+</p>
+
+<p>
+Username:
+admin'#
+</p>
+
+<p>
+Пароль любая последовательность символов.
+</p>
+
+<p>
+Password:
+sjdflkjslfjsdlkf
+</p>
+
+<p>
+После нажатия кнопки Login браузер отправляет серверу запрос.
+</p>
+
+<p>
+PHP получает эти данные.
+</p>
+
+<p>
+Шаг 2. PHP получает введенные значения
+</p>
+
+
+<p>
+Вот эта часть:
+</p>
+
+<p>
+$user = $_GET['username'];
+</p>
+
+<p>
+$pass = $_GET['password'];
+</p>
+
+<p>
+Обратите внимание данные передаются через запрос GET (не POST).
+</p>
+
+<p>
+Теперь переменные содержат
+</p>
+
+<p>
+$user = "admin'#";
+</p>
+
+<p>
+$pass = "sjdflkjslfjsdlkf";
+</p>
+
+<p>
+То есть пока это просто обычные строки.
+</p>
+
+<p>
+Шаг 3. Пароль превращается в MD5
+---
+
+<p>
+Следующая строка
+</p>
+
+<p>
+$pass = md5($pass);
+</p>
+
+<p>
+заменяет пароль его хэшем.
+</p>
+
+<p>
+Было
+</p>
+
+<p>
+sjdflkjslfjsdlkf
+</p>
+
+<p>
+Стало
+</p>
+
+<p>
+0b695362a1326b9cfdbb163e1763151b
+</p>
+
+<p>
+Теперь
+</p>
+
+<p>
+$user = "admin'#";
+</p>
+
+<p>
+$pass = "0b695362a1326b9cfdbb163e1763151b";
+</p>
+
+<p>
+Шаг 4. Формируется SQL-запрос
+</p>
+
+<p>
+Самая важная строка
+</p>
+
+<p>
+$qry = "SELECT * FROM users
+<br>
+WHERE user='$user'
+<br>
+AND password='$pass';";
+</p>
+
+<p>
+PHP просто берет текст запроса и подставляет туда значения переменных.
+<br>
+
+<p>
+PHP буквально делает замену.
+<br>
+
+<p>
+Было
+<br>
+
+<p>
+SELECT *
+<br>
+FROM users
+<br>
+WHERE user='$user'
+<br>
+AND password='$pass';
+<br>
+
+<p>
+Стало
+</p>
+
+<p>
+SELECT *
+<br>
+FROM users
+<br>
+WHERE user='admin'#'
+<br>
+AND password='0b695362a1326b9cfdbb163e1763151b';
+</p>
+
+<p>
+Обратите внимание.
+</p>
+
+<p>
+PHP вообще не знает ничего про SQL.
+</p>
+
+<p>
+Он просто вставил текст.
+</p>
+
+<p>
+Шаг 5. Этот текст отправляется MySQL
+</p>
+
+<p>
+Теперь этот текст получает база данных.
+</p>	
+
+<p>
+Для MySQL это уже обычный SQL-запрос.
+</p>
+
+<p>
+Шаг 6. MySQL начинает читать запрос
+</p>
+
+<p>
+Она читает слева направо.
+</p>
+
+<p>
+Сначала
+</p>
+
+<p>
+SELECT *
+</p>
+
+<p>
+потом
+</p>
+
+<p>
+FROM users
+</p>
+
+<p>
+потом
+</p>
+
+<p>
+WHERE
+</p>
+
+<p>
+потом
+</p>
+
+<p>
+user='admin'
+</p>
+
+<p>
+Пока всё нормально.
+</p>
+
+<p>
+Шаг 7. MySQL встречает
+</p>
+
+<p>
+Дальше она видит
+</p>
+
+<p>
+#
+</p>
+
+<p>
+А символ
+</p>
+
+<p>
+#
+</p>
+
+<p>
+в MySQL означает
+</p>
+
+<p>
+"Дальше всё комментарий."
+</p>
+
+<p>
+То есть база говорит
+</p>
+
+<p>
+"Я больше ничего читать не буду."
+</p>
+
+<p>
+Поэтому
+</p>
+
+<p>
+'
+<br>
+AND password='0b695362a1326b9cfdbb163e1763151b';
+</p>
+
+<p>
+вообще игнорируется.
+</p>
+
+<p>
+Получается, что реально выполняется только
+</p>
+
+<p>
+SELECT *
+<br>
+FROM users
+<br>
+WHERE user='admin'
+</p>
+
+<p>
+И всё.
+</p>
+
+<p>
+Проверки пароля больше нет.
+</p>
+
+<p>
+Шаг 8. Что делает база?
+</p>
+
+<p>
+База ищет
+</p>
+
+<p>
+user = admin
+</p>
+
+<p>
+В таблице есть запись
+</p>
+
+<pre>
+
+| user  | password |
+| ----- | -------- |
+| admin | ...      |
+
+</pre>
+
+<p>
+Она её находит.
+</p>
+
+<p>
+Возвращает одну строку.
+</p>
+
+<p>
+Шаг 9. Что получает PHP?
+</p>
+
+<p>
+Вот здесь
+</p>
+
+<p>
+$result = mysql_query($qry);
+</p>
+
+<p>
+в переменной
+</p>
+
+<p>
+$result
+</p>
+
+<p>
+лежит найденная строка пользователя admin.
+</p>
+
+<p>
+Шаг 10. Проверка количества строк
+</p>
+
+<p>
+Дальше
+</p>
+
+<p>
+mysql_num_rows($result)
+</p>
+
+<p>
+означает
+</p>
+
+<p>
+"Сколько строк вернула база?"
+</p>
+
+<p>
+Вернулась одна строка.
+</p>
+
+<p>
+Поэтому
+</p>
+
+<p>
+mysql_num_rows($result) == 1
+</p>
+
+<p>
+становится
+</p>
+
+<p>
+1 == 1
+</p>
+
+<p>
+Это
+</p>
+
+<p>
+true
+</p>
+
+<p>
+Значит выполняется
+</p>
+
+<p>
+if (...)
+<br>
+{
+</p>
+
+<p>
+Шаг 11. Получение аватара
+</p>
+
+<p>
+Берётся
+</p>
+
+<p>
+$avatar = mysql_result($result,0,"avatar");
+</p>
+
+<p>
+То есть
+</p>
+
+<p>
+"Из первой найденной строки возьми поле avatar."
+</p>
+
+<p>
+Например
+</p>
+
+<p>
+/hackable/users/admin.jpg
+</p>
+
+<p>
+Шаг 12. Выводится сообщение
+</p>
+
+<p>
+Теперь самое интересное.
+</p>
+
+<p>
+Смотрите внимательно.
+</p>
+
+<p>
+PHP НЕ пишет
+</p>
+
+<p>
+echo mysql_result($result,0,"user");
+</p>
+
+<p>
+Он пишет
+</p>
+
+<p>
+echo $user;
+</p>
+
+<p>
+А что находится в
+</p>
+
+<p>
+$user
+</p>
+
+<p>
+?
+</p>
+
+<p>
+Не имя из базы.
+</p>
+
+<p>
+А то, что мы ввели.
+</p>
+
+<p>
+То есть
+</p>
+
+<p>
+$user = "admin'#";
+</p>
+
+<p>
+Поэтому выводится
+</p>
+
+<p>
+Welcome to the password protected area admin'#
+</p>
+
+<p>
+Это НЕ означает
+</p>
+
+<p>
+что в базе есть пользователь
+</p>
+
+<p>
+admin'#
+</p>
+
+<p>
+Такого пользователя вообще нет.
+</p>
+
+<p>
+Просто разработчик решил вывести содержимое переменной
+</p>
+
+<p>
+$user
+</p>
+
+<p>
+Что реально произошло
+</p>
+
+<p>
+Можно представить процесс так:
+</p>
+
+<pre>
+
+Мы
+ │
+ │ admin'#
+ ▼
+
+PHP
+ │
+ │ вставило строку в SQL
+ ▼
+
+SELECT *
+FROM users
+WHERE user='admin'#'
+AND password='...';
+
+                │
+                ▼
+
+MySQL
+
+видит #
+
+↓
+
+остальное игнорирует
+
+↓
+
+выполняет
+
+SELECT *
+FROM users
+WHERE user='admin'
+
+↓
+
+находит пользователя admin
+
+↓
+
+возвращает его PHP
+
+↓
+
+PHP говорит
+
+"Вход успешный"
+
+↓
+
+печатает НЕ имя из базы
+
+↓
+
+печатает то,
+что пользователь ввёл
+
+↓
+
+admin'#
+
+</pre>
+
+<p>
+Именно это и является одной из классических SQL-инъекций: пользовательский ввод изменил структуру SQL-запроса. Вместо проверки имени пользователя и пароля база данных выполнила запрос, который проверяет только имя пользователя, потому что оставшаяся часть запроса была превращена в комментарий. Это хороший пример того, почему нельзя напрямую вставлять пользовательский ввод в SQL-запросы без параметризованных запросов или экранирования данных.
+</p>
+
+<p>
+Полный код скрипта PHP по кнопке View Source дан ниже:
+</p>
+
+<pre>
+
+&lt?php
+
+if( isset( $_GET['Login'] ) ) {
+
+    $user = $_GET['username'];
+    
+    $pass = $_GET['password'];
+    $pass = md5($pass);
+
+    $qry = "SELECT * FROM `users` WHERE user='$user' AND password='$pass';";
+    $result = mysql_query( $qry ) or die( '&ltpre>' . mysql_error() . '&lt/pre>' );
+
+    if( $result && mysql_num_rows( $result ) == 1 ) {
+        // Get users details
+        $i=0; // Bug fix.
+        $avatar = mysql_result( $result, $i, "avatar" );
+
+        // Login Successful
+        echo "&ltp>Welcome to the password protected area " . $user . "</p>";
+        echo '&ltimg src="' . $avatar . '" />';
+    } else {
+        //Login failed
+        echo "&ltpre>&ltbr>Username and/or password incorrect.&lt/pre>";
+    }
+
+    mysql_close();
+}
+
+?> 
+
+
+</pre>
+
+
+</body>
+</html>
