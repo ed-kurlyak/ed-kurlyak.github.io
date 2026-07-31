@@ -1,15 +1,15 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>Раздел Brute Force - BurpSuite готовимся к brute force Damn Vulnerable Web Application (DVWA) в metasploitable-linux-2.0.0</title>
+	<title>Раздел Brute Force - Burpsuite и Hydra подбор пароля Damn Vulnerable Web Application (DVWA) в metasploitable-linux-2.0.0</title>
 
-	<meta name="DESCRIPTION" content="Раздел Brute Force - BurpSuite готовимся к brute force Damn Vulnerable Web Application (DVWA) в metasploitable-linux-2.0.0">
-	<meta name="KEYWORDS" content="Раздел Brute Force - BurpSuite готовимся к brute force Damn Vulnerable Web Application (DVWA) в metasploitable-linux-2.0.0">
+	<meta name="DESCRIPTION" content="Раздел Brute Force - Burpsuite и Hydra подбор пароля Damn Vulnerable Web Application (DVWA) в metasploitable-linux-2.0.0">
+	<meta name="KEYWORDS" content="Раздел Brute Force - Burpsuite и Hydra подбор пароля Damn Vulnerable Web Application (DVWA) в metasploitable-linux-2.0.0">
 
-  <meta property="og:url"                content="https://ed-kurlyak.github.io/08.005-metasp2p1/metasp2a3.html" />
+  <meta property="og:url"                content="https://ed-kurlyak.github.io/08.005-metasp2p2/metasp2_003.html" />
   <meta property="og:type"               content="article" />
-  <meta property="og:title"              content="Ed Kurlyak - Раздел Brute Force - BurpSuite готовимся к brute force Damn Vulnerable Web Application (DVWA) в metasploitable-linux-2.0.0" />
-  <meta property="og:description"        content="Раздел Brute Force - BurpSuite готовимся к brute force Damn Vulnerable Web Application (DVWA) в metasploitable-linux-2.0.0" />
+  <meta property="og:title"              content="Ed Kurlyak - Раздел Brute Force - Burpsuite и Hydra подбор пароля Damn Vulnerable Web Application (DVWA) в metasploitable-linux-2.0.0" />
+  <meta property="og:description"        content="Раздел Brute Force - Burpsuite и Hydra подбор пароля Damn Vulnerable Web Application (DVWA) в metasploitable-linux-2.0.0" />
   <meta property="og:image"              content="https://ed-kurlyak.github.io/08.004-metasp2/metasp2.png" />
 
 <style type="text/css">
@@ -49,7 +49,7 @@ p {
 <body>
 
 <h3>
-Часть 3. Раздел Brute Force - BurpSuite готовимся к brute force Damn Vulnerable Web Application (DVWA) в metasploitable-linux-2.0.0
+Часть 3. Раздел Brute Force - Burpsuite и Hydra подбор пароля Damn Vulnerable Web Application (DVWA) в metasploitable-linux-2.0.0
 </h3>
 
 <p>
@@ -246,6 +246,206 @@ Username and/or password incorrect.
 
 <img src="./pic003/pic12.jpg" width=1400 alt="kali linux веб браузер mozilla firefox dvwa">
 
+<p>
+Далее мы будем настраивать программу Burpsuite и настраивать веб-браузер Mozilla Firefox для работы с Burpsuite, эта программа позволяет перехватывать http трафик и смотреть заголовки запросов.
+</p>
+
+<p>
+Обновим программу Burpsuite, команды терминала Kali Linux:
+</p>
+
+<p>
+sudo apt update
+<br>
+sudo apt install burpsuite
+</p>
+
+<p>
+Далее нам нужно настроить Burpsuit, а затем Firefox браузер.
+</p>
+
+<p>
+Сначала настроим Burpsuit. Запустим программу командой в терминале Kali Linux:
+</p>
+
+<p>
+burpsuite
+</p>
+
+<p>
+После запуска команды в терминале появляется такое окно:
+</p>
+
+<img src="./pic003/pic17.jpg" width=1400 alt="kali linux burpsuite">
+
+<p>
+Нажимаем кнопку внизу Continue with Burp Suite Community Edition.
+</p>
+
+
+<p>
+В следующем окне выбираем Temporary project in memory и жмем Next.
+</p>
+
+<img src="./pic003/pic18.jpg" width=1400 alt="kali linux burpsuite">
+
+<p>
+В следующем окне просто жмем кнопку Start Burp (скриншот ниже):
+</p>
+
+<img src="./pic003/pic19.jpg" width=1400 alt="kali linux burpsuite">
+
+<p>
+Далее необходимо убедится, что Burp слушает порт 8080, для этого открыть Proxy->Options (или в новых версиях Settings → Tools → Proxy).
+</p>
+
+<img src="./pic003/pic20.jpg" width=1400 alt="kali linux burpsuite">
+
+<p>
+Открывается окно, видим настройки правильные 127.0.0.1:8080 (скриншот ниже):
+</p>
+
+<img src="./pic003/pic21.jpg" width=1400 alt="kali linux burpsuite">
+
+<p>
+Если есть Listener на 127.0.0.1:8080 — всё нормально. У нас есть.
+</p>
+
+<p>
+Далее настраиваем Mozilla Firefox в Kali Linux.
+</p>
+
+<p>
+Запускаем Mozilla Firefox в Kali Linux. Справа вверху нажимаем на три полоски (скриншот ниже):
+</p>
+
+<img src="./pic003/pic13.jpg" width=1400 alt="kali linux веб браузер mozilla firefox">
+
+<p>
+Когда мы нажали три полоски появилось меню, в нем выбираем пункт Settings (скриншот ниже):
+</p>
+
+<img src="./pic003/pic14.jpg" width=1400 alt="kali linux веб браузер mozilla firefox">
+
+<p>
+После нажатия на пункт Settings в окне браузера появляются настройки, необходимо прокрутить страницу в самый низ, до пункта Network Settings - и рядом с пунктом нажать кнопку Settings ... (скриншот ниже):
+</p>
+
+<img src="./pic003/pic15.jpg" width=1400 alt="kali linux веб браузер mozilla firefox">
+
+<p>
+После нажатия Network Settings -> Settings... появляется окно, необходимо выбрать пункт Manual proxy configuration, указать пункт HTTP Proxy 127.0.0.1 и порт 8080, так же ниже под этим полем ввода поставить галочку Also use this proxy for HTTPS (или в других версиях браузера может быть Use this proxy server for all protocols). Далее в этом окне нажать OK.
+</p>
+
+<img src="./pic003/pic16.jpg" width=1400 alt="kali linux веб браузер mozilla firefox">
+
+<p>
+После нажатия кнопки OK закрываем закладку браузера Settings.
+</p>
+
+<p>
+Все, браузер Firefox настроен для работы с Burpsuit.
+</p>
+
+<p>
+Не закрываем Burpsuite, проверяем работу.
+</p>
+
+<p>
+В Firefox откройте:
+</p>
+
+<p>
+http://10.0.0.3/dvwa/
+</p>
+
+<p>
+Вводим логин/пароль admin/password. Выбираем Security Level - low. Выбираем ссылку уязвимости Brute Force.
+</p>
+
+<p>
+Далее в Burpsuite включаем перехват - нажимаем кнопку Intercept off и надпись на кнопке меняется после нажатия на Intercept on. То есть если мы хотим начать перехват нажимаем кнопку Intercept, и если мы хотим остановить перехват (например для обычного просмотра страниц в браузере) то нажимаем ту же кнопку Intercept.
+</p>
+
+<img src="./pic003/pic22.jpg" width=1400 alt="kali linux burpsuite">
+
+
+<p>
+Возвращаемся в Firefox, и вводим логин/пароль например amin/randompassword.
+</p>
+
+<p>
+Автоматически поверх всплыло окно Burpsuite:
+</p>
+
+<img src="./pic003/pic25.jpg" width=1400 alt="kali linux firefox">
+
+<img src="./pic003/pic24.jpg" width=1400 alt="kali linux burpsuite">
+
+<p>
+Для дальнейшего взлома нам важно в выводе эти поля:
+</p>
+
+
+<p>
+GET /dvwa/vulnerabilities/brute/?username=admin&password=randompassword&Login=Login HTTP/1.1
+</p>
+
+<p>
+В этой строке нам пригодиться:
+</p>
+
+<p>
+username=admin&password=randompassword&Login=Login
+</p>
+
+<p>
+И в следующей строке:
+</p>
+
+<p>
+Cookie: security=low; PHPSESSID=023d51270ddc266b8719c2c40820602e
+</p>
+
+<p>
+Нам пригодиться в будущем:
+</p>
+
+<p>
+security=low; PHPSESSID=023d51270ddc266b8719c2c40820602e
+</p>
+
+<p>
+Далее в статье мы будем использовать программу Hydra для подбора пароля в эту форму, и программа Hydra будет использовать в командной строке данные которые мы только что получили при помощи программы Burpsuite.
+</p>
+
+<p>
+Если вы хотите закончить работу с Burpsuite и работать с Firefox в обычном режиме, то необходимо вернуть первоначальные настройки Firefox.
+</p>
+
+<p>
+Запускаем второй (еще один) терминал, так как в первом терминале у нас Burpsuite (его уже можно закрыть). В терминале вводим команду hydra для подбора пароля:
+</p>
+
+<p>
+hydra -l admin -P /usr/share/wordlists/rockyou.txt 10.0.2.3 http-get-form "/dvwa/vulnerabilities/brute/:username=^USER^&password=^PASS^&Login=Login:H=Cookie:PHPSESSID=023d51270ddc266b8719c2c40820602e;security=low:F=Username and/or password incorrect."
+</p>
+
+<p>
+И видим результат пароль password:
+</p>
+
+<img src="./pic003/pic26.jpg" width=1400 alt="kali linux hydraw">
+
+<p>
+Так же в команду hydra можно добавить дополнительную вербализацию ключ -V, и вывод работы команды на экране будет более подробный, например:
+</p>
+
+<p>
+hydra -V -l admin -P /usr/share/wordlists/rockyou.txt 10.0.2.3 http-get-form "/dvwa/vulnerabilities/brute/:username=^USER^&password=^PASS^&Login=Login:H=Cookie:PHPSESSID=023d51270ddc266b8719c2c40820602e;security=low:F=Username and/or password incorrect."
+</p>
+
+<img src="./pic003/pic27.jpg" width=1400 alt="kali linux hydraw">
 
 
 </body>
