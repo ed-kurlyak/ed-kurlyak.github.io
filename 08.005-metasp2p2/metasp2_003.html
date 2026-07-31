@@ -447,6 +447,34 @@ hydra -V -l admin -P /usr/share/wordlists/rockyou.txt 10.0.2.3 http-get-form "/d
 
 <img src="./pic003/pic27.jpg" width=1400 alt="kali linux hydraw">
 
+<p>
+Интересный момент, почему нам нужен PHPSESSID - нам нужен потому что с самого начала мы вошли под паролем/логином amin/password в главную страницу DVWA, и потом внутри после входа мы взламываем еще одну страницу с логином/паролем - раздел Brute Force. Так вот именно что бы беспрепятственно проходить на сайт до раздела Brute Force нам нужен куки PHPSESSID - это как бы пропуск через логин/пароль на главной странице DVWA. Например если вы будете взламывать главную страницу входа DVWA то PHPSESSID не нужен.
+</p>
 
+<p>
+Например взлом главной страницы:
+</p>
+
+<p>
+http://10.0.2.3/dvwa/login.php
+</p>
+
+<p>
+В терминале Kali дать команду, мы знаем логин admin:
+</p>
+
+<p>
+hydra -V -l admin -P /usr/share/wordlists/rockyou.txt 10.0.2.3 http-post-form "/dvwa/login.php/:username=^USER^&password=^PASS^&Login=Login:F=Login failed"
+</p>
+
+<img src="./pic003/pic28.jpg" width=1400 alt="kali linux firefox">
+
+<img src="./pic003/pic29.jpg" width=1400 alt="kali linux burpsuite">
+
+<img src="./pic003/pic30.jpg" width=1400 alt="kali linux hydraw">
+
+<p>
+Как видим для взлома главной страницы DVWA PHPSESSID не нужен. Только после того как мы вошли на главуню страницу, нужен PHPSESSID для доступа к внутренней части сайта DVWA, PHPSESSID как бы заменяет логин/пароль для доступа к внутренней части сайта DVWA.
+</p>
 </body>
 </html>
