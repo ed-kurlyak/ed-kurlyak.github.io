@@ -449,9 +449,11 @@ hydra -l admin -P /usr/share/wordlists/rockyou.txt 10.0.2.3 http-get-form "/dvwa
 Так же в команду hydra можно добавить дополнительную вербализацию ключ -V, и вывод работы команды на экране будет более подробный, например:
 </p>
 
-<p>
+<pre>
+
 hydra -V -l admin -P /usr/share/wordlists/rockyou.txt 10.0.2.3 http-get-form "/dvwa/vulnerabilities/brute/:username=^USER^&password=^PASS^&Login=Login:H=Cookie:PHPSESSID=023d51270ddc266b8719c2c40820602e;security=low:F=Username and/or password incorrect."
-</p>
+
+</pre>
 
 <img src="./pic003/pic27.jpg" width=1400 alt="kali linux hydraw">
 
@@ -471,9 +473,11 @@ http://10.0.2.3/dvwa/login.php
 В терминале Kali дать команду, мы знаем логин admin:
 </p>
 
-<p>
+<pre>
+
 hydra -V -l admin -P /usr/share/wordlists/rockyou.txt 10.0.2.3 http-post-form "/dvwa/login.php/:username=^USER^&password=^PASS^&Login=Login:F=Login failed"
-</p>
+
+</pre>
 
 <img src="./pic003/pic28.jpg" width=1400 alt="kali linux firefox">
 
@@ -484,5 +488,763 @@ hydra -V -l admin -P /usr/share/wordlists/rockyou.txt 10.0.2.3 http-post-form "/
 <p>
 Как видим для взлома главной страницы DVWA PHPSESSID не нужен. Только после того как мы вошли на главуню страницу, нужен PHPSESSID для доступа к внутренней части сайта DVWA, PHPSESSID как бы заменяет логин/пароль для доступа к внутренней части сайта DVWA.
 </p>
+
+<p>
+Эта команда ниже запускает THC Hydra — программу для перебора логинов и паролей (brute force). В данном случае она пытается подобрать пароль для пользователя admin на учебном веб-приложении DVWA (Damn Vulnerable Web Application).
+</p>
+
+<p>
+Разберем команду по частям.
+</p>
+
+<pre>
+
+hydra -V -l admin -P /usr/share/wordlists/rockyou.txt 10.0.2.3 http-get-form "/dvwa/vulnerabilities/brute/:username=^USER^&password=^PASS^&Login=Login:H=Cookie:PHPSESSID=023d51270ddc266b8719c2c40820602e;security=low:F=Username and/or password incorrect."
+
+</pre>
+
+<p>
+1)hydra
+</p>
+
+<p>
+Это имя программы.
+</p>
+
+<p>
+Hydra умеет подбирать пароли к огромному количеству сервисов:
+</p>
+
+<p>
+HTTP
+<br>
+HTTPS
+<br>
+FTP
+<br>
+SSH
+<br>
+Telnet
+<br>
+SMB
+<br>
+MySQL
+<br>
+PostgreSQL
+<br>
+RDP
+<br>
+SMTP
+</p>
+
+<p>
+и многим другим.
+</p>
+
+<p>
+2) -V
+</p>
+
+<p>
+-V
+</p>
+
+<p>
+Большая буква V означает
+</p>
+
+<p>
+Verbose.
+</p>
+
+<p>
+Hydra будет выводить каждую попытку.
+</p>
+
+<p>
+Например
+</p>
+
+<p>
+[ATTEMPT] admin : 123456
+<br>
+[ATTEMPT] admin : password
+<br>
+[ATTEMPT] admin : qwerty
+</p>
+
+<p>
+Без -V попытки обычно не отображаются.
+</p>
+
+<p>
+3) -l admin
+</p>
+
+<p>
+Маленькая буква l (не цифра 1).
+</p>
+
+<p>
+-l admin
+</p>
+
+<p>
+означает использовать один логин
+</p>
+
+<p>
+admin
+</p>
+
+<p>
+То есть Hydra НЕ перебирает пользователей.
+</p>
+
+<p>
+Она перебирает только пароль.
+</p>
+
+<p>
+Если бы нужно было перебирать пользователей тоже, используют
+</p>
+
+<p>
+-L users.txt
+</p>
+
+<p>
+где
+</p>
+
+<p>
+users.txt
+</p>
+
+<p>
+admin
+<br>
+root
+<br>
+test
+<br>
+john
+</p>
+
+<p>
+4) -P
+</p>
+
+<p>
+-P /usr/share/wordlists/rockyou.txt
+</p>
+
+<p>
+Большая буква P.
+</p>
+
+<p>
+Это словарь паролей.
+</p>
+
+<p>
+Hydra читает файл
+</p>
+
+<p>
+rockyou.txt
+</p>
+
+<p>
+например
+</p>
+
+<p>
+123456
+<br>
+password
+<br>
+qwerty
+<br>
+admin
+<br>
+letmein
+<br>
+football
+<br>
+...
+</p>
+
+<p>
+и по очереди подставляет каждый пароль.
+</p>
+
+<p>
+5)
+</p>
+
+<p>
+10.0.2.3
+</p>
+
+<p>
+IP-адрес сервера.
+</p>
+
+<p>
+Именно сюда Hydra отправляет HTTP-запросы.
+</p>
+
+
+<p>
+6)http-get-form
+</p>
+
+<p>
+Это один из модулей Hydra.
+</p>
+
+<p>
+Он означает:
+</p>
+
+<p>
+форма авторизации работает через HTTP GET.
+</p>
+
+<p>
+Например браузер может отправлять такой запрос:
+</p>
+
+<p>
+GET /login.php?user=admin&pass=1234
+</p>
+
+<p>
+или
+</p>
+
+<p>
+GET /dvwa/vulnerabilities/brute/?username=admin&password=1234&Login=Login
+</p>
+
+<p>
+Если бы использовался метод POST, был бы модуль
+</p>
+
+<p>
+http-post-form
+</p>
+
+<p>
+7) Вся длинная строка
+</p>
+
+<p>
+После http-get-form идет описание формы.
+</p>
+
+<pre>
+
+"/dvwa/vulnerabilities/brute/:username=^USER^&password=^PASS^&Login=Login:H=Cookie:PHPSESSID=023d51270ddc266b8719c2c40820602e;security=low:F=Username and/or password incorrect."
+
+</pre>
+
+<p>
+Hydra делит её по двоеточиям (:) на несколько частей.
+</p>
+
+<p>
+Первая часть
+</p>
+
+<p>
+/dvwa/vulnerabilities/brute/
+</p>
+
+<p>
+Это URL.
+</p>
+
+<p>
+Hydra будет обращаться к
+</p>
+
+<p>
+http://10.0.2.3/dvwa/vulnerabilities/brute/
+</p>
+
+<p>
+Вторая часть
+</p>
+
+<p>
+username=^USER^&password=^PASS^&Login=Login
+</p>
+
+
+<p>
+Это параметры запроса.
+</p>
+
+<p>
+Например Hydra подставляет
+</p>
+
+<p>
+USER = admin
+</p>
+
+<p>
+PASS = 123456
+</p>
+
+<p>
+и получается
+</p>
+
+<p>
+username=admin
+<br>
+password=123456
+<br>
+Login=Login
+</p>
+
+<p>
+Следующая попытка
+</p>
+
+<p>
+username=admin
+<br>
+password=password
+<br>
+Login=Login
+</p>
+
+<p>
+Потом
+</p>
+
+<p>
+username=admin
+<br>
+password=qwerty
+<br>
+Login=Login
+</p>	
+
+<p>
+и так далее.
+</p>
+
+<p>
+Что означает
+</p>
+
+<p>
+^USER^
+</p>
+
+<p>
+Это специальный маркер Hydra.
+</p>
+
+<p>
+Он заменяется текущим логином.
+</p>
+
+<p>
+Что означает
+</p>
+
+<p>
+^PASS^
+</p>
+
+<p>
+Это специальный маркер.
+</p>
+
+<p>
+Hydra заменяет его очередным паролем из словаря.
+</p>
+
+<p>
+Почему есть
+</p>
+
+<p>
+Login=Login
+</p>
+
+<p>
+Потому что HTML-форма обычно содержит кнопку:
+</p>
+
+<pre>
+
+&ltinput
+type="submit"
+name="Login"
+value="Login">
+
+</pre>
+
+<p>
+Когда пользователь нажимает кнопку, браузер отправляет
+</p>
+
+<p>
+Login=Login
+</p>
+
+<p>
+Hydra имитирует обычный браузер, поэтому этот параметр тоже передается.
+</p>
+
+<p>
+8) H=
+</p>
+
+<p>
+Следующая часть
+</p>
+
+<p>
+H=Cookie:PHPSESSID=023d51270ddc266b8719c2c40820602e;security=low
+</p>
+
+<p>
+H= означает добавить HTTP-заголовок (Header).
+</p>
+
+<p>
+В данном случае добавляется заголовок Cookie:
+</p>
+
+<p>
+Cookie:
+<br>
+PHPSESSID=023d51270ddc266b8719c2c40820602e;
+<br>
+security=low
+</p>
+
+<p>
+Это нужно потому, что DVWA требует активную сессию и установленный уровень безопасности.
+</p>
+
+<p>
+PHPSESSID
+</p>
+
+<p>
+Это идентификатор сессии PHP.
+</p>
+
+<p>
+Например
+</p>
+
+<p>
+PHPSESSID=023d51270ddc266b8719c2c40820602e
+</p>
+
+<p>
+По нему сервер узнает пользователя.
+</p>
+
+<p>
+security=low
+</p>
+
+<p>
+DVWA имеет несколько уровней защиты которые мы с вами уже настраивали на странице DVWA.
+</p>
+
+<p>
+low
+<br>
+medium
+<br>
+high
+<br>
+impossible
+</p>
+
+<p>
+Cookie
+</p>
+
+<p>
+security=low
+</p>
+
+<p>
+говорит серверу
+</p>
+
+<p>
+использовать уровень Low
+</p>
+
+<p>
+На этом уровне защита минимальна, и приложение специально предназначено для учебных лабораторий.
+</p>
+
+<p>
+9) F=
+</p>
+
+<p>
+Последняя часть
+</p>
+
+<p>
+F=Username and/or password incorrect.
+</p>
+
+<p>
+F= означает строку, указывающую на неудачную попытку входа (Failure), то есть та строка которая пишеться на странице в браузере после неудачного входа.
+</p>
+
+<p>
+Hydra после каждого запроса анализирует ответ сервера.
+</p>
+
+<p>
+Если видит
+</p>
+
+<p>
+Username and/or password incorrect.
+</p>
+
+<p>
+значит
+</p>
+
+<p>
+пароль неверный
+</p>
+
+<p>
+Если этой строки нет, Hydra считает, что вход, вероятно, успешен, и сообщает найденные учетные данные.
+</p>
+
+<p>
+Можно так же через символ | сложить несколько фраз, сообщений ответов, тогда будет использоваться операция "или" например ниже:
+</p>
+
+<p>
+F=Username and/or password incorrect.|Login failed
+</p>
+
+<p>
+Если сервер ответил
+</p>
+
+<p>
+Username and/or password incorrect.
+</p>
+
+<p>
+или
+</p>
+
+<p>
+Login failed
+</p>
+
+<p>
+попытка считается неудачной.
+</p>
+
+<p>
+Как работает команда целиком
+</p>
+
+<p>
+Если представить процесс упрощенно, Hydra делает примерно следующее:
+</p>
+
+<p>
+Берет первый пароль из rockyou.txt.
+<br>
+Формирует GET-запрос с логином admin и этим паролем.
+<br>
+Добавляет Cookie с указанной сессией и уровнем безопасности.
+<br>
+Отправляет запрос на страницу /dvwa/vulnerabilities/brute/.
+<br>
+Получает HTML-ответ.
+<br>
+Проверяет, содержится ли в ответе текст Username and/or password incorrect..
+<br>
+Если текст найден — переходит к следующему паролю.
+<br>
+Если текст отсутствует — считает, что пароль найден, и завершает подбор.
+</p>
+
+<p>
+Символ : используется в двух разных ролях.
+</p>
+
+<p>
+Строка выглядит так:
+</p>
+
+<pre>
+
+/dvwa/vulnerabilities/brute/:username=^USER^&password=^PASS^&Login=Login:H=Cookie:PHPSESSID=023d51270ddc266b8719c2c40820602e;security=low:F=Username and/or password incorrect.
+
+</pre>
+
+<p>
+Hydra разбирает ее слева направо.
+</p>
+
+<p>
+Она ожидает следующий формат:
+</p>
+
+<p>
+URL : параметры : дополнительные опции : условие
+</p>
+
+<p>
+То есть здесь получается:
+</p>
+
+<p>
+1)
+/dvwa/vulnerabilities/brute/
+</p>
+
+<p>
+2)
+username=^USER^&password=^PASS^&Login=Login
+</p>
+
+<p>
+3)
+H=Cookie:PHPSESSID=023d51270ddc266b8719c2c40820602e;security=low
+</p>
+
+<p>
+4)
+F=Username and/or password incorrect.
+</p>
+
+<p>
+Обратите внимание на третью часть.
+</p>
+
+<p>
+H=Cookie:PHPSESSID=023d51270ddc266b8719c2c40820602e;security=low
+</p>
+
+<p>
+Здесь первое двоеточие (перед H=):
+</p>
+
+<pre>
+
+...Login=Login : H=Cookie...
+               ↑
+
+</pre>
+
+<p>
+— это разделитель полей Hydra.
+</p>
+
+<p>
+А вот второе двоеточие:
+</p>
+
+<p>
+H=Cookie:PHPSESSID=...
+</p>      ↑
+
+<p>
+уже не является разделителем Hydra.
+</p>
+
+<p>
+Оно входит в значение параметра H=.
+</p>
+
+<p>
+Почему?
+</p>
+
+<p>
+Потому что HTTP-заголовок всегда записывается как
+</p>
+
+<p>
+Имя: Значение
+</p>
+
+<p>
+Например
+</p>
+
+<p>
+Host: google.com
+</p>
+
+<p>
+или
+</p>
+
+<p>
+User-Agent: Mozilla/5.0
+</p>
+
+<p>
+или
+</p>
+
+<p>
+Cookie: PHPSESSID=...
+</p>
+
+<p>
+То есть
+</p>
+
+<p>
+Cookie:PHPSESSID=...
+</p>
+
+<p>
+— это обычный HTTP-заголовок:
+</p>
+
+<p>
+То есть Hydra сформирует HTTP-запрос примерно такого вида:
+</p>
+
+<p>
+GET /dvwa/vulnerabilities/brute/?username=admin&password=123456&Login=Login HTTP/1.1
+<br>
+Host: 10.0.2.3
+<br>
+Cookie: PHPSESSID=023d51270ddc266b8719c2c40820602e; security=low
+</p>
+
+<p>
+Именно поэтому двоеточие после Cookie — это не разделитель полей Hydra, а обычный синтаксис HTTP-заголовка.
+</p>
+
+<p>
+То есть внешние двоеточия разделяют крупные блоки, а двоеточие после Cookie принадлежит уже содержимому третьего блока — HTTP-заголовку. Поэтому Hydra не воспринимает его как начало нового поля.
+</p>
+
+
 </body>
 </html>
