@@ -1,5 +1,5 @@
 //=============================================================
-//	Ed Kurlyak 2023 Tomb Raider 2-3-4-5 Widescreen Patch
+//	Ed Kurlyak 2011-2025 Tomb Raider 2-3-4-5 Widescreen Patch
 //=============================================================
 
 #define _WIN32_WINNT 0x0500
@@ -14,8 +14,7 @@
 #pragma comment (lib, "Comctl32.lib")
 
 #define WINDOW_WIDTH 570
-//#define WINDOW_HEIGHT 298
-#define WINDOW_HEIGHT 305
+#define WINDOW_HEIGHT 247
 
 #define LONG_PTR long
 
@@ -25,31 +24,26 @@ HWND g_hDlg;
 HWND g_hWndCheckBox_Dist;
 HWND g_hWndCheckBox_FOV;
 HWND g_hWndCheckBox_Aspect;
-HWND g_hWndCheckBox_60fps;
 
 #define IDC_MYCHECKBOX_DIST 101
 #define IDC_MYCHECKBOX_FOV 102
 #define IDC_MYCHECKBOX_ASPECT 103
-#define IDC_MYCHECKBOX_60FPS 104
 
 bool g_lButtonDown_CheckBox_Dist = false;
 bool g_lButtonDown_CheckBox_FOV = false;
 bool g_lButtonDown_CheckBox_Aspect = true;
-bool g_lButtonDown_CheckBox_60fps = false;
 
 HWND g_hWndStaticText_Dist;
 HWND g_hWndStaticText_FOV;
 HWND g_hWndStaticText_Aspect;
 HWND g_hWndStaticText_AspectWH;
 HWND g_hWndStaticText_Result;
-HWND g_hWndStaticText_60fps;
 
 #define IDC_MYSTATICTEXT_DIST 108
 #define IDC_MYSTATICTEXT_FOV 109
 #define IDC_MYSTATICTEXT_ASPECT 110
 #define IDC_MYSTATICTEXT_ASPECTWH 111
 #define IDC_MYSTATICTEXT_RESULT 116
-#define IDC_MYSTATICTEXT_60FPS 117
 
 HWND g_hWndEdit_Dist;
 HWND g_hWndEdit_FOV;
@@ -85,8 +79,7 @@ struct THREADPARMS
 	char Widescreen_Res[256];
 	char CamDist_Res[256];
 	char Fov_Res[256];
-	char FPS60_Res[256];
-
+	
 	char File_Name[256];
 };
 
@@ -145,11 +138,6 @@ LRESULT CALLBACK CheckBox_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lP
 				Redraw = true;
 			}
 
-			if (g_lButtonDown_CheckBox_60fps && hWnd == g_hWndCheckBox_60fps)
-			{
-				Redraw = true;
-			}
-
 			if(Redraw)
 			{
 				Rect.top = Rect.top + 3;
@@ -189,13 +177,6 @@ LRESULT CALLBACK CheckBox_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lP
 			if(hWnd == g_hWndCheckBox_Aspect)
 			{
 				g_lButtonDown_CheckBox_Aspect = g_lButtonDown_CheckBox_Aspect ? 0 : 1;
-				GetClientRect(hWnd, &Rect);
-				::InvalidateRect(hWnd, &Rect, TRUE);
-			}
-
-			if (hWnd == g_hWndCheckBox_60fps)
-			{
-				g_lButtonDown_CheckBox_60fps = g_lButtonDown_CheckBox_60fps ? 0 : 1;
 				GetClientRect(hWnd, &Rect);
 				::InvalidateRect(hWnd, &Rect, TRUE);
 			}
@@ -335,7 +316,7 @@ void __cdecl Thread_Func1(void * pParam)
 	bool FOV = false;
 	bool FPS60 = false;
 	
-	FILE *Fp = NULL;
+FILE *Fp = NULL;
 
 	Fp = fopen("Tomb2.exe", "r+b");
 	if( Fp != 0 )
@@ -385,7 +366,7 @@ void __cdecl Thread_Func1(void * pParam)
 	}
 	
 	Fp  = fopen(pThreadParms->File_Name, "r+b");
-	if( Fp != 0 )
+	if( Fp == 0 )
     {
 	}
 
@@ -402,13 +383,13 @@ void __cdecl Thread_Func1(void * pParam)
 	fread((BYTE*)Buff, FileSize, 1, Fp);
 
 	
-	FILE* FpBak = NULL;
+	FILE* FpBak;
 	char FileName[256];
 	strcpy(FileName, pThreadParms->File_Name);
 	strcat(FileName, ".bak");
 
 	FpBak = fopen(FileName, "wb");
-	if (Fp != 0)
+	if (FpBak == 0)
 	{
 		fwrite(Buff, FileSize, 1, FpBak);
 		fclose(FpBak);
@@ -517,43 +498,6 @@ void __cdecl Thread_Func1(void * pParam)
 
 	}
 
-	if(!strncmp(pThreadParms->File_Name, "Tomb2.exe", 256) ||
-		
-		!strncmp(pThreadParms->File_Name, "t2gold.exe", 256) ||
-		
-		!strncmp(pThreadParms->File_Name, "tomb3.exe", 256) ||
-		
-		!strncmp(pThreadParms->File_Name, "tr3gold.exe", 256) )
-
-	{
-	
-	if (g_lButtonDown_CheckBox_60fps)
-	{
-		UINT i = 0;
-		do
-		{
-
-			if (Buff[i] == 0x8B &&
-				Buff[i + 1] == 0xF8 &&
-				Buff[i + 2] == 0x83 &&
-				Buff[i + 3] == 0xFF &&
-				Buff[i + 4] == 0x2)
-			{
-				Buff[i + 4] = 0x0;
-
-				strcpy(pThreadParms->FPS60_Res, "60 FPS Unlock OK");
-				FPS60 = true;
-
-				break;
-			}
-
-			i++;
-
-		} while (i < FileSize);
-	}
-
-	}
- 
 	rewind(Fp);
 	fwrite(Buff, FileSize , 1, Fp);
 	fclose(Fp);
@@ -564,8 +508,6 @@ void __cdecl Thread_Func1(void * pParam)
 		strcpy(pThreadParms->CamDist_Res, "Camera dist correction not used");
 	if (!FOV)
 		strcpy(pThreadParms->Fov_Res, "FOV correction not used");
-	if (!FPS60)
-		strcpy(pThreadParms->FPS60_Res, "Unlock 60 FPS not used");
 
 	_endthread();
 }
@@ -580,7 +522,7 @@ INT_PTR CALLBACK WndProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	HRGN hRgn;
 	POINT Pt1;
 	//HANDLE FontHandle;
-	HRSRC Res;
+	//HRSRC Res;
 	HFONT hFont;
 	const char *Buff = "";
 	LPDRAWITEMSTRUCT DrawItemStruct;
@@ -595,20 +537,20 @@ INT_PTR CALLBACK WndProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		case WM_COMMAND:
 			switch(LOWORD(wParam))
 			{
-				//обрабатываем нажатие на кнопку закрытия
-				//в правом верхнем углу заголовка окна
+				//РѕР±СЂР°Р±Р°С‚С‹РІР°РµРј РЅР°Р¶Р°С‚РёРµ РЅР° РєРЅРѕРїРєСѓ Р·Р°РєСЂС‹С‚РёСЏ
+				//РІ РїСЂР°РІРѕРј РІРµСЂС…РЅРµРј СѓРіР»Сѓ Р·Р°РіРѕР»РѕРІРєР° РѕРєРЅР°
 				case IDC_MYBUTTON_EXIT_TITLE:
 						DestroyWindow(hDlg);
 						break;
 				
-				//обрабатываем нажатие на кнопку exit
-				//появляется после нажатия на кнопку apply
+				//РѕР±СЂР°Р±Р°С‚С‹РІР°РµРј РЅР°Р¶Р°С‚РёРµ РЅР° РєРЅРѕРїРєСѓ exit
+				//РїРѕСЏРІР»СЏРµС‚СЃСЏ РїРѕСЃР»Рµ РЅР°Р¶Р°С‚РёСЏ РЅР° РєРЅРѕРїРєСѓ apply
 				case IDC_MYBUTTON_EXIT:
 						DestroyWindow(hDlg);
 						break;
 				
-				//обрабатываем нажатие на кнопку apply
-				//в главном окне приложения
+				//РѕР±СЂР°Р±Р°С‚С‹РІР°РµРј РЅР°Р¶Р°С‚РёРµ РЅР° РєРЅРѕРїРєСѓ apply
+				//РІ РіР»Р°РІРЅРѕРј РѕРєРЅРµ РїСЂРёР»РѕР¶РµРЅРёСЏ
 				case IDC_MYBUTTON_APPLY:
 				
 				pThreadParms = new THREADPARMS;
@@ -618,7 +560,6 @@ INT_PTR CALLBACK WndProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				pThreadParms->Widescreen_Res[0] = 0;
 				pThreadParms->CamDist_Res[0] = 0;
 				pThreadParms->Fov_Res[0] = 0;
-				pThreadParms->FPS60_Res[0] = 0;
 
 				char BuffWidth[256];
 				::SendMessage(g_hWndEdit_AspectW, WM_GETTEXT, 256, LPARAM(BuffWidth));
@@ -661,7 +602,6 @@ INT_PTR CALLBACK WndProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				DestroyWindow(g_hWndStaticText_FOV);
 				DestroyWindow(g_hWndStaticText_Aspect);
 				DestroyWindow(g_hWndStaticText_AspectWH);
-				DestroyWindow(g_hWndStaticText_60fps);
 
 				DestroyWindow(g_hWndEdit_Dist);
 				DestroyWindow(g_hWndEdit_FOV);
@@ -671,31 +611,28 @@ INT_PTR CALLBACK WndProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				DestroyWindow(g_hWndCheckBox_Dist);
 				DestroyWindow(g_hWndCheckBox_FOV);
 				DestroyWindow(g_hWndCheckBox_Aspect);
-				DestroyWindow(g_hWndCheckBox_60fps);
 				
 				DestroyWindow(g_hWndButton_Apply);
 				
-				//создаем фонт для кнопки exit
+				//СЃРѕР·РґР°РµРј С„РѕРЅС‚ РґР»СЏ РєРЅРѕРїРєРё exit
 				hFont = CreateFont(-15,0,0,0,FW_BOLD,FALSE,FALSE,FALSE,FALSE,FALSE,
                 //FALSE,0, FALSE,"Exo 2 Light");
 				FALSE,0, FALSE,"Arial");
-				//FALSE,0, FALSE,"Times New Roman");
-				//FALSE,0, FALSE,"Consolas");
 
-				//создаем кнопку закрытия окна на месте кнопки appy
-				//обрабатываем нажатие в WM_COMMAND
+				//СЃРѕР·РґР°РµРј РєРЅРѕРїРєСѓ Р·Р°РєСЂС‹С‚РёСЏ РѕРєРЅР° РЅР° РјРµСЃС‚Рµ РєРЅРѕРїРєРё appy
+				//РѕР±СЂР°Р±Р°С‚С‹РІР°РµРј РЅР°Р¶Р°С‚РёРµ РІ WM_COMMAND
 				g_hWndButton_Exit=CreateWindowEx(0,"Button", "",
 					WS_CHILD|WS_TABSTOP|WS_VISIBLE|BS_OWNERDRAW|BS_PUSHBUTTON,
-					436, 233, 107, 42,hDlg,
+					436, 183, 107, 42, hDlg,
 					(HMENU)IDC_MYBUTTON_EXIT,g_hInst,NULL);
  
 				if(!g_hWndButton_Exit)
 				{
-					MessageBox(NULL,"Button создать не удалось", "Info",MB_OK);
+					MessageBox(NULL,"Button СЃРѕР·РґР°С‚СЊ РЅРµ СѓРґР°Р»РѕСЃСЊ", "Info",MB_OK);
 					return -1;
 				}
 
-				//устанавливаем фонт для кнопки exit
+				//СѓСЃС‚Р°РЅР°РІР»РёРІР°РµРј С„РѕРЅС‚ РґР»СЏ РєРЅРѕРїРєРё exit
 				SendMessage(g_hWndButton_Exit, WM_SETFONT, WPARAM (hFont), TRUE);
 
 				if(strlen(pThreadParms->File_Name) == 0)
@@ -705,12 +642,11 @@ INT_PTR CALLBACK WndProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				else
 				{
 					char BuffTemp[256];
-					sprintf(BuffTemp, "Done %s!\r\n\r\n%s\r\n%s\r\n%s\r\n%s",
+					sprintf(BuffTemp, "Done %s!\r\n\r\n%s\r\n%s\r\n%s",
 					pThreadParms->File_Name,
 					pThreadParms->Widescreen_Res,
 					pThreadParms->CamDist_Res,
-					pThreadParms->Fov_Res,
-					pThreadParms->FPS60_Res);
+					pThreadParms->Fov_Res);
 
 					Buff = BuffTemp;
 				}
@@ -721,7 +657,7 @@ INT_PTR CALLBACK WndProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
  
 				if(!g_hWndStaticText_Result)
 				{
-						MessageBox(NULL,"Static создать не удалось", "Info",MB_OK);
+						MessageBox(NULL,"Static СЃРѕР·РґР°С‚СЊ РЅРµ СѓРґР°Р»РѕСЃСЊ", "Info",MB_OK);
 						return -1;
 				}
     
@@ -729,7 +665,7 @@ INT_PTR CALLBACK WndProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 				SendMessage(g_hWndStaticText_Result, WM_SETTEXT, 0, LPARAM(Buff));
 				
-				//рисуем окно результата в WM_PAINT
+				//СЂРёСЃСѓРµРј РѕРєРЅРѕ СЂРµР·СѓР»СЊС‚Р°С‚Р° РІ WM_PAINT
 				Status = AFTER_APPLY_RESULT;
 
 				::InvalidateRect(hDlg, NULL, true);
@@ -737,18 +673,19 @@ INT_PTR CALLBACK WndProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 			return (INT_PTR)TRUE;
 
-		//создаем фонт для текста и edit
-		//создаем check box три штуки
-		//создаем static для текстовой подписи каждого check box
-		//создаем надпись в заголовке окна
-		//создаем кнопку закрытия в заголовке окна
-		//создаем кнопку apply
+		//СЃРѕР·РґР°РµРј С„РѕРЅС‚ РґР»СЏ С‚РµРєСЃС‚Р° Рё edit
+		//СЃРѕР·РґР°РµРј check box С‚СЂРё С€С‚СѓРєРё
+		//СЃРѕР·РґР°РµРј static РґР»СЏ С‚РµРєСЃС‚РѕРІРѕР№ РїРѕРґРїРёСЃРё РєР°Р¶РґРѕРіРѕ check box
+		//СЃРѕР·РґР°РµРј РЅР°РґРїРёСЃСЊ РІ Р·Р°РіРѕР»РѕРІРєРµ РѕРєРЅР°
+		//СЃРѕР·РґР°РµРј РєРЅРѕРїРєСѓ Р·Р°РєСЂС‹С‚РёСЏ РІ Р·Р°РіРѕР»РѕРІРєРµ РѕРєРЅР°
+		//СЃРѕР·РґР°РµРј РєРЅРѕРїРєСѓ apply
 		case WM_INITDIALOG:
-			//в ресурсах ищем фонт
-			Res = FindResource(g_hInst, MAKEINTRESOURCE(IDR_MY_FONT1),"MY_FONT");
-
-			//создаем фонт из ресурсов программы
+			
 			/*
+			//РІ СЂРµСЃСѓСЂСЃР°С… РёС‰РµРј С„РѕРЅС‚
+			Res = FindResource(g_hInst, MAKEINTRESOURCE(IDR_MY_FONT1),"MY_FONT");
+			
+			//СЃРѕР·РґР°РµРј С„РѕРЅС‚ РёР· СЂРµСЃСѓСЂСЃРѕРІ РїСЂРѕРіСЂР°РјРјС‹
 			if (Res) 
 			{
 				HGLOBAL Mem = LoadResource(g_hInst, Res);
@@ -768,295 +705,257 @@ INT_PTR CALLBACK WndProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 					MessageBox(hDlg, "Font add fails", "Error", MB_OK);
 				}
 			}
-			*/
+*/
 
-			//создаем окно check box для dist на базе static
+			//СЃРѕР·РґР°РµРј РѕРєРЅРѕ check box РґР»СЏ dist РЅР° Р±Р°Р·Рµ static
 			g_hWndCheckBox_Dist=CreateWindowEx(0,"Static", "",
 			    WS_CHILD|WS_TABSTOP|WS_VISIBLE | SS_LEFT | SS_NOTIFY,
 				18, 35, 25, 25,hDlg,(HMENU)(UINT_PTR)IDC_MYCHECKBOX_DIST,g_hInst,NULL);
  
 			if(!g_hWndCheckBox_Dist)
 			{
-				MessageBox(hDlg,"Static создать не удалось", "Info",MB_OK);
+				MessageBox(hDlg,"Static СЃРѕР·РґР°С‚СЊ РЅРµ СѓРґР°Р»РѕСЃСЊ", "Info",MB_OK);
 				return -1;
 			}
  
-			// Установить новую функцию обработки окна check box dist
+			// РЈСЃС‚Р°РЅРѕРІРёС‚СЊ РЅРѕРІСѓСЋ С„СѓРЅРєС†РёСЋ РѕР±СЂР°Р±РѕС‚РєРё РѕРєРЅР° check box dist
 			SetWindowLong(g_hWndCheckBox_Dist,GWL_USERDATA,GetWindowLong(g_hWndCheckBox_Dist,GWL_WNDPROC));
 			SetWindowLong(g_hWndCheckBox_Dist,GWL_WNDPROC,(LONG)(LONG_PTR)CheckBox_WndProc);
 	
-			//создаем окно check box для FOV на базе static
+			//СЃРѕР·РґР°РµРј РѕРєРЅРѕ check box РґР»СЏ FOV РЅР° Р±Р°Р·Рµ static
 			g_hWndCheckBox_FOV=CreateWindowEx(0,"Static", "",
 		       WS_CHILD|WS_TABSTOP|WS_VISIBLE | SS_LEFT | SS_NOTIFY,
 				18, 132, 25, 25,hDlg,(HMENU)(UINT_PTR)IDC_MYCHECKBOX_FOV,g_hInst,NULL);
  
 			if(!g_hWndCheckBox_FOV)
 			{
-				MessageBox(NULL,"Static создать не удалось", "Info",MB_OK);
+				MessageBox(NULL,"Static СЃРѕР·РґР°С‚СЊ РЅРµ СѓРґР°Р»РѕСЃСЊ", "Info",MB_OK);
 				return -1;
 			}
  
-			// Установить новую функцию окна
+			// РЈСЃС‚Р°РЅРѕРІРёС‚СЊ РЅРѕРІСѓСЋ С„СѓРЅРєС†РёСЋ РѕРєРЅР°
 			SetWindowLong(g_hWndCheckBox_FOV,GWL_USERDATA,GetWindowLong(g_hWndCheckBox_FOV,GWL_WNDPROC));
 			SetWindowLong(g_hWndCheckBox_FOV,GWL_WNDPROC,(LONG)(LONG_PTR)CheckBox_WndProc);
  
-			//создаем окно check box для aspect на базе static
+			//СЃРѕР·РґР°РµРј РѕРєРЅРѕ check box РґР»СЏ aspect РЅР° Р±Р°Р·Рµ static
 			g_hWndCheckBox_Aspect=CreateWindowEx(0,"Static", "",
 		       WS_CHILD|WS_TABSTOP|WS_VISIBLE | SS_LEFT | SS_NOTIFY,
 				310, 35, 25, 25,hDlg,(HMENU)(UINT_PTR)IDC_MYCHECKBOX_ASPECT,g_hInst,NULL);
  
 			if(!g_hWndCheckBox_Aspect)
 			{
-				MessageBox(NULL,"Static создать не удалось", "Info",MB_OK);
+				MessageBox(NULL,"Static СЃРѕР·РґР°С‚СЊ РЅРµ СѓРґР°Р»РѕСЃСЊ", "Info",MB_OK);
 				return -1;
 			}
  
-			// Установить новую функцию окна
+			// РЈСЃС‚Р°РЅРѕРІРёС‚СЊ РЅРѕРІСѓСЋ С„СѓРЅРєС†РёСЋ РѕРєРЅР°
 			SetWindowLong(g_hWndCheckBox_Aspect,GWL_USERDATA,GetWindowLong(g_hWndCheckBox_Aspect,GWL_WNDPROC));
 			SetWindowLong(g_hWndCheckBox_Aspect,GWL_WNDPROC,(LONG)(LONG_PTR)CheckBox_WndProc);
  
-			//создаем окно check box для 60 fps на базе static
-			g_hWndCheckBox_60fps = CreateWindowEx(0, "Static", "",
-				WS_CHILD | WS_TABSTOP | WS_VISIBLE | SS_LEFT | SS_NOTIFY,
-				18, 250, 25, 25, hDlg, (HMENU)(UINT_PTR)IDC_MYCHECKBOX_60FPS, g_hInst, NULL);
-
-			if (!g_hWndCheckBox_60fps)
-			{
-				MessageBox(NULL, "Static создать не удалось", "Info", MB_OK);
-				return -1;
-			}
-
-			// Установить новую функцию окна
-			SetWindowLong(g_hWndCheckBox_60fps, GWL_USERDATA, GetWindowLong(g_hWndCheckBox_60fps, GWL_WNDPROC));
-			SetWindowLong(g_hWndCheckBox_60fps, GWL_WNDPROC, (LONG)(LONG_PTR)CheckBox_WndProc);
-
-
-			//создаем фонт что бы выводить текст в static окнах
+			//СЃРѕР·РґР°РµРј С„РѕРЅС‚ С‡С‚Рѕ Р±С‹ РІС‹РІРѕРґРёС‚СЊ С‚РµРєСЃС‚ РІ static РѕРєРЅР°С…
 			//dist, fov, aspect hw
 			hFont = CreateFont(-15,0,0,0,FW_BOLD,FALSE,FALSE,FALSE,FALSE,FALSE,
                 //FALSE,0, FALSE,"Exo 2 Light");
 				FALSE,0, FALSE,"Arial");
-				//FALSE,0, FALSE,"Times New Roman");
-				//FALSE,0, FALSE,"Consolas");
 			
-			//на базе static создаем текст для dist
-			//в сообщении WM_CTLCOLORSTATIC закрасим цвет фона для текста
+			//РЅР° Р±Р°Р·Рµ static СЃРѕР·РґР°РµРј С‚РµРєСЃС‚ РґР»СЏ dist
+			//РІ СЃРѕРѕР±С‰РµРЅРёРё WM_CTLCOLORSTATIC Р·Р°РєСЂР°СЃРёРј С†РІРµС‚ С„РѕРЅР° РґР»СЏ С‚РµРєСЃС‚Р°
 			g_hWndStaticText_Dist=CreateWindowEx(0,"Static", "",
 		        WS_CHILD|WS_TABSTOP|WS_VISIBLE | SS_LEFT | SS_NOTIFY,
 				68, 35, 220, 40,hDlg,(HMENU)(UINT_PTR)IDC_MYSTATICTEXT_DIST,g_hInst,NULL);
  
 			if(!g_hWndStaticText_Dist)
 			{
-				MessageBox(NULL,"Static создать не удалось", "Info",MB_OK);
+				MessageBox(NULL,"Static СЃРѕР·РґР°С‚СЊ РЅРµ СѓРґР°Р»РѕСЃСЊ", "Info",MB_OK);
 				return -1;
 			}
 			
-			//устанавливаем фонт для static текста dist
+			//СѓСЃС‚Р°РЅР°РІР»РёРІР°РµРј С„РѕРЅС‚ РґР»СЏ static С‚РµРєСЃС‚Р° dist
 			SendMessage(g_hWndStaticText_Dist, WM_SETFONT, WPARAM (hFont), TRUE);
 	
-			//устанавливаем текст для static dist
+			//СѓСЃС‚Р°РЅР°РІР»РёРІР°РµРј С‚РµРєСЃС‚ РґР»СЏ static dist
 			Buff = "Camera distance from Lara; default game value is 1536";
 			SendMessage(g_hWndStaticText_Dist, WM_SETTEXT, 0, LPARAM(Buff));
 
-			//на базе static создаем текст для FOV
-			//в сообщении WM_CTLCOLORSTATIC закрасим цвет фона для текста
+			//РЅР° Р±Р°Р·Рµ static СЃРѕР·РґР°РµРј С‚РµРєСЃС‚ РґР»СЏ FOV
+			//РІ СЃРѕРѕР±С‰РµРЅРёРё WM_CTLCOLORSTATIC Р·Р°РєСЂР°СЃРёРј С†РІРµС‚ С„РѕРЅР° РґР»СЏ С‚РµРєСЃС‚Р°
 			g_hWndStaticText_FOV=CreateWindowEx(0,"Static", "",
 				WS_CHILD|WS_TABSTOP|WS_VISIBLE | SS_LEFT | SS_NOTIFY,
 				68, 132, 220, 60,hDlg,(HMENU)(UINT_PTR)IDC_MYSTATICTEXT_FOV,g_hInst,NULL);
  
 			if(!g_hWndStaticText_FOV)
 			{
-				MessageBox(NULL,"Static создать не удалось", "Info",MB_OK);
+				MessageBox(NULL,"Static СЃРѕР·РґР°С‚СЊ РЅРµ СѓРґР°Р»РѕСЃСЊ", "Info",MB_OK);
 				return -1;
 			}
-			//устанавливаем фонт для static текста FOV
+			//СѓСЃС‚Р°РЅР°РІР»РёРІР°РµРј С„РѕРЅС‚ РґР»СЏ static С‚РµРєСЃС‚Р° FOV
 			SendMessage(g_hWndStaticText_FOV, WM_SETFONT, WPARAM (hFont), TRUE);
 
-			//устанавливаем текст для static FOV
+			//СѓСЃС‚Р°РЅР°РІР»РёРІР°РµРј С‚РµРєСЃС‚ РґР»СЏ static FOV
 			Buff = "Field Of View (FOV); enter screen resolution WIDTH used in game setup";
 			SendMessage(g_hWndStaticText_FOV, WM_SETTEXT, 0, LPARAM(Buff));
 
-			//на базе static создаем текст для Aspect
-			//в сообщении WM_CTLCOLORSTATIC закрасим цвет фона для текста
+			//РЅР° Р±Р°Р·Рµ static СЃРѕР·РґР°РµРј С‚РµРєСЃС‚ РґР»СЏ Aspect
+			//РІ СЃРѕРѕР±С‰РµРЅРёРё WM_CTLCOLORSTATIC Р·Р°РєСЂР°СЃРёРј С†РІРµС‚ С„РѕРЅР° РґР»СЏ С‚РµРєСЃС‚Р°
 			g_hWndStaticText_Aspect=CreateWindowEx(0,"Static", "",
 				WS_CHILD|WS_TABSTOP|WS_VISIBLE | SS_LEFT | SS_NOTIFY,
 				360, 35, 180, 53,hDlg,(HMENU)(UINT_PTR)IDC_MYSTATICTEXT_ASPECT,g_hInst,NULL);
  
 			if(!g_hWndStaticText_Aspect)
 			{
-				MessageBox(NULL, "Static создать не удалось", "Info",MB_OK);
+				MessageBox(NULL, "Static СЃРѕР·РґР°С‚СЊ РЅРµ СѓРґР°Р»РѕСЃСЊ", "Info",MB_OK);
 				return -1;
 			}
  
-			//устанавливаем фонт для static текста Aspect
+			//СѓСЃС‚Р°РЅР°РІР»РёРІР°РµРј С„РѕРЅС‚ РґР»СЏ static С‚РµРєСЃС‚Р° Aspect
 			SendMessage(g_hWndStaticText_Aspect, WM_SETFONT, WPARAM (hFont), TRUE);
 	
-			//устанавливаем текст для static Aspect
+			//СѓСЃС‚Р°РЅР°РІР»РёРІР°РµРј С‚РµРєСЃС‚ РґР»СЏ static Aspect
 			Buff = "Widescreen aspect\r\nratio default game value is 4:3";
 			SendMessage(g_hWndStaticText_Aspect, WM_SETTEXT, 0, LPARAM(Buff));
 	
-			//на базе static создаем текст для AspectWH
-			//в сообщении WM_CTLCOLORSTATIC закрасим цвет фона для текста
+			//РЅР° Р±Р°Р·Рµ static СЃРѕР·РґР°РµРј С‚РµРєСЃС‚ РґР»СЏ AspectWH
+			//РІ СЃРѕРѕР±С‰РµРЅРёРё WM_CTLCOLORSTATIC Р·Р°РєСЂР°СЃРёРј С†РІРµС‚ С„РѕРЅР° РґР»СЏ С‚РµРєСЃС‚Р°
 		    g_hWndStaticText_AspectWH=CreateWindowEx(0,"Static", "",
 		        WS_CHILD|WS_TABSTOP|WS_VISIBLE | SS_LEFT | SS_NOTIFY,
 				367, 92, 125, 70,hDlg,(HMENU)(UINT_PTR)IDC_MYSTATICTEXT_ASPECTWH,g_hInst,NULL);
  
 			if(!g_hWndStaticText_AspectWH)
 			{
-				MessageBox(NULL,"Static создать не удалось", "Info",MB_OK);
+				MessageBox(NULL,"Static СЃРѕР·РґР°С‚СЊ РЅРµ СѓРґР°Р»РѕСЃСЊ", "Info",MB_OK);
 				return -1;
 			}
 			
-			//устанавливаем фонт для static текста AspectWH
+			//СѓСЃС‚Р°РЅР°РІР»РёРІР°РµРј С„РѕРЅС‚ РґР»СЏ static С‚РµРєСЃС‚Р° AspectWH
 			SendMessage(g_hWndStaticText_AspectWH, WM_SETFONT, WPARAM (hFont), TRUE);
 
-			//устанавливаем текст для static AspectWH
+			//СѓСЃС‚Р°РЅР°РІР»РёРІР°РµРј С‚РµРєСЃС‚ РґР»СЏ static AspectWH
 			Buff = "Display width\r\n\r\nDisplay height";
 			SendMessage(g_hWndStaticText_AspectWH, WM_SETTEXT, 0, LPARAM(Buff));
 
-			//на базе static создаем текст для 60fps
-			//в сообщении WM_CTLCOLORSTATIC закрасим цвет фона для текста
-			g_hWndStaticText_60fps = CreateWindowEx(0, "Static", "",
-				WS_CHILD | WS_TABSTOP | WS_VISIBLE | SS_LEFT | SS_NOTIFY,
-				68, 250, 130, 45, hDlg, (HMENU)(UINT_PTR)IDC_MYSTATICTEXT_60FPS, g_hInst, NULL);
-
-			if (!g_hWndStaticText_60fps)
-			{
-				MessageBox(NULL, "Static создать не удалось", "Info", MB_OK);
-				return -1;
-			}
-			//устанавливаем фонт для static текста FOV
-			SendMessage(g_hWndStaticText_60fps, WM_SETFONT, WPARAM(hFont), TRUE);
-
-			//устанавливаем текст для static FOV
-			Buff = "Unlock 60 FPS\r\nTR23 Only";
-			SendMessage(g_hWndStaticText_60fps, WM_SETTEXT, 0, LPARAM(Buff));
-
-			//создаем edit для dist
-			//в сообщении WM_CTLCOLOREDIT закрашиваем фон для edit dist
+			//СЃРѕР·РґР°РµРј edit РґР»СЏ dist
+			//РІ СЃРѕРѕР±С‰РµРЅРёРё WM_CTLCOLOREDIT Р·Р°РєСЂР°С€РёРІР°РµРј С„РѕРЅ РґР»СЏ edit dist
 		    g_hWndEdit_Dist=CreateWindowEx(WS_EX_CLIENTEDGE,"Edit", "1536",
 				WS_CHILD|WS_TABSTOP|WS_VISIBLE | WS_BORDER|ES_LEFT,
 				75, 78, 65,32,hDlg,(HMENU)IDC_MYEDIT_DIST,g_hInst,NULL);
  
 			if(!g_hWndEdit_Dist)
 			{
-				MessageBox(NULL,"Edit создать не удалось", "Info",MB_OK);
+				MessageBox(NULL,"Edit СЃРѕР·РґР°С‚СЊ РЅРµ СѓРґР°Р»РѕСЃСЊ", "Info",MB_OK);
 				return -1;
 			}
  
-			// Установить функцию обработки сообщений для edit dist
+			// РЈСЃС‚Р°РЅРѕРІРёС‚СЊ С„СѓРЅРєС†РёСЋ РѕР±СЂР°Р±РѕС‚РєРё СЃРѕРѕР±С‰РµРЅРёР№ РґР»СЏ edit dist
 			SetWindowLong(g_hWndEdit_Dist,GWL_USERDATA,GetWindowLong(g_hWndEdit_Dist,GWL_WNDPROC));
 			SetWindowLong(g_hWndEdit_Dist,GWL_WNDPROC,(LONG)(LONG_PTR)Edit_WndProc);
 		
-			//установить фонт для edit dist
+			//СѓСЃС‚Р°РЅРѕРІРёС‚СЊ С„РѕРЅС‚ РґР»СЏ edit dist
 			SendMessage(g_hWndEdit_Dist, WM_SETFONT, WPARAM (hFont), TRUE);
 
-			//создаем edit для FOV
-			//в сообщении WM_CTLCOLOREDIT закрашиваем фон для edit FOV
+			//СЃРѕР·РґР°РµРј edit РґР»СЏ FOV
+			//РІ СЃРѕРѕР±С‰РµРЅРёРё WM_CTLCOLOREDIT Р·Р°РєСЂР°С€РёРІР°РµРј С„РѕРЅ РґР»СЏ edit FOV
 		    g_hWndEdit_FOV=CreateWindowEx(WS_EX_CLIENTEDGE,"Edit", "undef",
 		        WS_CHILD|WS_TABSTOP|WS_VISIBLE | WS_BORDER|ES_LEFT,
 				75, 195, 65,32,hDlg,(HMENU)IDC_MYEDIT_FOV,g_hInst,NULL);
  
 		   if(!g_hWndEdit_FOV)
 			{
-				MessageBox(NULL,"Edit создать не удалось", "Info",MB_OK);
+				MessageBox(NULL,"Edit СЃРѕР·РґР°С‚СЊ РЅРµ СѓРґР°Р»РѕСЃСЊ", "Info",MB_OK);
 				return -1;
 			}
  
-			// Установить функцию обработки сообщений для edit FOV
+			// РЈСЃС‚Р°РЅРѕРІРёС‚СЊ С„СѓРЅРєС†РёСЋ РѕР±СЂР°Р±РѕС‚РєРё СЃРѕРѕР±С‰РµРЅРёР№ РґР»СЏ edit FOV
 			SetWindowLong(g_hWndEdit_FOV,GWL_USERDATA,GetWindowLong(g_hWndEdit_FOV,GWL_WNDPROC));
 			SetWindowLong(g_hWndEdit_FOV,GWL_WNDPROC,(LONG)(LONG_PTR)Edit_WndProc);
 		
-			//установить фонт для edit FOV
+			//СѓСЃС‚Р°РЅРѕРІРёС‚СЊ С„РѕРЅС‚ РґР»СЏ edit FOV
 			SendMessage(g_hWndEdit_FOV, WM_SETFONT, WPARAM (hFont), TRUE);
 
-			//создаем edit для aspect W
-			//в сообщении WM_CTLCOLOREDIT закрашиваем фон для edit aspect W
+			//СЃРѕР·РґР°РµРј edit РґР»СЏ aspect W
+			//РІ СЃРѕРѕР±С‰РµРЅРёРё WM_CTLCOLOREDIT Р·Р°РєСЂР°С€РёРІР°РµРј С„РѕРЅ РґР»СЏ edit aspect W
 		    g_hWndEdit_AspectW=CreateWindowEx(WS_EX_CLIENTEDGE,"Edit", "16",
 				WS_CHILD|WS_TABSTOP|WS_VISIBLE | WS_BORDER|ES_LEFT,
 				495, 83, 45,32,hDlg,(HMENU)IDC_MYEDIT_ASPECTW,g_hInst,NULL);
  
 			if(!g_hWndEdit_AspectW)
 			{
-				MessageBox(NULL,"Edit создать не удалось", "Info",MB_OK);
+				MessageBox(NULL,"Edit СЃРѕР·РґР°С‚СЊ РЅРµ СѓРґР°Р»РѕСЃСЊ", "Info",MB_OK);
 				return -1;
 			}
  
-			// Установить функцию обработки сообщений
+			// РЈСЃС‚Р°РЅРѕРІРёС‚СЊ С„СѓРЅРєС†РёСЋ РѕР±СЂР°Р±РѕС‚РєРё СЃРѕРѕР±С‰РµРЅРёР№
 			SetWindowLong(g_hWndEdit_AspectW,GWL_USERDATA,GetWindowLong(g_hWndEdit_AspectW,GWL_WNDPROC));
 			SetWindowLong(g_hWndEdit_AspectW,GWL_WNDPROC,(LONG)(LONG_PTR)Edit_WndProc);
 		
-			//устанавливаем фонт
+			//СѓСЃС‚Р°РЅР°РІР»РёРІР°РµРј С„РѕРЅС‚
 			SendMessage(g_hWndEdit_AspectW, WM_SETFONT, WPARAM (hFont), TRUE);
 
-			//создаем edit для aspect H
-			//в сообщении WM_CTLCOLOREDIT закрашиваем фон для edit aspect H
+			//СЃРѕР·РґР°РµРј edit РґР»СЏ aspect H
+			//РІ СЃРѕРѕР±С‰РµРЅРёРё WM_CTLCOLOREDIT Р·Р°РєСЂР°С€РёРІР°РµРј С„РѕРЅ РґР»СЏ edit aspect H
 		    g_hWndEdit_AspectH=CreateWindowEx(WS_EX_CLIENTEDGE,"Edit", "9",
 				WS_CHILD|WS_TABSTOP|WS_VISIBLE | WS_BORDER|ES_LEFT,
 				495, 122, 45,32,hDlg,(HMENU)IDC_MYEDIT_ASPECTH,g_hInst,NULL);
  
 			if(!g_hWndEdit_AspectH)
 			{
-				MessageBox(NULL,"Edit создать не удалось", "Info",MB_OK);
+				MessageBox(NULL,"Edit СЃРѕР·РґР°С‚СЊ РЅРµ СѓРґР°Р»РѕСЃСЊ", "Info",MB_OK);
 				return -1;
 			}
  
-			// Установить функцию обработки сообщений
+			// РЈСЃС‚Р°РЅРѕРІРёС‚СЊ С„СѓРЅРєС†РёСЋ РѕР±СЂР°Р±РѕС‚РєРё СЃРѕРѕР±С‰РµРЅРёР№
 			SetWindowLong(g_hWndEdit_AspectH,GWL_USERDATA,GetWindowLong(g_hWndEdit_AspectH,GWL_WNDPROC));
 			SetWindowLong(g_hWndEdit_AspectH,GWL_WNDPROC,(LONG)(LONG_PTR)Edit_WndProc);
 
-			//устанавливаем фонт
+			//СѓСЃС‚Р°РЅР°РІР»РёРІР°РµРј С„РѕРЅС‚
 			SendMessage(g_hWndEdit_AspectH, WM_SETFONT, WPARAM (hFont), TRUE);
 
-			//создаем в гл.окне кнопку apply
-			//сама кнопка рисуется в сообщении WM_DRAWITEM
-			//обрабатывается в WM_COMMAND
+			//СЃРѕР·РґР°РµРј РІ РіР».РѕРєРЅРµ РєРЅРѕРїРєСѓ apply
+			//СЃР°РјР° РєРЅРѕРїРєР° СЂРёСЃСѓРµС‚СЃСЏ РІ СЃРѕРѕР±С‰РµРЅРёРё WM_DRAWITEM
+			//РѕР±СЂР°Р±Р°С‚С‹РІР°РµС‚СЃСЏ РІ WM_COMMAND
 			g_hWndButton_Apply=CreateWindowEx(0,"Button", "",
 				WS_CHILD|WS_TABSTOP|WS_VISIBLE|BS_OWNERDRAW|BS_PUSHBUTTON,
-				436, 233, 107, 42,hDlg,
+				436, 183, 107, 42, hDlg,
 				(HMENU)IDC_MYBUTTON_APPLY,g_hInst,NULL);
  
 			if(!g_hWndButton_Apply)
 			{
-				MessageBox(NULL,"Button создать не удалось", "Info",MB_OK);
+				MessageBox(NULL,"Button СЃРѕР·РґР°С‚СЊ РЅРµ СѓРґР°Р»РѕСЃСЊ", "Info",MB_OK);
 				return -1;
 			}
-			//устанавливаем фонт для кнопки
+			//СѓСЃС‚Р°РЅР°РІР»РёРІР°РµРј С„РѕРЅС‚ РґР»СЏ РєРЅРѕРїРєРё
 			SendMessage(g_hWndButton_Apply, WM_SETFONT, WPARAM (hFont), TRUE);
 
-			//создаем фонт для текста в заголовке окна
+			//СЃРѕР·РґР°РµРј С„РѕРЅС‚ РґР»СЏ С‚РµРєСЃС‚Р° РІ Р·Р°РіРѕР»РѕРІРєРµ РѕРєРЅР°
 			hFont = CreateFont(-13,0,0,0,FW_BOLD,FALSE,FALSE,FALSE,FALSE,FALSE,
                 //FALSE,0, FALSE,"Exo 2 Light");
 				FALSE,0, FALSE,"Arial");
-				//FALSE,0, FALSE,"Times New Roman");
-				//FALSE,0, FALSE,"Consolas");
 
-			//создаем staic text для заголовка окна
+			//СЃРѕР·РґР°РµРј staic text РґР»СЏ Р·Р°РіРѕР»РѕРІРєР° РѕРєРЅР°
 		    g_hWndTextCaption=CreateWindowEx(0,"Static", "",
 		        WS_CHILD|WS_TABSTOP|WS_VISIBLE | SS_LEFT | SS_NOTIFY,
-				13, 4, 250, 17,hDlg,(HMENU)(UINT_PTR)IDC_MYSTATICTEXT_CAPTION,g_hInst,NULL);
+				13, 4, 500, 17, hDlg,(HMENU)(UINT_PTR)IDC_MYSTATICTEXT_CAPTION,g_hInst,NULL);
  
 			if(!g_hWndTextCaption)
 			{
-				MessageBox(NULL,"Static создать не удалось", "Info",MB_OK);
+				MessageBox(NULL,"Static СЃРѕР·РґР°С‚СЊ РЅРµ СѓРґР°Р»РѕСЃСЊ", "Info",MB_OK);
 				return -1;
 			}
  
-			// Установить оконную процедуру нажимать будем
-			// левую кнопку мыши на static для перемещения окна (заголовок)
+			// РЈСЃС‚Р°РЅРѕРІРёС‚СЊ РѕРєРѕРЅРЅСѓСЋ РїСЂРѕС†РµРґСѓСЂСѓ РЅР°Р¶РёРјР°С‚СЊ Р±СѓРґРµРј
+			// Р»РµРІСѓСЋ РєРЅРѕРїРєСѓ РјС‹С€Рё РЅР° static РґР»СЏ РїРµСЂРµРјРµС‰РµРЅРёСЏ РѕРєРЅР° (Р·Р°РіРѕР»РѕРІРѕРє)
 			SetWindowLong(g_hWndTextCaption,GWL_USERDATA,GetWindowLong(g_hWndTextCaption,GWL_WNDPROC));
 			SetWindowLong(g_hWndTextCaption,GWL_WNDPROC,(LONG)(LONG_PTR)TextCaption_WndProc);
 			
-			//установить фонт для текста
+			//СѓСЃС‚Р°РЅРѕРІРёС‚СЊ С„РѕРЅС‚ РґР»СЏ С‚РµРєСЃС‚Р°
 			SendMessage(g_hWndTextCaption, WM_SETFONT, WPARAM (hFont), TRUE);
 	
-			//установить текст
-			Buff = "Widescreen Tomb Raider 2345 v1.7.8";
+			//СѓСЃС‚Р°РЅРѕРІРёС‚СЊ С‚РµРєСЃС‚
+			Buff = "Widescreen Patch Tomb Raider Adventures Of Lara Croft by Ed Kurlyak";
 			SendMessage(g_hWndTextCaption, WM_SETTEXT, 0, LPARAM(Buff));
 
-			//создаем кнопку закрытия справа в заголовке окна
-			//рисуем саму кнопку в сообщении WM_DRAWITEM
-			//обрабатывается в WM_COMMAND
+			//СЃРѕР·РґР°РµРј РєРЅРѕРїРєСѓ Р·Р°РєСЂС‹С‚РёСЏ СЃРїСЂР°РІР° РІ Р·Р°РіРѕР»РѕРІРєРµ РѕРєРЅР°
+			//СЂРёСЃСѓРµРј СЃР°РјСѓ РєРЅРѕРїРєСѓ РІ СЃРѕРѕР±С‰РµРЅРёРё WM_DRAWITEM
+			//РѕР±СЂР°Р±Р°С‚С‹РІР°РµС‚СЃСЏ РІ WM_COMMAND
 			g_hWndButtonExit_Title=CreateWindowEx(0,"Button", "",
 				WS_CHILD|WS_TABSTOP|WS_VISIBLE|BS_OWNERDRAW|BS_PUSHBUTTON,
 				546, 3, 16, 16,hDlg,
@@ -1064,18 +963,18 @@ INT_PTR CALLBACK WndProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
  
 			if(!g_hWndButtonExit_Title)
 			{
-				MessageBox(hDlg,"Button создать не удалось", "Info",MB_OK);
+				MessageBox(hDlg,"Button СЃРѕР·РґР°С‚СЊ РЅРµ СѓРґР°Р»РѕСЃСЊ", "Info",MB_OK);
 				return -1;
 			}
 
 			return (INT_PTR)TRUE;
 
 		case WM_CTLCOLORSTATIC:
-			//текст у нас рисуется на static
-			//закрашиваем фон текста для текста Dist, Fov, Aspect hw
+			//С‚РµРєСЃС‚ Сѓ РЅР°СЃ СЂРёСЃСѓРµС‚СЃСЏ РЅР° static
+			//Р·Р°РєСЂР°С€РёРІР°РµРј С„РѕРЅ С‚РµРєСЃС‚Р° РґР»СЏ С‚РµРєСЃС‚Р° Dist, Fov, Aspect hw
 			if( ((HWND)lParam == g_hWndStaticText_Dist) || ((HWND)lParam == g_hWndStaticText_FOV)
 			|| ((HWND)lParam == g_hWndStaticText_Aspect) || ((HWND)lParam == g_hWndStaticText_AspectWH)
-			|| ((HWND)lParam == g_hWndStaticText_Result) || ((HWND)lParam == g_hWndStaticText_60fps))
+			|| ((HWND)lParam == g_hWndStaticText_Result))
 			{
 				hDC = (HDC) wParam;
 				::SetTextColor(hDC, RGB(0, 0, 0));
@@ -1086,7 +985,7 @@ INT_PTR CALLBACK WndProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				return (LRESULT) hBrush;				
 			}
 
-		//закрашиваем фон для edit dist, fov, aspect wh
+		//Р·Р°РєСЂР°С€РёРІР°РµРј С„РѕРЅ РґР»СЏ edit dist, fov, aspect wh
 		case WM_CTLCOLOREDIT:
 			hDC = (HDC) wParam;
 			::SetTextColor(hDC, RGB(0, 0, 0));
@@ -1099,7 +998,7 @@ INT_PTR CALLBACK WndProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		
 		case WM_DRAWITEM:
 
-			//рисуем кнопку выхода справа в заголовке окна
+			//СЂРёСЃСѓРµРј РєРЅРѕРїРєСѓ РІС‹С…РѕРґР° СЃРїСЂР°РІР° РІ Р·Р°РіРѕР»РѕРІРєРµ РѕРєРЅР°
 			if (LOWORD(wParam) == IDC_MYBUTTON_EXIT_TITLE )
 			{
 				DrawItemStruct = (LPDRAWITEMSTRUCT )lParam;
@@ -1140,7 +1039,7 @@ INT_PTR CALLBACK WndProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				return (INT_PTR)TRUE;
 			}
 
-			//рисуем кнопку гл.окна apply и результ.окна кнопка exit
+			//СЂРёСЃСѓРµРј РєРЅРѕРїРєСѓ РіР».РѕРєРЅР° apply Рё СЂРµР·СѓР»СЊС‚.РѕРєРЅР° РєРЅРѕРїРєР° exit
 			if( (LOWORD(wParam) == IDC_MYBUTTON_APPLY ) ||
 				(LOWORD(wParam) == IDC_MYBUTTON_EXIT ) )
 			{
@@ -1234,7 +1133,7 @@ INT_PTR CALLBACK WndProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 			::DeleteObject( hBrush );
 
-			//рисуем в окне приложения первый экран
+			//СЂРёСЃСѓРµРј РІ РѕРєРЅРµ РїСЂРёР»РѕР¶РµРЅРёСЏ РїРµСЂРІС‹Р№ СЌРєСЂР°РЅ
 			if(Status == FIRST_SCREEN)
 			{
 				//cam dist
@@ -1295,38 +1194,6 @@ INT_PTR CALLBACK WndProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				::DeleteObject( hBrush );
 				::DeleteObject( hRgn );
 
-				//60 fps
-				Pt[0].x = 11;
-				Pt[0].y = 243;
-
-				Pt[1].x = 225;
-				Pt[1].y = 243;
-
-				Pt[2].x = 225;
-				//Pt[2].y = 288;
-				Pt[2].y = 295;
-
-				Pt[3].x = 51;
-				//Pt[3].y = 288;
-				Pt[3].y = 295;
-
-				Pt[4].x = 51;
-				Pt[4].y = 283;
-
-				Pt[5].x = 11;
-				Pt[5].y = 283;
-
-				hRgn = ::CreatePolygonRgn((const POINT*)& Pt, 6, ALTERNATE);
-
-				hBrush = ::CreateSolidBrush(RGB(175, 207, 206));
-				if (!hBrush) return 0;
-
-				::FillRgn(hDC, hRgn, hBrush);
-
-				::DeleteObject(hBrush);
-				::DeleteObject(hRgn);
-
-
 				//aspect ratio
 				Pt[0].x = 303;
 				Pt[0].y = 28;
@@ -1357,26 +1224,19 @@ INT_PTR CALLBACK WndProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				::DeleteObject( hRgn );			
 					
 				//button apply
+				Pt[0].x = 403;
+				Pt[0].y = 171;
 
-				Pt[0].x = 250;
-				Pt[0].y = 250;
+				Pt[1].x = 558;
+				Pt[1].y = 171;
 
-				Pt[1].x = 380;
-				Pt[1].y = 250;
+				Pt[2].x = 558;
+				Pt[2].y = 238;
 
-				Pt[2].x = 380;
-				Pt[2].y = 190;
+				Pt[3].x = 403;
+				Pt[3].y = 238;
 
-				Pt[3].x = 558;
-				Pt[3].y = 190;
-
-				Pt[4].x = 558;
-				Pt[4].y = 295;
-
-				Pt[5].x = 250;
-				Pt[5].y = 295;
-
-				hRgn = ::CreatePolygonRgn((const POINT *)&Pt, 6, ALTERNATE);
+				hRgn = ::CreatePolygonRgn((const POINT *)&Pt, 4, ALTERNATE);
 
 				hBrush = ::CreateSolidBrush( RGB(175, 207, 206) );
 				if (!hBrush) return 0;
@@ -1387,10 +1247,10 @@ INT_PTR CALLBACK WndProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				::DeleteObject( hRgn );
 
 			}
-			//рисуем в окне приложения result screen
+			//СЂРёСЃСѓРµРј РІ РѕРєРЅРµ РїСЂРёР»РѕР¶РµРЅРёСЏ result screen
 			else if(Status == AFTER_APPLY_RESULT)
 			{
-				//тут выводим текст
+				//С‚СѓС‚ РІС‹РІРѕРґРёРј С‚РµРєСЃС‚
 				Pt[0].x = 53;
 				Pt[0].y = 50;
 
@@ -1412,18 +1272,18 @@ INT_PTR CALLBACK WndProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 				DeleteObject(hBrush);
 				
-				//тут расположена кнопка Exit
+				//С‚СѓС‚ СЂР°СЃРїРѕР»РѕР¶РµРЅР° РєРЅРѕРїРєР° Exit
 				Pt[0].x = 403;
-				Pt[0].y = 221;
+				Pt[0].y = 171;
 
 				Pt[1].x = 558;
-				Pt[1].y = 221;
+				Pt[1].y = 171;
 
 				Pt[2].x = 558;
-				Pt[2].y = 288;
+				Pt[2].y = 238;
 
 				Pt[3].x = 403;
-				Pt[3].y = 288;
+				Pt[3].y = 238;
 
 				hRgn = ::CreatePolygonRgn((const POINT *)&Pt, 4, ALTERNATE);
 				
@@ -1439,7 +1299,7 @@ INT_PTR CALLBACK WndProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			
 			return (INT_PTR)TRUE;
 
-			//перемещаем окно держа мышей за заголовок
+			//РїРµСЂРµРјРµС‰Р°РµРј РѕРєРЅРѕ РґРµСЂР¶Р° РјС‹С€РµР№ Р·Р° Р·Р°РіРѕР»РѕРІРѕРє
 			case WM_LBUTTONDOWN:
 
 				Pt1.x = LOWORD(lParam);

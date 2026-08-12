@@ -113,5 +113,9 @@ SOURCE=.\Resource.h
 SOURCE=.\Tr.ico
 # End Source File
 # End Group
+# Begin Source File
+
+SOURCE=".\Exo2-Light.ttf"
+# End Source File
 # End Target
 # End Project
